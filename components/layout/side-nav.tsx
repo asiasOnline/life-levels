@@ -4,9 +4,8 @@ import Link from 'next/link'
 const SideNav = () => {
   return (
     <div className='h-screen px-10 border-r'>
-        <h1>Life Levels</h1>
+        <h1><Link href="/">Life Levels</Link></h1>
         <div className='flex flex-col'>
-            <Link href="/">Dashboard</Link>
             <Link href="/tasks">Tasks</Link>
             <Link href="/habits">Habits</Link>
             <Link href="/projects">Projects</Link>

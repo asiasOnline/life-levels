@@ -1,9 +1,6 @@
-import SideNav from "../components/ui/side-nav";
-
-export default function Habits() {
+export default function Projects() {
     return (
-      <div className="flex">
-        <SideNav />
+      <div>
         <h1>Projects</h1>
       </div>
     );
