@@ -1,0 +1,43 @@
+export type TaskStatus = 
+  | 'not-started'
+  | 'in-progress'
+  | 'completed'
+  | 'on-hold';
+
+export type TaskPriority = 
+  | 'low'
+  | 'medium'
+  | 'high'
+  | 'urgent';
+
+  export type TaskDifficulty = 
+  | 'easy'
+  | 'medium'
+  | 'hard'
+
+export interface TaskInterface {
+  id: string;
+  title: string;
+  description: string;
+  startDate: Date;
+  dueDate: Date;
+  status: TaskStatus;
+  priority: TaskPriority;
+  difficulty: TaskDifficulty;
+  xpReward?: number;
+}
+
+// Helper objects for your dropdowns
+export const TASK_STATUSES: { value: TaskStatus; label: string }[] = [
+  { value: 'not-started', label: 'Not Started' },
+  { value: 'in-progress', label: 'In Progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'on-hold', label: 'On Hold' },
+];
+
+export const TASK_PRIORITIES: { value: TaskPriority; label: string }[] = [
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+  { value: 'urgent', label: 'Urgent' },
+];
