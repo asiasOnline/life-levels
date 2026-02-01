@@ -1,6 +1,19 @@
 import Image from "next/image";
+import StatContainer from "@/components/features/stats/stat-container";
+import { StatData } from "@/lib/types";
 
-export default function Home() {
+
+export default function Dashboard() {
+  const userStats: StatData[] = [
+    {
+      type: 'health',
+      label: 'Health',
+      value: 85,
+      maxValue: 100,
+      
+    }
+  ]
+
   return (
     <div>
       <div>

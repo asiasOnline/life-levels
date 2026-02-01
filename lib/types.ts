@@ -1,3 +1,4 @@
+/* #region Task Types */
 export type TaskStatus = 
   | 'not-started'
   | 'in-progress'
@@ -27,7 +28,7 @@ export interface TaskInterface {
   xpReward?: number;
 }
 
-// Helper objects for your dropdowns
+// Helper objects for dropdowns
 export const TASK_STATUSES: { value: TaskStatus; label: string }[] = [
   { value: 'not-started', label: 'Not Started' },
   { value: 'in-progress', label: 'In Progress' },
@@ -41,3 +42,23 @@ export const TASK_PRIORITIES: { value: TaskPriority; label: string }[] = [
   { value: 'high', label: 'High' },
   { value: 'urgent', label: 'Urgent' },
 ];
+/* #endregion Task */
+
+/* #region Stat Types */
+export type StatType = 
+  | 'health'
+  | 'gold'
+  | 'xp'
+  | 'energy'
+  | 'streak';
+
+export interface StatData {
+  type: StatType;
+  label: string;
+  value: number;
+  maxValue?: number; // For progress bars (health, XP, etc.)
+  icon?: React.ReactNode; // Optional icon component
+  variant?: 'default' | 'success' | 'warning' | 'danger';
+}
+
+/* #endregion Task */

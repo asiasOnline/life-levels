@@ -33,7 +33,7 @@ export default function RootLayout({
           <SideNav />
           <div>
             <TopNav />
-            <div className="w-screen h-screen bg-stone-100">
+            <div className="w-screen h-screen p-5 bg-stone-100">
               {children}
             </div>
           </div>

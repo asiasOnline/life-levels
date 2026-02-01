@@ -1,10 +1,19 @@
 import React from 'react'
 import Link from 'next/link'
+import { GoSidebarExpand } from "react-icons/go";
 
 const SideNav = () => {
   return (
-    <div className='h-screen px-10 border-r'>
-        <h1><Link href="/">Life Levels</Link></h1>
+    <aside className='h-screen w-full px-6 py-4 border-r'>
+        <div className='flex items-center gap-20 pb-6'>
+          <Link href="/" className='block w-40 h-auto'>
+            <img 
+              src="/placeholder-logo.svg" 
+              alt="Logo" 
+            />
+          </Link>
+          <GoSidebarExpand className='w-6 h-6'/>
+        </div>
         <div className='flex flex-col'>
             <Link href="/tasks">Tasks</Link>
             <Link href="/habits">Habits</Link>
@@ -14,7 +23,7 @@ const SideNav = () => {
             <Link href="/characters">Characters</Link>
             <Link href="/rewards">Rewards</Link>
         </div>
-    </div>
+    </aside>
   )
 }
 
