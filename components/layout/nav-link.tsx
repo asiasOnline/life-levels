@@ -2,7 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FaLink } from "react-icons/fa6";
+
 import { cn } from '@/lib/utils';
 
 interface NavLinkProps {
@@ -19,10 +19,15 @@ const NavLink = ({href, label, icon: Icon}: NavLinkProps) => {
     <Link
         href={href}
         className={cn(
-
+          'flex items-center gap-3 px-4 py-2 justify-center md:justify-start bg-white',
+          'hover: hover:text-accent-foreground',
+          isActive
+          ? 'bg-accent text-accent-foreground font-medium'
+          : 'text-muted-foreground'
         )}
     >
-    <Icon className='w-6 h-6'/>
+    <Icon className='w-5 h-5'/>
+    <span className='hidden md:inline'>{label}</span>
     </Link>
   )
 }

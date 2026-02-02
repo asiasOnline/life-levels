@@ -1,23 +1,23 @@
 import React from 'react'
-import { StatData } from '@/lib/types'
+import { StatData, StatDisplayMode } from '@/lib/types'
 import Stat from './stat'
 import { cn } from '@/lib/utils'
 
 interface StatContainerProps {
   stats: StatData[];
   layout?: 'horizontal' | 'vertical' | 'grid';
-  showProgress?: boolean;
+  displayMode?: StatDisplayMode;
   className?: string;
 }
 
 const StatContainer = ({
   stats,
   layout = 'horizontal',
-  showProgress = false,
+  displayMode,
   className
 }: StatContainerProps) => {
   const layoutClasses = {
-    horizontal: 'flex flex-row gap-4',
+    horizontal: 'flex flex-row justify-around',
     vertical: 'flex flex-col gap-4',
     grid: 'grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4',
   }
@@ -32,7 +32,7 @@ const StatContainer = ({
         <Stat 
           key={stat.type}
           stat={stat}
-          showProgress={showProgress}
+          displayMode={displayMode}
         />
       ))}
     </div>

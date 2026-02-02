@@ -52,13 +52,19 @@ export type StatType =
   | 'energy'
   | 'streak';
 
+export type StatDisplayMode = 
+  | 'progress'
+  | 'numeric'
+  | 'none';
+
 export interface StatData {
   type: StatType;
   label: string;
   value: number;
-  maxValue?: number; // For progress bars (health, XP, etc.)
-  icon?: React.ReactNode; // Optional icon component
+  maxValue?: number; 
+  icon?: React.ReactNode;
   variant?: 'default' | 'success' | 'warning' | 'danger';
+  displayMode?: StatDisplayMode;
 }
 
 /* #endregion Task */
