@@ -5,12 +5,12 @@ import { FaGear } from "react-icons/fa6";
 
 const TopNav = () => {
   return (
-    <div className='py-4 border-b'>
-        <div className='flex justify-start'>
+    <div className='py-4 px-8 border-b'>
+        <div className='flex justify-between'>
           <div className="w-150">
             <SearchBar />
           </div>
-          <div className='flex'>
+          <div className='flex items-center gap-8'>
             <IoMdNotifications className='w-6 h-6'/>
             <FaGear className='w-5 h-5'/>
             <IoMdSunny className='w-6 h-6' />

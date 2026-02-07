@@ -24,7 +24,7 @@ const StatContainer = ({
 
   return (
     <div className={cn(
-      'rounded-lg border bg-card p-4',
+      'w-full rounded-lg border bg-card p-4',
       layoutClasses[layout],
       className
     )}>

@@ -3,7 +3,7 @@ import { Progress } from '@/components/ui/progress'
 
 const CharacterContainer = () => {
   return (
-    <div className='rounded-xl bg-amber-400 mb-4'>
+    <div className='w-full rounded-lg bg-amber-400 mb-4 border'>
       <div className='flex justify-center pt-4'>
         <img 
           src='/characters/swordsman.svg'
@@ -12,7 +12,7 @@ const CharacterContainer = () => {
           alt="The Knight Character" 
           />
       </div>
-      <div className='px-4 py-2 bg-white'>
+      <div className='px-4 py-2 rounded-br-lg rounded-bl-lg bg-card'>
         <div className='flex justify-between'>
           <h3>The Knight</h3>
           <p>LVL 2</p>

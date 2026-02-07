@@ -26,7 +26,7 @@ const SideNav = () => {
   ]
 
   return (
-    <aside className='h-screen w-full px-6 py-4 border-r'>
+    <aside className='h-screen max-w-80 px-6 py-4 border-r'>
         <div className='flex items-center gap-20 pb-6'>
           <Link href="/" className='block w-40 h-auto'>
             <img 

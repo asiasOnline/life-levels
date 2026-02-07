@@ -9,7 +9,7 @@ const SearchBar = () => {
       <Input 
         type='search' 
         placeholder='Search...' 
-        className='rounded-tl-2xl rounded-bl-2xl rounded-tr-none rounded-br-none'/>
+        className='rounded-tl-2xl rounded-bl-2xl rounded-tr-none rounded-br-none bg-white'/>
       <Button
         className='rounded-tr-2xl rounded-br-2xl rounded-tl-none rounded-bl-none'
       >
