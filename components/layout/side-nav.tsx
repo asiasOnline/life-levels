@@ -2,7 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useState, useEffect } from 'react';
-import NavLink from './nav-link';
+import SideNavLink from './side-nav-link';
 import { GoSidebarExpand, GoSidebarCollapse } from "react-icons/go";
 import { BiSolidDashboard, BiSolidChat } from "react-icons/bi";
 import { FaRotate, FaSquareCheck, FaFolder, FaStar, FaCircleArrowUp, FaUserGroup, FaRegCalendarDays } from "react-icons/fa6";
@@ -74,7 +74,7 @@ const SideNav = () => {
         
         <nav className='flex flex-col gap-2'>
           {navItems.map((item) => (
-            <NavLink 
+            <SideNavLink 
               key={item.href}
               href={item.href}
               label={item.label}

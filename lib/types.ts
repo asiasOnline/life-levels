@@ -67,4 +67,16 @@ export interface StatData {
   displayMode?: StatDisplayMode;
 }
 
-/* #endregion Task */
+/* #region Skill Types */
+export interface SkillData {
+  type: StatType;
+  icon?: React.ReactNode;
+  label: string;
+  value: number;
+  maxValue?: number; 
+  variant?: 'default' | 'success' | 'warning' | 'danger';
+  displayMode?: StatDisplayMode;
+}
+
+/* #region Skill Types */
+

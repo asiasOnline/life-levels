@@ -17,7 +17,7 @@ interface NavLinkProps {
     expanded: boolean
 }
 
-const NavLink = ({href, label, icon: Icon, expanded}: NavLinkProps) => {
+const SideNavLink = ({href, label, icon: Icon, expanded}: NavLinkProps) => {
     const pathname = usePathname()
     const isActive = pathname === href || pathname.startsWith(`${href}/`)
 
@@ -57,4 +57,4 @@ const NavLink = ({href, label, icon: Icon, expanded}: NavLinkProps) => {
   return linkContent
 }
 
-export default NavLink
+export default SideNavLink
