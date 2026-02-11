@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Gabarito, Lexend } from "next/font/google";
 import "./globals.css";
 import HomeNav from "@/components/layout/home-nav";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const gabarito = Gabarito({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const lexend = Lexend({
   subsets: ["latin"],
 });
 
@@ -26,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${gabarito.className} ${lexend.className} antialiased bg-stone-50`}
       >
         <HomeNav />
         {children}

@@ -19,7 +19,7 @@ const HomeNav = () => {
           />
         </Link>
         <div className='flex place-items-center'>
-        <nav className='flex gap-4 place-items-center'>
+        <nav className='flex gap-16 place-items-center'>
             {navItems.map((item) => (
                 <Link 
                   key={item.href}
@@ -29,7 +29,7 @@ const HomeNav = () => {
                 </Link>
               ))}
             </nav>
-          <div className='pl-10 flex gap-4'>
+          <div className='pl-20 flex gap-4'>
             <Button variant={'outline'}>
               Log In
             </Button>
