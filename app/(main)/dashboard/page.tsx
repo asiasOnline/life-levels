@@ -1,3 +1,4 @@
+import { getUser } from '@/lib/auth/get-user'
 import StatContainer from "@/components/features/stats/stat-container";
 import CharacterContainer from "@/components/features/characters/character-container";
 import TaskContainer from "@/components/features/tasks/task-container";
@@ -8,7 +9,9 @@ import { StatData } from "@/lib/types";
 import { FaHeart, FaFire } from "react-icons/fa6";
 import { RiCopperCoinFill } from "react-icons/ri";
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const user = await getUser()
+
   const userStats: StatData[] = [
     {
       type: 'health',
@@ -35,7 +38,7 @@ export default function Dashboard() {
     <div>
       <div>
         <h1 className="text font-semibold">Dashboard</h1>
-        <h1 className="text-3xl font-bold">Good Morning, Asia!</h1>
+        <h1 className="text-3xl font-bold">Good Morning, {user.email}!</h1>
       </div>
       <div className="flex">
         <div className="w-100">

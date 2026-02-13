@@ -30,12 +30,16 @@ const HomeNav = () => {
               ))}
             </nav>
           <div className='pl-20 flex gap-4'>
-            <Button variant={'outline'}>
-              Log In
-            </Button>
-            <Button>
+            <Link href={'/login'}>
+              <Button variant={'outline'}>
+                Log In
+              </Button>
+            </Link>
+            <Link href={'/signup'}>
+              <Button>
               Sign Up for Free
             </Button>
+            </Link>
           </div>
         </div>
     </div>

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Gabarito, Lexend } from "next/font/google";
 import "./globals.css";
-import HomeNav from "@/components/layout/home-nav";
 
 const gabarito = Gabarito({
   subsets: ["latin"],
@@ -26,7 +25,6 @@ export default function RootLayout({
       <body
         className={`${gabarito.className} ${lexend.className} antialiased bg-stone-50`}
       >
-        <HomeNav />
         {children}
       </body>
     </html>
