@@ -31,7 +31,6 @@ const SideNav = () => {
     { href: '/', label: 'Dashboard', icon: BiSolidDashboard },
     { href: '/habits', label: 'Habits', icon: FaRotate },
     { href: '/tasks', label: 'Tasks', icon: FaSquareCheck },
-    { href: '/projects', label: 'Projects', icon: FaFolder },
     { href: '/goals', label: 'Goals', icon: SiTarget },
     { href: '/rewards', label: 'Rewards', icon: FaStar },
     { href: '/skills', label: 'Skills', icon: FaCircleArrowUp },

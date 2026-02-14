@@ -1,3 +1,7 @@
+/* #region View Mode */
+export type ViewMode = 'grid' | 'table'
+/* #endregion View Mode */
+
 /* #region Task Types */
 export type TaskStatus = 
   | 'not-started'
@@ -66,17 +70,22 @@ export interface StatData {
   variant?: 'default' | 'success' | 'warning' | 'danger';
   displayMode?: StatDisplayMode;
 }
+/* #endregion Stat Types */
 
 /* #region Skill Types */
 export interface SkillData {
-  type: StatType;
+  id: string;
+  title: string;
+  description?: string;
   icon?: React.ReactNode;
-  label: string;
-  value: number;
-  maxValue?: number; 
-  variant?: 'default' | 'success' | 'warning' | 'danger';
-  displayMode?: StatDisplayMode;
+  tags?: string[];
+  level: number;
+  currentXP: number;
+  xpToNextLevel: number;
+  characterId?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-/* #region Skill Types */
+/* #endregion Skill Types */
 
