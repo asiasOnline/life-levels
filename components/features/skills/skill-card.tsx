@@ -16,11 +16,12 @@ const SkillCard = ({ skill, onClick, className }: SkillCardProps) => {
   return (
     <Card className={cn('w-full', className)}>
       <CardHeader>
+        <div className="text-2xl mb-2">{skill.icon}</div>
         <CardTitle>{skill.title}</CardTitle>
-        <CardDescription>{skill.description}</CardDescription>
+        <Badge variant="secondary">LVL | {skill.level}</Badge>
       </CardHeader>
       <CardContent>
-        <Badge variant="secondary">{skill.level}</Badge>
+        <CardDescription>{skill.description}</CardDescription>
       </CardContent>
     </Card>
   )

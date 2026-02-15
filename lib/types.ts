@@ -77,7 +77,7 @@ export interface SkillData {
   id: string;
   title: string;
   description?: string;
-  icon?: React.ReactNode;
+  icon: React.ReactNode;
   tags?: string[];
   level: number;
   currentXP: number;

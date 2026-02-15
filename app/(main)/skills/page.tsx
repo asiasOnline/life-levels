@@ -7,41 +7,46 @@ import { ItemContainerHeader } from "@/components/layout/item-container-header";
 import { SkillData, ViewMode } from "@/lib/types";
 import SkillCard from "@/components/features/skills/skill-card";
 import { addXPToSkill } from "@/components/features/skills/utils";
+import { GiWeightLiftingUp } from "react-icons/gi";
+import { FaLightbulb } from "react-icons/fa6";
+import { PiHairDryerFill } from "react-icons/pi";
 
 export default function SkillsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [skills, setSkills] = useState<SkillData[]>([
     {
       id: '1',
-      title: 'Financial Planning',
-      description: 'Managing budgets, investments, and long-term financial goals',
-      level: 5,
-      currentXP: 750,
-      xpToNextLevel: 1000,
-      tags: ['Finance', 'Planning', 'Wealth'],
+      title: 'Strength, Endurance & Agility',
+      description: 'The mastery of stamina and a journey to building power, endurance, and resilience. - A Gift From Ares',
+      icon: <GiWeightLiftingUp />,
+      level: 2,
+      currentXP: 51,
+      xpToNextLevel: 400,
+      tags: ['physical fitness', 'exercise', 'flexibility', 'cardio', 'strength training'],
       createdAt: new Date(),
       updatedAt: new Date(),
     },
     {
       id: '2',
-      title: 'Weight Training',
-      description: 'Building strength through resistance exercises',
-      icon: '🏋️',
-      level: 3,
-      currentXP: 200,
-      xpToNextLevel: 400,
-      tags: ['Fitness', 'Gym'],
+      title: 'Innovation & Creativity',
+      description: 'Forge the future in your design by mastering a multitude of complex and intricate skills to hone your craft and make goods that balance beauty, usability, innovation, and quality. - A Gift From Hephaestus',
+      icon: <FaLightbulb />,
+      level: 9,
+      currentXP: 333,
+      xpToNextLevel: 900,
+      tags: ['game design', 'creative thinking', 'writing', 'UX/UI', 'coding'],
       createdAt: new Date(),
       updatedAt: new Date(),
     },
     {
       id: '3',
-      title: 'Meditation',
-      description: 'Practicing mindfulness and mental clarity',
-      level: 7,
-      currentXP: 1200,
-      xpToNextLevel: 1600,
-      tags: ['Mindfulness', 'Mental Health'],
+      title: 'Charisma & Beauty',
+      description: 'It takes skill to radiate confidence, elegance, and beauty; mastering this defines a glow that shines from within captivating those around in an almost magical aura. - A Gift From Aphrodite',
+      icon: <PiHairDryerFill />,
+      level: 5,
+      currentXP: 131,
+      xpToNextLevel: 500,
+      tags: ['beauty', 'style', 'skin care', 'confidence', 'charm', 'make up', 'hair care', 'fashion'],
       createdAt: new Date(),
       updatedAt: new Date(),
     },
