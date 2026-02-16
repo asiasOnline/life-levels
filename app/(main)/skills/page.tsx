@@ -4,12 +4,15 @@ import { useState } from "react";
 import PageHeader from "@/components/layout/page-header";
 import ItemContainer from "@/components/layout/item-container";
 import { ItemContainerHeader } from "@/components/layout/item-container-header";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SkillTableRow } from "@/components/features/skills/skill-table-row";
 import { SkillData, ViewMode } from "@/lib/types";
-import SkillCard from "@/components/features/skills/skill-card";
+import { SkillCard } from "@/components/features/skills/skill-card";
 import { addXPToSkill } from "@/components/features/skills/utils";
 import { GiWeightLiftingUp } from "react-icons/gi";
 import { FaLightbulb } from "react-icons/fa6";
 import { PiHairDryerFill } from "react-icons/pi";
+import { FaMoneyBill } from "react-icons/fa6";
 
 export default function SkillsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
@@ -50,6 +53,18 @@ export default function SkillsPage() {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
+    {
+      id: '4',
+      title: 'Prosperity & Wealth',
+      description: 'The arcane art of managing ones wealth, making wise investments, and protecting ones financial assets. - A Gift From Hades',
+      icon: <FaMoneyBill />,
+      level: 5,
+      currentXP: 28,
+      xpToNextLevel: 500,
+      tags: ['finance management', 'budgeting', 'investment', 'saving', 'expense tracking', 'income tracking', 'debt management'],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
   ])
 
   const handleSkillClick = (skill: SkillData) => {
@@ -67,7 +82,7 @@ export default function SkillsPage() {
      <div>
       <PageHeader 
         title="Skills"
-        subtitle="Manage your skills and expertise"
+        subtitle="Track long-term mastery and capability development across all life contexts, with clear progression milestones that unlock meaningful rewards."
       />
       <ItemContainer>
       <ItemContainerHeader 
@@ -83,10 +98,32 @@ export default function SkillsPage() {
       />
       {/* Grid View */}
       {viewMode === 'grid' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 justify-center content-start auto-cols-max gap-4 p-6">
           {skills.map((skill) => (
             <SkillCard key={skill.id} skill={skill} onClick={handleSkillClick} />
           ))}
+        </div>
+      )}
+
+      {/* Table View */}
+      {viewMode === 'table' && (
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-16">Icon</TableHead>
+                <TableHead>Skill</TableHead>
+                <TableHead>Level</TableHead>
+                <TableHead>Progress</TableHead>
+                <TableHead>Tags</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {skills.map((skill) => (
+                <SkillTableRow key={skill.id} skill={skill} onClick={handleSkillClick} />
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
      </ItemContainer>

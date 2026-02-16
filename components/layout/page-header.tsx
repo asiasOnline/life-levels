@@ -8,8 +8,8 @@ interface PageHeaderProps {
 const PageHeader = ({title, subtitle}: PageHeaderProps) => {
   return (
     <div className="page-header mb-12">
-      <h1 className="text-3xl font-bold">{title}</h1>
-      <p className="text-muted-foreground">{subtitle}</p>
+      <h1 className="text-3xl font-bold pb-2">{title}</h1>
+      <p className="w-200 text-muted-foreground">{subtitle}</p>
     </div>
   )
 }
