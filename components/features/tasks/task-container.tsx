@@ -1,5 +1,5 @@
 import React from 'react'
-import SearchBar from '@/components/layout/search-bar'
+import SearchBar from '@/components/layout/nav/search-bar'
 import NewTaskButton from './new-task-button'
 import FilterButton from '@/components/layout/filter-button'
 import SortButton from '@/components/layout/sort-button'

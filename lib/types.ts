@@ -72,20 +72,3 @@ export interface StatData {
 }
 /* #endregion Stat Types */
 
-/* #region Skill Types */
-export interface SkillData {
-  id: string;
-  title: string;
-  description?: string;
-  icon: React.ReactNode;
-  tags?: string[];
-  level: number;
-  currentXP: number;
-  xpToNextLevel: number;
-  characterId?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-/* #endregion Skill Types */
-
