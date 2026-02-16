@@ -1,7 +1,7 @@
 import React from 'react'
-import { Button } from '../ui/button';
 import { IoGrid } from "react-icons/io5";
 import { FaList } from "react-icons/fa6";
+import { Button } from '@/components/ui/button';
 
 const LayoutViewButton = () => {
   return (

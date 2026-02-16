@@ -4,7 +4,6 @@ export interface SkillData extends IconData {
     id: string;
     title: string;
     description?: string;
-    icon: React.ReactNode;
     tags?: string[];
     level: number;
     currentXP: number;

@@ -1,10 +1,11 @@
 import React from 'react'
 import SearchBar from '@/components/layout/nav/search-bar'
 import NewTaskButton from './new-task-button'
-import FilterButton from '@/components/layout/filter-button'
-import SortButton from '@/components/layout/sort-button'
-import LayoutViewButton from '@/components/layout/layout-view-button'
+import FilterButton from '@/components/layout/app/filter-button'
+import SortButton from '@/components/layout/nav/sort-button'
+import LayoutViewButton from '@/components/layout/app/layout-view-button'
 import Task from './task'
+
 
 
 const TaskContainer = () => {

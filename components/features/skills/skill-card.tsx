@@ -1,11 +1,14 @@
 'use client'
 
 import React from 'react' 
-import { SkillData } from '@/lib/types'
+import { SkillData } from './types'
+import { getProgressPercentage } from './utils'
+import { renderIcon } from '@/components/layout/app/icon-picker/icon-utils'
 import { Badge } from '@/components/ui/badge'
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter} from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
+
 
 interface SkillCardProps {
   skill: SkillData;
@@ -23,7 +26,9 @@ export function SkillCard ({ skill, onClick, className }: SkillCardProps) {
       {/* Icon, Title & Level */}
       <CardHeader className='min-h-12'>
         <div className='flex items-start justify-between space-x-4'>
-          <div className="text-2xl">{skill.icon}</div>
+          <div className="text-2xl">
+            {renderIcon(skill.icon, skill.iconType, skill.iconColor, 'w-6 h-6')}
+          </div>
           <CardTitle className='leading-[150%]'>{skill.title}</CardTitle>
           <Badge variant="secondary">LVL | {skill.level}</Badge>
         </div>

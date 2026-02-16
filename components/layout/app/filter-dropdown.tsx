@@ -3,15 +3,16 @@
 import { useState } from "react"
 import { IoFilterOutline } from "react-icons/io5";
 import { RxCross2 } from "react-icons/rx";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { 
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuCheckboxItem,
-    DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { Badge } from "../ui/badge";
+    DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+
 
 export interface FilterOption {
     id: string;

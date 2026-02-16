@@ -1,4 +1,4 @@
-import HomeNav from "@/components/layout/home-nav";
+import HomeNav from "@/components/layout/marketing/home-nav"
 
 export default function MarketingLayout({
     children,

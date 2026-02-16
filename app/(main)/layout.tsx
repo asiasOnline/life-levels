@@ -1,5 +1,5 @@
-import SideNav from "@/components/layout/side-nav"
-import TopNav from "@/components/layout/top-nav"
+import SideNav from "@/components/layout/nav/side-nav"
+import TopNav from "@/components/layout/nav/top-nav"
 
 export default function DashboardLayout({
     children,
