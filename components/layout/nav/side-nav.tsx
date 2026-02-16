@@ -28,7 +28,7 @@ const SideNav = () => {
   }, [])
 
   const navItems = [
-    { href: '/', label: 'Dashboard', icon: BiSolidDashboard },
+    { href: '/dashboard', label: 'Dashboard', icon: BiSolidDashboard },
     { href: '/habits', label: 'Habits', icon: FaRotate },
     { href: '/tasks', label: 'Tasks', icon: FaSquareCheck },
     { href: '/goals', label: 'Goals', icon: SiTarget },

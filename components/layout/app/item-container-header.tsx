@@ -56,7 +56,7 @@ export function ItemContainerHeader({
       
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-12">
-          <h1 className="text-lg text-stone-500">{title}</h1>
+          <h1 className="text-lg font-medium text-stone-500">{title}</h1>
         
           {/* Search */}
           <div className="w-120 flex-1 max-w-md">
