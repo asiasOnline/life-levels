@@ -1,14 +1,14 @@
 'use client'
 
 import React from 'react'
-import { SkillData } from './types';
-import { getProgressPercentage } from './utils';
+import { Skill } from '@/lib/types/skills';
+import { getProgressPercentage } from '../../../lib/utils/skills';
 import { Badge } from '@/components/ui/badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 
 interface SkillTableRowProps {
-  skill: SkillData;
-  onClick: (skill: SkillData) => void;
+  skill: Skill;
+  onClick: (skill: Skill) => void;
 }
 
 export function SkillTableRow({ skill, onClick }: SkillTableRowProps) {

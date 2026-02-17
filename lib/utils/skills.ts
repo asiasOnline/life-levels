@@ -1,6 +1,6 @@
 // components/features/skills/utils.ts
 
-import { SkillData } from "@/lib/types"
+import { Skill } from "../types/skills"
 
 /**
  * Calculate XP required for a given level
@@ -35,7 +35,7 @@ export function getProgressPercentage(currentXP: number, xpToNextLevel: number):
 /**
  * Add XP to a skill and calculate new level
  */
-export function addXPToSkill(skill: SkillData, xpGained: number): SkillData {
+export function addXPToSkill(skill: Skill, xpGained: number): Skill {
   const newCurrentXP = skill.currentXP + xpGained
   const newLevel = calculateLevelFromXP(newCurrentXP)
   const xpForCurrentLevel = calculateXPForLevel(newLevel)

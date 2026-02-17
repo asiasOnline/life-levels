@@ -1,6 +1,9 @@
 import { IconData } from "@/components/layout/app/icon-picker/types";
 
-export interface SkillData extends IconData {
+// =====================================================
+// DATABASE TYPE
+// =====================================================
+export interface Skill extends IconData {
     id: string;
     title: string;
     description?: string;

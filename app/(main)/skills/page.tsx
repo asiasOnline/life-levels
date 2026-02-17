@@ -19,16 +19,16 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { fetchSkills } from "@/lib/actions/skill";
 import { ViewMode } from "@/lib/types";
-import { SkillData } from "@/components/features/skills/types";
+import { Skill } from "@/lib/types/skills";
 import { IconType } from "@/components/layout/app/icon-picker/types";
 import { FaPlus, FaXmark } from "react-icons/fa6";
 
 export default function SkillsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const [skills, setSkills] = useState<SkillData[]>([])
+  const [skills, setSkills] = useState<Skill[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [selectedSkill, setSelectedSkill] = useState<SkillData | null>(null)
+  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
  const loadSkills = async () => {
@@ -37,7 +37,7 @@ export default function SkillsPage() {
       const data = await fetchSkills()
       
       // Map database rows to Skill objects
-      const skillsData: SkillData[] = data.map((row) => ({
+      const skillsData: Skill[] = data.map((row) => ({
         id: row.id,
         title: row.title,
         description: row.description || undefined,
@@ -67,7 +67,7 @@ export default function SkillsPage() {
     loadSkills()
   }, [])
 
-  const handleSkillClick = (skill: SkillData) => {
+  const handleSkillClick = (skill: Skill) => {
     setSelectedSkill(skill)
     setIsDetailModalOpen(true)
   }
@@ -96,7 +96,7 @@ export default function SkillsPage() {
 
 
     return (
-     <div>
+     <>
       <PageHeader 
         title="Skills"
         subtitle="Track long-term mastery and capability development across all life contexts, with clear progression milestones that unlock meaningful rewards."
@@ -181,6 +181,6 @@ export default function SkillsPage() {
       />
 
      </ItemContainer>
-     </div>
+     </>
     );
   }

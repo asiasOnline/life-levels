@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react' 
-import { SkillData } from './types'
-import { getProgressPercentage } from './utils'
+import { Skill } from '@/lib/types/skills'
+import { getProgressPercentage } from '@/lib/utils/skills'
 import { renderIcon } from '@/components/layout/app/icon-picker/icon-utils'
 import { Badge } from '@/components/ui/badge'
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter} from '@/components/ui/card'
@@ -11,8 +11,8 @@ import { cn } from '@/lib/utils'
 
 
 interface SkillCardProps {
-  skill: SkillData;
-  onClick?: (skill: SkillData) => void;
+  skill: Skill;
+  onClick?: (skill: Skill) => void;
   className?: string;
 }
 

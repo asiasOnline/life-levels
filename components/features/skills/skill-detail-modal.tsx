@@ -1,10 +1,9 @@
-// components/features/skills/skill-detail-modal.tsx
 'use client'
 
 import { useState } from 'react'
-import { SkillData } from './types'
+import { Skill } from '@/lib/types/skills'
 import { renderIcon } from '@/components/layout/app/icon-picker/icon-utils'
-import { getProgressPercentage } from './utils'
+import { getProgressPercentage } from '../../../lib/utils/skills'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -39,7 +38,7 @@ import { deleteSkill } from '@/lib/actions/skill'
 
 
 interface SkillDetailModalProps {
-  skill: SkillData | null
+  skill: Skill | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onSkillUpdated: () => void

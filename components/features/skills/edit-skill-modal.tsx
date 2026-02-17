@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { IconPicker } from '@/components/layout/app/icon-picker/icon-picker'
 import { IconType } from '@/components/layout/app/icon-picker/types'
-import { SkillData } from './types'
+import { Skill } from '@/lib/types/skills'
 import { updateSkill } from '@/lib/actions/skill'
 import { toast } from 'sonner'
 
@@ -42,7 +42,7 @@ const editSkillSchema = z.object({
 type EditSkillFormValues = z.infer<typeof editSkillSchema>
 
 interface EditSkillModalProps {
-  skill: SkillData
+  skill: Skill
   open: boolean
   onOpenChange: (open: boolean) => void
   onSkillUpdated: () => void

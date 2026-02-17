@@ -1,9 +1,7 @@
 import { getUser } from '@/lib/auth/get-user'
 import StatContainer from "@/components/features/stats/stat-container";
 import CharacterContainer from "@/components/features/characters/character-container";
-import TaskContainer from "@/components/features/tasks/task-container";
 import NewEventButton from "@/components/features/schedule/new-event-button";
-import NewTaskButton from "@/components/features/tasks/new-task-button";
 import { StatData } from "@/lib/types";
 import { FaHeart, FaFire } from "react-icons/fa6";
 import { RiCopperCoinFill } from "react-icons/ri";
@@ -51,12 +49,10 @@ export default async function Dashboard() {
         </div>
         <div>
           <div className="flex gap-4">
-            <NewTaskButton />
             <NewEventButton />
           </div>
         </div>
       </div>
-      <TaskContainer />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
-import { Database } from '@/lib/database'
-import { calculateXPForLevel } from '@/components/features/skills/utils'
+import { Database } from '@/lib/database.types'
+import { calculateXPForLevel } from '@/lib/utils/skills'
 import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR  } from '@/components/layout/app/icon-picker/types'
 
 type SkillRow = Database['public']['Tables']['skills']['Row']
