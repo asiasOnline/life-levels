@@ -1,94 +1,101 @@
+// components/features/skills/edit-skill-modal.tsx
 'use client'
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { 
-    Dialog, 
-    DialogContent, 
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter
-} from "@/components/ui/dialog"
-import { 
-    Field, 
-    FieldContent,
-    FieldDescription,
-    FieldError,
-    FieldGroup,
-    FieldLabel,
-    FieldSet,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { IconPicker } from "@/components/layout/app/icon-picker/icon-picker"
-import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR } from "@/components/layout/app/icon-picker/types"
-import { toast } from "sonner"
-import { FaPlus, FaXmark } from "react-icons/fa6";
+import { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { Plus, X } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { IconPicker } from '@/components/layout/app/icon-picker/icon-picker'
+import { IconType } from '@/components/layout/app/icon-picker/types'
+import { SkillData } from './types'
+import { updateSkill } from '@/lib/actions/skill'
+import { toast } from 'sonner'
 
-const createSkillSchema = z.object({
-    title: z
-    .string()
-    .min(1, "Name is required"),
-    description: z
-    .string()
-    .optional(),
-    icon: z
-    .string()
-    .optional(),
-    iconType: z
-    .enum(['emoji', 'icon', 'image']),
-    iconColor: z
-    .string()
-    .optional(),
-    tags: z
-    .array(z.string())
-    .optional(),
+
+const editSkillSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
+  description: z.string().max(500, 'Description is too long').optional(),
+  icon: z.string().optional(),
+  iconType: z.enum(['emoji', 'icon', 'image']),
+  iconColor: z.string().optional(),
+  tags: z.array(z.string()).optional(),
 })
 
-type CreateSkillFormValues = z.infer<typeof createSkillSchema>
+type EditSkillFormValues = z.infer<typeof editSkillSchema>
 
-interface CreateSkillModalProps {
-    isOpen: boolean
-    onOpenChange: (open: boolean) => void
-    onSkillCreated: () => void
+interface EditSkillModalProps {
+  skill: SkillData
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSkillUpdated: () => void
 }
 
-export function CreateSkillModal({ isOpen, onOpenChange, onSkillCreated }: CreateSkillModalProps) {
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [tagInput, setTagInput] = useState("")
-    
-    const form = useForm<CreateSkillFormValues>({
-        resolver: zodResolver(createSkillSchema),
-        defaultValues: {
-            title: "",
-            description: "",
-            icon: DEFAULT_ICON,
-            iconType: DEFAULT_ICON_TYPE,
-            iconColor: DEFAULT_ICON_COLOR,
-            tags: [],
-        },
+export function EditSkillModal({
+  skill,
+  open,
+  onOpenChange,
+  onSkillUpdated,
+}: EditSkillModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [tagInput, setTagInput] = useState('')
+
+  const form = useForm<EditSkillFormValues>({
+    resolver: zodResolver(editSkillSchema),
+    defaultValues: {
+      title: skill.title,
+      description: skill.description || '',
+      icon: skill.icon,
+      iconType: skill.iconType,
+      iconColor: skill.iconColor,
+      tags: skill.tags || [],
+    },
+  })
+
+  // Reset form when skill changes
+  useEffect(() => {
+    form.reset({
+      title: skill.title,
+      description: skill.description || '',
+      icon: skill.icon,
+      iconType: skill.iconType,
+      iconColor: skill.iconColor,
+      tags: skill.tags || [],
     })
+  }, [skill, form])
 
-    const tags = form.watch("tags") || []
+  const tags = form.watch('tags') || []
 
-    const handleAddTag = () => {
-        const newTag = tagInput.trim()
-        if (newTag && !tags.includes(newTag)) {
-            form.setValue("tags", [...tags, newTag])
-            setTagInput("")
-        }
+  const handleAddTag = () => {
+    const trimmedTag = tagInput.trim()
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      form.setValue('tags', [...tags, trimmedTag])
+      setTagInput('')
     }
+  }
 
-    const handleRemoveTag = (tagToRemove: string) => {
-        form.setValue("tags", tags.filter((tag) => tag !== tagToRemove))
-    }
+  const handleRemoveTag = (tagToRemove: string) => {
+    form.setValue('tags', tags.filter((tag) => tag !== tagToRemove))
+  }
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault()
       handleAddTag()
@@ -103,44 +110,42 @@ export function CreateSkillModal({ isOpen, onOpenChange, onSkillCreated }: Creat
     }
   }
 
-  const onSubmit = async (values: CreateSkillFormValues) => {
+  const onSubmit = async (values: EditSkillFormValues) => {
     setIsSubmitting(true)
 
     try {
-      const { createSkill } = await import('@/lib/actions/skill')
-      await createSkill({
+      await updateSkill(skill.id, {
         title: values.title,
         description: values.description,
-        icon: values.icon || DEFAULT_ICON,
+        icon: values.icon,
         iconType: values.iconType,
         iconColor: values.iconColor,
         tags: values.tags,
       })
 
-      toast.success(`${values.title} has been added to your skill log.`)
+      toast.success(`${values.title} has been updated.`)
 
-      form.reset()
+      onSkillUpdated()
       onOpenChange(false)
-      onSkillCreated()
     } catch (error) {
-      console.error('Error creating skill:', error)
-      toast.error("Failed to create skill. Please try again.")
+      console.error('Error updating skill:', error)
+      toast.error('Failed to update skill. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Skill</DialogTitle>
+          <DialogTitle>Edit Skill</DialogTitle>
           <DialogDescription>
-            Add a new skill to track your progress and earn XP.
+            Update your skill details and preferences.
           </DialogDescription>
         </DialogHeader>
 
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             {/* Icon Picker */}
             <Field>
@@ -208,7 +213,7 @@ export function CreateSkillModal({ isOpen, onOpenChange, onSkillCreated }: Creat
                     size="icon"
                     onClick={handleAddTag}
                   >
-                    <FaPlus className="h-4 w-4" />
+                    <Plus className="h-4 w-4" />
                   </Button>
                 </div>
                 {tags.length > 0 && (
@@ -221,7 +226,7 @@ export function CreateSkillModal({ isOpen, onOpenChange, onSkillCreated }: Creat
                           onClick={() => handleRemoveTag(tag)}
                           className="ml-1 hover:text-destructive"
                         >
-                          <FaXmark className="h-3 w-3" />
+                          <X className="h-3 w-3" />
                         </button>
                       </Badge>
                     ))}
@@ -233,14 +238,9 @@ export function CreateSkillModal({ isOpen, onOpenChange, onSkillCreated }: Creat
               </FieldDescription>
             </Field>
 
-            {/* Future fields placeholder */}
-            <div className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
-              Link to Characters, Habits, Tasks & Goals (Coming Soon)
-            </div>
-
             <Field orientation="horizontal">
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Skill'}
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
               <Button
                 type="button"
@@ -256,5 +256,4 @@ export function CreateSkillModal({ isOpen, onOpenChange, onSkillCreated }: Creat
       </DialogContent>
     </Dialog>
   )
-
 }

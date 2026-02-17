@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { SkillData } from '@/lib/types';
+import { SkillData } from './types';
 import { getProgressPercentage } from './utils';
 import { Badge } from '@/components/ui/badge';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -14,10 +14,16 @@ interface SkillTableRowProps {
 export function SkillTableRow({ skill, onClick }: SkillTableRowProps) {
   const progressPercentage = getProgressPercentage(skill.currentXP, skill.xpToNextLevel)
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick(skill)
+    }
+  }
+
   return (
     <TableRow 
-        onClick={() => onClick(skill)} 
         className="cursor-pointer hover:bg-accent"
+        onClick={handleClick}
     >
     {/* Icon */}
       <TableCell className="text-2xl w-16">{skill.icon}</TableCell>

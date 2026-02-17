@@ -7,6 +7,7 @@ import { ItemContainerHeader } from "@/components/layout/app/item-container-head
 import { SkillCard } from "@/components/features/skills/skill-card";
 import { SkillTableRow } from "@/components/features/skills/skill-table-row";
 import { CreateSkillModal } from "@/components/features/skills/create-skill-modal";
+import { SkillDetailModal } from "@/components/features/skills/skill-detail-modal";
 import { 
   Table, 
   TableHead, 
@@ -26,7 +27,9 @@ export default function SkillsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [skills, setSkills] = useState<SkillData[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [selectedSkill, setSelectedSkill] = useState<SkillData | null>(null)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
  const loadSkills = async () => {
     try {
@@ -65,12 +68,20 @@ export default function SkillsPage() {
   }, [])
 
   const handleSkillClick = (skill: SkillData) => {
-    console.log('Clicked skill:', skill)
-    // Future: Open skill detail modal
+    setSelectedSkill(skill)
+    setIsDetailModalOpen(true)
   }
 
   const handleSkillCreated = () => {
-    loadSkills() // Reload skills after creating a new one
+    loadSkills()
+  }
+
+  const handleSkillUpdated = () => {
+    loadSkills()
+  }
+
+  const handleSkillDeleted = () => {
+    loadSkills()
   }
 
   if (isLoading) {
@@ -95,7 +106,7 @@ export default function SkillsPage() {
         title="Skill Log"
         searchPlaceholder="Search skills..."
         addButtonLabel="New Skill"
-        onAddNew={() => setIsModalOpen(true)}
+        onAddNew={() => setIsCreateModalOpen(true)}
         onSearch={(query) => console.log('Search:', query)}
         onFilterChange={() => console.log('Filter')}
         onSortChange={() => console.log('Sort')}
@@ -106,7 +117,7 @@ export default function SkillsPage() {
       {skills.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg">
           <p className="text-muted-foreground mb-4">No skills yet</p>
-          <Button onClick={() => setIsModalOpen(true)}>
+          <Button onClick={() => setIsCreateModalOpen(true)}>
             <FaPlus className="h-4 w-4 mr-2" />
             Create Your First Skill
           </Button>
@@ -140,7 +151,11 @@ export default function SkillsPage() {
               </TableHeader>
               <TableBody>
                 {skills.map((skill) => (
-                  <SkillTableRow key={skill.id} skill={skill} onClick={handleSkillClick} />
+                  <SkillTableRow 
+                    key={skill.id} 
+                    skill={skill}
+                    onClick={handleSkillClick} 
+                  />
                 ))}
               </TableBody>
             </Table>
@@ -149,10 +164,20 @@ export default function SkillsPage() {
         </>
         )}
         
+        {/* Create Skill Modal */}
         <CreateSkillModal
-        isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}
+        isOpen={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
         onSkillCreated={handleSkillCreated}
+      />
+
+      {/* Skill Detail Modal */}
+      <SkillDetailModal
+        skill={selectedSkill}
+        open={isDetailModalOpen}
+        onOpenChange={setIsDetailModalOpen}
+        onSkillUpdated={handleSkillUpdated}
+        onSkillDeleted={handleSkillDeleted}
       />
 
      </ItemContainer>

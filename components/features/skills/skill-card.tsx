@@ -19,10 +19,18 @@ interface SkillCardProps {
 export function SkillCard ({ skill, onClick, className }: SkillCardProps) {
   const progressPercentage = getProgressPercentage(skill.currentXP, skill.xpToNextLevel)
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick(skill)
+    }
+  }
+
   return (
     <Card className={cn(
       'w-full max-w-120 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.005]', 
-      className)}>
+      className)}
+      onClick={handleClick}
+      >
       {/* Icon, Title & Level */}
       <CardHeader className='min-h-12'>
         <div className='flex items-start justify-between space-x-4'>
