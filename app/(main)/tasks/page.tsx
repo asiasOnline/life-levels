@@ -4,10 +4,15 @@ import { useState, useEffect } from "react";
 import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
+import { IconType } from "@/components/layout/app/icon-picker/types";
 import { ViewMode } from "@/lib/types";
 import { Task } from "@/lib/types/tasks";
-import { IconType } from "@/components/layout/app/icon-picker/types";
+import TaskCard from "@/components/features/tasks/task-card";
+import TaskTableRow from "@/components/features/tasks/task-table-row";
+import CreateTaskModal from "@/components/features/tasks/create-task-modal";
+import TaskDetailModal from "@/components/features/tasks/task-detail-modal";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function Tasks() {
     const [viewMode, setViewMode] = useState<ViewMode>('grid')

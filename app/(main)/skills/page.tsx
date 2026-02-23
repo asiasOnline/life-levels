@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
+import { IconType } from "@/components/layout/app/icon-picker/types";
+import { ViewMode } from "@/lib/types";
+import { Skill } from "@/lib/types/skills";
 import { SkillCard } from "@/components/features/skills/skill-card";
 import { SkillTableRow } from "@/components/features/skills/skill-table-row";
 import { CreateSkillModal } from "@/components/features/skills/create-skill-modal";
@@ -18,9 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { fetchSkills } from "@/lib/actions/skill";
-import { ViewMode } from "@/lib/types";
-import { Skill } from "@/lib/types/skills";
-import { IconType } from "@/components/layout/app/icon-picker/types";
+
 import { FaPlus, FaXmark } from "react-icons/fa6";
 
 export default function SkillsPage() {

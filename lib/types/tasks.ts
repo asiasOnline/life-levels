@@ -1,3 +1,5 @@
+import { IconData } from "@/components/layout/app/icon-picker/types";
+
 // =====================================================
 // ENUMS & CONSTANTS
 // =====================================================
@@ -66,25 +68,14 @@ export const BASE_XP_VALUES: Record<TaskDifficulty, number> = {
   [TASK_DIFFICULTY.HARD]: 200,
   [TASK_DIFFICULTY.EXPERT]: 400,
 };
-
-// =====================================================
-// ICON TYPE (reused from Skills)
-// =====================================================
-export interface IconData {
-  type: 'emoji' | 'fontawesome' | 'image';
-  value: string;
-  color?: string; // For FontAwesome icons
-}
-
 // =====================================================
 // DATABASE TYPES
 // =====================================================
-export interface Task {
+export interface Task extends IconData {
   id: string;
   user_id: string;
   title: string;
   description: string | null;
-  icon: IconData;
   status: TaskStatus;
   difficulty: TaskDifficulty;
   start_date: string | null;

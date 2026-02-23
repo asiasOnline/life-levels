@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/card'
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { Button } from '@/components/ui/button';
 import { Field, FieldLabel, FieldError } from "@/components/ui/field"
@@ -33,7 +33,8 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>
 
 const LogInForm = () => {
-  const [showPassword, setShowPassword] = useState(false)
+  const [password, setPassword] = useState("")
+  const [isVisible, setIsVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
@@ -45,7 +46,7 @@ const LogInForm = () => {
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   })
-
+  
   const onSubmit = async (data: FormData) => {
     setIsLoading(true)
 
@@ -122,19 +123,23 @@ const LogInForm = () => {
               <InputGroup>
                 <InputGroupInput
                   id="user-password"
-                  type="password"
+                  // Toggle the input type based on the 'showPassword' state
+                  type={isVisible ? 'text': "password"}
                   placeholder="Enter password"
+                  value={password}
                   {...register("password")}
                   aria-invalid={errors.password ? "true" : "false"}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <InputGroupAddon align="inline-end">
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setIsVisible(!isVisible)}
                     className="cursor-pointer"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={isVisible ? "Hide password" : "Show password"}
                   >
-                    {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
+                    {/* Change button text based on the 'showPassword' state */}
+                    {isVisible ? <FaRegEye /> : <FaRegEyeSlash />}
                   </button>
                 </InputGroupAddon>
               </InputGroup>

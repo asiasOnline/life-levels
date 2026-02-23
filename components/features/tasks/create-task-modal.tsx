@@ -1,9 +1,9 @@
 import React from 'react'
 
-const NewTaskModal = () => {
+const CreateTaskModal = () => {
   return (
-    <div>NewTaskModal</div>
+    <div>CreateTaskModal</div>
   )
 }
 
-export default NewTaskModal
+export default CreateTaskModal
