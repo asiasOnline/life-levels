@@ -1,9 +1,539 @@
-import React from 'react'
+'use client'
 
-const CreateTaskModal = () => {
-  return (
-    <div>CreateTaskModal</div>
-  )
+import { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldError,
+} from '@/components/ui/field'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { IconPicker } from "@/components/layout/app/icon-picker/icon-picker"
+import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR } from "@/components/layout/app/icon-picker/types"
+import { toast } from "sonner" 
+import { createClient } from '@/lib/supabase/client'
+import {
+  TASK_STATUS,
+  TASK_PRIORITY,
+  TASK_DIFFICULTY,
+  TASK_PRIORITY_LABELS,
+  TASK_DIFFICULTY_LABELS,
+  TASK_STATUS_LABELS,
+} from '@/lib/types/tasks'
+import { 
+  getDefaultGoldReward, 
+  calculateTaskXP, 
+  validateSkillCount 
+} from '@/lib/utils/tasks'
+import { FaRegCalendarDays, FaClock, FaCoins, FaStar, FaCircleArrowUp, FaUserGroup } from "react-icons/fa6";
+
+// ─── Schema ───────────────────────────────────────────────────────────────────
+
+const createTaskSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200, 'Title is too long'),
+  description: z.string().max(1000, 'Description is too long').optional(),
+  icon: z.string().optional(),
+  iconType: z.enum(['emoji', 'fontawesome', 'image']),
+  iconColor: z.string().optional(),
+  status: z.enum(['backlog', 'in_progress', 'paused', 'completed']),
+  priority: z.enum(['critical', 'high', 'mid', 'low']),
+  difficulty: z.enum(['easy', 'normal', 'hard', 'expert']),
+  start_date: z.string().optional(),
+  due_date: z.string().optional(),
+  skill_ids: z
+    .array(z.string())
+    .min(1, 'At least 1 skill is required')
+    .max(3, 'Maximum 3 skills allowed'),
+  gold_reward: z.number().min(0).optional(),
+  use_custom_xp: z.boolean(),
+  custom_character_xp: z.number().min(0).optional(),
+  custom_skill_xp: z.number().min(0).optional(),
+}).refine(
+  (data) => {
+    if (data.start_date && data.due_date) {
+      return new Date(data.start_date) <= new Date(data.due_date)
+    }
+    return true
+  },
+  {
+    message: 'Due date must be after start date',
+    path: ['due_date'],
+  }
+)
+
+type CreateTaskFormValues = z.infer<typeof createTaskSchema>
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface Skill {
+  id: string
+  title: string
+  icon: string
+  icon_type: string
+  icon_color: string
+  level: number
 }
 
-export default CreateTaskModal
+interface CreateTaskModalProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onTaskCreated: () => void
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTaskModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [skills, setSkills] = useState<Skill[]>([])
+  const [isLoadingSkills, setIsLoadingSkills] = useState(true)
+
+  const form = useForm<CreateTaskFormValues>({
+    resolver: zodResolver(createTaskSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      icon: DEFAULT_ICON,
+      iconType: DEFAULT_ICON_TYPE as 'emoji' | 'fontawesome' | 'image',
+      iconColor: DEFAULT_ICON_COLOR,
+      status: TASK_STATUS.BACKLOG,
+      priority: TASK_PRIORITY.MID,
+      difficulty: TASK_DIFFICULTY.NORMAL,
+      start_date: '',
+      due_date: '',
+      skill_ids: [],
+      gold_reward: undefined,
+      use_custom_xp: false,
+      custom_character_xp: undefined,
+      custom_skill_xp: undefined,
+    },
+  })
+
+  const watchedDifficulty = form.watch('difficulty')
+  const watchedSkillIds = form.watch('skill_ids')
+  const watchedUseCustomXP = form.watch('use_custom_xp')
+  const watchedCustomCharacterXP = form.watch('custom_character_xp')
+  const watchedCustomSkillXP = form.watch('custom_skill_xp')
+
+  // Load skills on mount
+  useEffect(() => {
+    loadSkills()
+  }, [])
+
+  // Auto-calculate gold reward when difficulty changes
+  useEffect(() => {
+    if (watchedDifficulty && form.getValues('gold_reward') === undefined) {
+      const defaultGold = getDefaultGoldReward(watchedDifficulty)
+      form.setValue('gold_reward', defaultGold)
+    }
+  }, [watchedDifficulty])
+
+  async function loadSkills() {
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('skills')
+        .select('id, title, icon, icon_type, icon_color, level')
+        .order('title')
+
+      if (error) throw error
+
+      setSkills(data || [])
+    } catch (error) {
+      console.error('Error loading skills:', error)
+      toast.error('Error loading skills')
+    } finally {
+      setIsLoadingSkills(false)
+    }
+  }
+
+  const handleIconChange = (icon: string, iconType: IconType, iconColor?: string) => {
+    form.setValue('icon', icon)
+    form.setValue('iconType', iconType as 'emoji' | 'fontawesome' | 'image')
+    if (iconColor) {
+      form.setValue('iconColor', iconColor)
+    }
+  }
+
+  const toggleSkillSelection = (skillId: string) => {
+    const currentSkills = watchedSkillIds || []
+    if (currentSkills.includes(skillId)) {
+      form.setValue(
+        'skill_ids',
+        currentSkills.filter((id) => id !== skillId)
+      )
+    } else if (currentSkills.length < 3) {
+      form.setValue('skill_ids', [...currentSkills, skillId])
+    }
+  }
+
+  async function onSubmit(values: CreateTaskFormValues) {
+    try {
+      setIsSubmitting(true)
+      const supabase = createClient()
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      // Prepare task data
+      const taskData = {
+        user_id: user.id,
+        title: values.title,
+        description: values.description || null,
+        icon: {
+          type: values.iconType,
+          value: values.icon || DEFAULT_ICON,
+          color: values.iconColor,
+        },
+        status: values.status,
+        priority: values.priority,
+        difficulty: values.difficulty,
+        start_date: values.start_date || null,
+        due_date: values.due_date || null,
+        gold_reward: values.gold_reward ?? getDefaultGoldReward(values.difficulty),
+        use_custom_xp: values.use_custom_xp,
+        custom_character_xp: values.use_custom_xp ? values.custom_character_xp : null,
+        custom_skill_xp: values.use_custom_xp ? values.custom_skill_xp : null,
+      }
+
+      // Insert task
+      const { data: task, error: taskError } = await supabase
+        .from('tasks')
+        .insert(taskData)
+        .select()
+        .single()
+
+      if (taskError) throw taskError
+
+      // Insert task-skill relationships
+      const taskSkills = values.skill_ids.map((skill_id) => ({
+        task_id: task.id,
+        skill_id,
+      }))
+
+      const { error: skillsError } = await supabase
+        .from('task_skills')
+        .insert(taskSkills)
+
+      if (skillsError) throw skillsError
+
+      toast.success(`${values.title} has been created successfully.`)
+
+      form.reset()
+      onTaskCreated()
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Error creating task:', error)
+      toast.error('Error creating task. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Calculate preview XP values
+  const previewXP = watchedUseCustomXP
+    ? {
+        characterXP: watchedCustomCharacterXP ?? 0,
+        skillXP: watchedCustomSkillXP ?? 0,
+      }
+    : calculateTaskXP(watchedDifficulty, watchedSkillIds.length, 1)
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Create New Task</DialogTitle>
+          <DialogDescription>
+            Add a one-time activity to track and complete
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Icon Picker */}
+          <FieldGroup>
+            <FieldLabel>Icon</FieldLabel>
+            <IconPicker
+              currentIcon={form.watch('icon') || DEFAULT_ICON}
+              currentIconType={form.watch('iconType') as IconType}
+              currentIconColor={form.watch('iconColor')}
+              onIconChange={handleIconChange}
+            />
+            <FieldError>{form.formState.errors.icon?.message}</FieldError>
+          </FieldGroup>
+
+          {/* Title */}
+          <FieldGroup>
+            <FieldLabel>Title *</FieldLabel>
+            <Input
+              {...form.register('title')}
+              placeholder="e.g., Review Q4 budget report"
+            />
+            <FieldError>{form.formState.errors.title?.message}</FieldError>
+          </FieldGroup>
+
+          {/* Description */}
+          <FieldGroup>
+            <FieldLabel>Description</FieldLabel>
+            <Textarea
+              {...form.register('description')}
+              placeholder="Add any additional context or notes..."
+              rows={3}
+            />
+            <FieldError>{form.formState.errors.description?.message}</FieldError>
+          </FieldGroup>
+
+          {/* Status, Priority, Difficulty Row */}
+          <div className="grid grid-cols-3 gap-4">
+            <FieldGroup>
+              <FieldLabel>Status</FieldLabel>
+              <Select
+                value={form.watch('status')}
+                onValueChange={(value) => form.setValue('status', value as any)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(TASK_STATUS_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError>{form.formState.errors.status?.message}</FieldError>
+            </FieldGroup>
+
+            <FieldGroup>
+              <FieldLabel>Priority *</FieldLabel>
+              <Select
+                value={form.watch('priority')}
+                onValueChange={(value) => form.setValue('priority', value as any)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(TASK_PRIORITY_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError>{form.formState.errors.priority?.message}</FieldError>
+            </FieldGroup>
+
+            <FieldGroup>
+              <FieldLabel>Difficulty *</FieldLabel>
+              <Select
+                value={form.watch('difficulty')}
+                onValueChange={(value) => form.setValue('difficulty', value as any)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(TASK_DIFFICULTY_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError>{form.formState.errors.difficulty?.message}</FieldError>
+            </FieldGroup>
+          </div>
+
+          {/* Dates */}
+          <div className="grid grid-cols-2 gap-4">
+            <FieldGroup>
+              <FieldLabel>Start Date</FieldLabel>
+              <Input
+                type="date"
+                {...form.register('start_date')}
+              />
+              <FieldError>{form.formState.errors.start_date?.message}</FieldError>
+            </FieldGroup>
+
+            <FieldGroup>
+              <FieldLabel>Due Date</FieldLabel>
+              <Input
+                type="date"
+                {...form.register('due_date')}
+              />
+              <FieldError>{form.formState.errors.due_date?.message}</FieldError>
+            </FieldGroup>
+          </div>
+
+          {/* Skills Selection */}
+          <FieldGroup>
+            <FieldLabel>Linked Skills * (1-3 required)</FieldLabel>
+            <FieldDescription>
+              Select 1 to 3 skills that this task will develop
+            </FieldDescription>
+            {isLoadingSkills ? (
+              <div className="text-sm text-muted-foreground">Loading skills...</div>
+            ) : skills.length === 0 ? (
+              <div className="rounded-lg border border-dashed p-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  No skills found. Create a skill first to continue.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto rounded-lg border p-3">
+                {skills.map((skill) => (
+                  <button
+                    key={skill.id}
+                    type="button"
+                    onClick={() => toggleSkillSelection(skill.id)}
+                    className={`flex items-center gap-2 rounded-lg border p-2 text-left transition-colors ${
+                      watchedSkillIds.includes(skill.id)
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:bg-muted'
+                    }`}
+                  >
+                    <Checkbox
+                      checked={watchedSkillIds.includes(skill.id)}
+                      onCheckedChange={() => toggleSkillSelection(skill.id)}
+                    />
+                    <span className="text-sm font-medium truncate flex-1">
+                      {skill.title}
+                    </span>
+                    <Badge variant="outline" className="text-xs">
+                      Lv {skill.level}
+                    </Badge>
+                  </button>
+                ))}
+              </div>
+            )}
+            <FieldError>{form.formState.errors.skill_ids?.message}</FieldError>
+          </FieldGroup>
+
+          {/* Rewards Section */}
+          <div className="rounded-lg border p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold">Rewards</h4>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="use-custom-xp"
+                  checked={watchedUseCustomXP}
+                  onCheckedChange={(checked) =>
+                    form.setValue('use_custom_xp', checked as boolean)
+                  }
+                />
+                <Label htmlFor="use-custom-xp" className="text-sm cursor-pointer">
+                  Use custom XP values
+                </Label>
+              </div>
+            </div>
+
+            {/* Gold Reward */}
+            <FieldGroup>
+              <FieldLabel>Gold Reward</FieldLabel>
+              <Input
+                type="number"
+                min="0"
+                {...form.register('gold_reward', { valueAsNumber: true })}
+                placeholder={`Default: ${getDefaultGoldReward(watchedDifficulty)}`}
+              />
+              <FieldError>{form.formState.errors.gold_reward?.message}</FieldError>
+            </FieldGroup>
+
+            {/* Custom XP inputs */}
+            {watchedUseCustomXP && (
+              <div className="grid grid-cols-2 gap-4">
+                <FieldGroup>
+                  <FieldLabel>Character XP</FieldLabel>
+                  <Input
+                    type="number"
+                    min="0"
+                    {...form.register('custom_character_xp', { valueAsNumber: true })}
+                    placeholder="Enter custom XP"
+                  />
+                  <FieldError>
+                    {form.formState.errors.custom_character_xp?.message}
+                  </FieldError>
+                </FieldGroup>
+
+                <FieldGroup>
+                  <FieldLabel>Skill XP (per skill)</FieldLabel>
+                  <Input
+                    type="number"
+                    min="0"
+                    {...form.register('custom_skill_xp', { valueAsNumber: true })}
+                    placeholder="Enter custom XP"
+                  />
+                  <FieldError>
+                    {form.formState.errors.custom_skill_xp?.message}
+                  </FieldError>
+                </FieldGroup>
+              </div>
+            )}
+
+            {/* XP Preview */}
+            <div className="flex items-center gap-4 pt-2 border-t">
+              <div className="flex items-center gap-1.5 text-sm">
+                <FaCoins className="h-4 w-4 text-amber-400" />
+                <span className="text-muted-foreground">Gold:</span>
+                <span className="font-semibold">
+                  {form.watch('gold_reward') ?? getDefaultGoldReward(watchedDifficulty)}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 text-sm">
+                <FaUserGroup className="h-4 w-4 text-cyan-400" />
+                <span className="text-muted-foreground">Char XP:</span>
+                <span className="font-semibold">{previewXP.characterXP}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-sm">
+                <FaCircleArrowUp className="h-4 w-4 text-violet-400" />
+                <span className="text-muted-foreground">Skill XP:</span>
+                <span className="font-semibold">
+                  {previewXP.skillXP} × {watchedSkillIds.length} = {previewXP.skillXP * watchedSkillIds.length}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting || skills.length === 0}>
+              {isSubmitting ? 'Creating...' : 'Create Task'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}

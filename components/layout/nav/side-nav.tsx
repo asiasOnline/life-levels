@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import SideNavLink from './side-nav-link';
 import { GoSidebarExpand, GoSidebarCollapse } from "react-icons/go";
 import { BiSolidDashboard, BiSolidChat } from "react-icons/bi";
-import { FaRotate, FaSquareCheck, FaFolder, FaStar, FaCircleArrowUp, FaUserGroup, FaRegCalendarDays } from "react-icons/fa6";
+import { FaRotate, FaSquareCheck, FaStar, FaCircleArrowUp, FaUserGroup, FaRegCalendarDays } from "react-icons/fa6";
 import { SiTarget } from "react-icons/si";
 import { cn } from '@/lib/utils'
 

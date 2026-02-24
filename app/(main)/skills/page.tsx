@@ -21,7 +21,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { fetchSkills } from "@/lib/actions/skill";
-
 import { FaPlus, FaXmark } from "react-icons/fa6";
 
 export default function SkillsPage() {

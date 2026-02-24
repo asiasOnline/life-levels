@@ -78,6 +78,7 @@ export interface Task extends IconData {
   description: string | null;
   status: TaskStatus;
   difficulty: TaskDifficulty;
+  priority: TaskPriority;
   start_date: string | null;
   due_date: string | null;
   completed_at: string | null;
