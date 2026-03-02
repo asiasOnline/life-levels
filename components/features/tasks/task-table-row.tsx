@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { formatDate, isOverdue } from '@/lib/utils/tasks'
-import { renderIcon } from '@/components/layout/app/icon-picker/icon-utils'
+import { renderIcon } from '@/lib/utils/icon'
 import { cn } from '@/lib/utils'
 import {
   Task,

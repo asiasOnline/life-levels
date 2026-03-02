@@ -1,15 +1,14 @@
 'use client'
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
-import { IconType } from "@/components/layout/app/icon-picker/types";
 import { ViewMode } from "@/lib/types";
-import { Task } from "@/lib/types/tasks";
+import { fetchTasks } from "@/lib/actions/tasks";
+import { TaskWithSkills } from "@/lib/actions/tasks";
 import TaskCard from "@/components/features/tasks/task-card";
-import TaskTableRow from "@/components/features/tasks/task-table-row";
+import { TaskTableRow } from "@/components/features/tasks/task-table-row";
 import { CreateTaskModal } from "@/components/features/tasks/create-task-modal";
 import TaskDetailModal from "@/components/features/tasks/task-detail-modal";
 import { 
@@ -23,29 +22,11 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { FaPlus, FaXmark } from "react-icons/fa6";
 
-// ─── Types ───────────────────────────
-
-interface TaskWithSkills extends Task {
-  task_skills: {
-    skills: {
-      id: string
-      title: string
-      icon: string
-      icon_type: string
-      icon_color: string
-      level: number
-    }
-  }[]
-}
-
-
 export default function TaskPage() {
     const [viewMode, setViewMode] = useState<ViewMode>('grid')
-    const [tasks, setTasks] = useState<Task[]>([])
+    const [tasks, setTasks] = useState<TaskWithSkills[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-    const [selectedTask, setSelectedTask] = useState<Task | null>(null)
-    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
     useEffect(() => {
     loadTasks()
@@ -54,30 +35,11 @@ export default function TaskPage() {
   async function loadTasks() {
     try {
       setIsLoading(true)
-      const supabase = createClient()
-
-      const { data, error } = await supabase
-        .from('tasks')
-        .select(`
-          *,
-          task_skills (
-            skills (
-              id,
-              title,
-              icon,
-              icon_type,
-              icon_color,
-              level
-            )
-          )
-        `)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      setTasks(data || [])
+      const data = await fetchTasks()
+      setTasks(data)
     } catch (error) {
       console.error('Error loading tasks:', error)
+      toast.error('Failed to load tasks. Please try again.')
     } finally {
       setIsLoading(false)
     }

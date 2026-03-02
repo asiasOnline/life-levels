@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { createClient } from '@/lib/supabase/client'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import {
@@ -33,9 +34,13 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { IconPicker } from "@/components/layout/app/icon-picker/icon-picker"
-import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR } from "@/components/layout/app/icon-picker/types"
+import { 
+  IconType, 
+  DEFAULT_ICON, 
+  DEFAULT_ICON_TYPE, 
+  DEFAULT_ICON_COLOR 
+} from "@/lib/types/icon"
 import { toast } from "sonner" 
-import { createClient } from '@/lib/supabase/client'
 import {
   TASK_STATUS,
   TASK_PRIORITY,
@@ -51,7 +56,7 @@ import {
 } from '@/lib/utils/tasks'
 import { FaRegCalendarDays, FaClock, FaCoins, FaStar, FaCircleArrowUp, FaUserGroup } from "react-icons/fa6";
 
-// ─── Schema ───────────────────────────────────────────────────────────────────
+// ─── Task Schema ─────────────────────
 
 const createTaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title is too long'),
@@ -62,20 +67,20 @@ const createTaskSchema = z.object({
   status: z.enum(['backlog', 'in_progress', 'paused', 'completed']),
   priority: z.enum(['critical', 'high', 'mid', 'low']),
   difficulty: z.enum(['easy', 'normal', 'hard', 'expert']),
-  start_date: z.string().optional(),
-  due_date: z.string().optional(),
-  skill_ids: z
+  startDate: z.string().optional(),
+  dueDate: z.string().optional(),
+  skillIds: z
     .array(z.string())
     .min(1, 'At least 1 skill is required')
     .max(3, 'Maximum 3 skills allowed'),
-  gold_reward: z.number().min(0).optional(),
-  use_custom_xp: z.boolean(),
-  custom_character_xp: z.number().min(0).optional(),
-  custom_skill_xp: z.number().min(0).optional(),
+  goldReward: z.number().min(0).optional(),
+  useCustomXP: z.boolean(),
+  customCharacterXP: z.number().min(0).optional(),
+  customSkillXP: z.number().min(0).optional(),
 }).refine(
   (data) => {
-    if (data.start_date && data.due_date) {
-      return new Date(data.start_date) <= new Date(data.due_date)
+    if (data.startDate && data.dueDate) {
+      return new Date(data.startDate) <= new Date(data.dueDate)
     }
     return true
   },
@@ -87,7 +92,7 @@ const createTaskSchema = z.object({
 
 type CreateTaskFormValues = z.infer<typeof createTaskSchema>
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Object Types ──────────────────────────
 
 interface Skill {
   id: string
@@ -104,7 +109,7 @@ interface CreateTaskModalProps {
   onTaskCreated: () => void
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────
 
 export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTaskModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -122,21 +127,21 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
       status: TASK_STATUS.BACKLOG,
       priority: TASK_PRIORITY.MID,
       difficulty: TASK_DIFFICULTY.NORMAL,
-      start_date: '',
-      due_date: '',
-      skill_ids: [],
-      gold_reward: undefined,
-      use_custom_xp: false,
-      custom_character_xp: undefined,
-      custom_skill_xp: undefined,
+      startDate: '',
+      dueDate: '',
+      skillIds: [],
+      goldReward: undefined,
+      useCustomXP: false,
+      customCharacterXP: undefined,
+      customSkillXP: undefined,
     },
   })
 
   const watchedDifficulty = form.watch('difficulty')
-  const watchedSkillIds = form.watch('skill_ids')
-  const watchedUseCustomXP = form.watch('use_custom_xp')
-  const watchedCustomCharacterXP = form.watch('custom_character_xp')
-  const watchedCustomSkillXP = form.watch('custom_skill_xp')
+  const watchedSkillIds = form.watch('skillIds')
+  const watchedUseCustomXP = form.watch('useCustomXP')
+  const watchedCustomCharacterXP = form.watch('customCharacterXP')
+  const watchedCustomSkillXP = form.watch('customSkillXP')
 
   // Load skills on mount
   useEffect(() => {
@@ -145,9 +150,9 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
 
   // Auto-calculate gold reward when difficulty changes
   useEffect(() => {
-    if (watchedDifficulty && form.getValues('gold_reward') === undefined) {
+    if (watchedDifficulty && form.getValues('goldReward') === undefined) {
       const defaultGold = getDefaultGoldReward(watchedDifficulty)
-      form.setValue('gold_reward', defaultGold)
+      form.setValue('goldReward', defaultGold)
     }
   }, [watchedDifficulty])
 
@@ -182,73 +187,45 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
     const currentSkills = watchedSkillIds || []
     if (currentSkills.includes(skillId)) {
       form.setValue(
-        'skill_ids',
+        'skillIds',
         currentSkills.filter((id) => id !== skillId)
       )
     } else if (currentSkills.length < 3) {
-      form.setValue('skill_ids', [...currentSkills, skillId])
+      form.setValue('skillIds', [...currentSkills, skillId])
     }
   }
 
   async function onSubmit(values: CreateTaskFormValues) {
+    setIsSubmitting(true)
+
     try {
-      setIsSubmitting(true)
-      const supabase = createClient()
-
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      // Prepare task data
-      const taskData = {
-        user_id: user.id,
+      const { createTask } = await import('@/lib/actions/tasks')
+      await createTask({
         title: values.title,
-        description: values.description || null,
-        icon: {
-          type: values.iconType,
-          value: values.icon || DEFAULT_ICON,
-          color: values.iconColor,
-        },
+        description: values.description,
+        icon: values.icon || DEFAULT_ICON,
+        iconType: values.iconType,
+        iconColor: values.iconColor,
         status: values.status,
         priority: values.priority,
         difficulty: values.difficulty,
-        start_date: values.start_date || null,
-        due_date: values.due_date || null,
-        gold_reward: values.gold_reward ?? getDefaultGoldReward(values.difficulty),
-        use_custom_xp: values.use_custom_xp,
-        custom_character_xp: values.use_custom_xp ? values.custom_character_xp : null,
-        custom_skill_xp: values.use_custom_xp ? values.custom_skill_xp : null,
-      }
+        start_date: values.startDate,
+        due_date: values.dueDate,
+        skillIds: values.skillIds,
+        gold_reward: values.goldReward,
+        use_custom_xp: values.useCustomXP,
+        custom_character_xp: values.customCharacterXP,
+        custom_skill_xp: values.customSkillXP,
+      })
 
-      // Insert task
-      const { data: task, error: taskError } = await supabase
-        .from('tasks')
-        .insert(taskData)
-        .select()
-        .single()
-
-      if (taskError) throw taskError
-
-      // Insert task-skill relationships
-      const taskSkills = values.skill_ids.map((skill_id) => ({
-        task_id: task.id,
-        skill_id,
-      }))
-
-      const { error: skillsError } = await supabase
-        .from('task_skills')
-        .insert(taskSkills)
-
-      if (skillsError) throw skillsError
-
-      toast.success(`${values.title} has been created successfully.`)
+      toast.success(`${values.title} has been created.`)
 
       form.reset()
-      onTaskCreated()
       onOpenChange(false)
+      onTaskCreated()
     } catch (error) {
       console.error('Error creating task:', error)
-      toast.error('Error creating task. Please try again.')
+      toast.error("Failed to create task. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -375,18 +352,18 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
               <FieldLabel>Start Date</FieldLabel>
               <Input
                 type="date"
-                {...form.register('start_date')}
+                {...form.register('startDate')}
               />
-              <FieldError>{form.formState.errors.start_date?.message}</FieldError>
+              <FieldError>{form.formState.errors.startDate?.message}</FieldError>
             </FieldGroup>
 
             <FieldGroup>
               <FieldLabel>Due Date</FieldLabel>
               <Input
                 type="date"
-                {...form.register('due_date')}
+                {...form.register('dueDate')}
               />
-              <FieldError>{form.formState.errors.due_date?.message}</FieldError>
+              <FieldError>{form.formState.errors.dueDate?.message}</FieldError>
             </FieldGroup>
           </div>
 
@@ -431,7 +408,7 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
                 ))}
               </div>
             )}
-            <FieldError>{form.formState.errors.skill_ids?.message}</FieldError>
+            <FieldError>{form.formState.errors.skillIds?.message}</FieldError>
           </FieldGroup>
 
           {/* Rewards Section */}
@@ -443,7 +420,7 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
                   id="use-custom-xp"
                   checked={watchedUseCustomXP}
                   onCheckedChange={(checked) =>
-                    form.setValue('use_custom_xp', checked as boolean)
+                    form.setValue('useCustomXP', checked as boolean)
                   }
                 />
                 <Label htmlFor="use-custom-xp" className="text-sm cursor-pointer">
@@ -458,10 +435,10 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
               <Input
                 type="number"
                 min="0"
-                {...form.register('gold_reward', { valueAsNumber: true })}
+                {...form.register('goldReward', { valueAsNumber: true })}
                 placeholder={`Default: ${getDefaultGoldReward(watchedDifficulty)}`}
               />
-              <FieldError>{form.formState.errors.gold_reward?.message}</FieldError>
+              <FieldError>{form.formState.errors.goldReward?.message}</FieldError>
             </FieldGroup>
 
             {/* Custom XP inputs */}
@@ -472,11 +449,11 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
                   <Input
                     type="number"
                     min="0"
-                    {...form.register('custom_character_xp', { valueAsNumber: true })}
+                    {...form.register('customCharacterXP', { valueAsNumber: true })}
                     placeholder="Enter custom XP"
                   />
                   <FieldError>
-                    {form.formState.errors.custom_character_xp?.message}
+                    {form.formState.errors.customCharacterXP?.message}
                   </FieldError>
                 </FieldGroup>
 
@@ -485,11 +462,11 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
                   <Input
                     type="number"
                     min="0"
-                    {...form.register('custom_skill_xp', { valueAsNumber: true })}
+                    {...form.register('customSkillXP', { valueAsNumber: true })}
                     placeholder="Enter custom XP"
                   />
                   <FieldError>
-                    {form.formState.errors.custom_skill_xp?.message}
+                    {form.formState.errors.customSkillXP?.message}
                   </FieldError>
                 </FieldGroup>
               </div>
@@ -501,7 +478,7 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
                 <FaCoins className="h-4 w-4 text-amber-400" />
                 <span className="text-muted-foreground">Gold:</span>
                 <span className="font-semibold">
-                  {form.watch('gold_reward') ?? getDefaultGoldReward(watchedDifficulty)}
+                  {form.watch('goldReward') ?? getDefaultGoldReward(watchedDifficulty)}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-sm">

@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Upload, Palette } from 'lucide-react'
-import { AVAILABLE_ICONS, getIconComponent, renderIcon } from './icon-utils'
-import { IconType, DEFAULT_ICON_COLOR } from './types'
+import { AVAILABLE_ICONS, getIconComponent, renderIcon } from '../../../../lib/utils/icon'
+import { IconType, DEFAULT_ICON_COLOR } from '@/lib/types/icon'
 import { cn } from '@/lib/utils'
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react'
 
@@ -34,7 +34,7 @@ const PRESET_COLORS = [
 
 export function IconPicker({
   currentIcon,
-  currentIconType = 'icon',
+  currentIconType = 'fontawesome',
   currentIconColor = DEFAULT_ICON_COLOR,
   onIconChange,
 }: IconPickerProps) {
@@ -48,14 +48,14 @@ export function IconPicker({
   }
 
   const handleIconClick = (iconName: string) => {
-    onIconChange(iconName, 'icon', selectedColor)
+    onIconChange(iconName, 'fontawesome', selectedColor)
   }
 
   const handleColorChange = (color: string) => {
     setSelectedColor(color)
     setCustomColor(color)
-    if (currentIconType === 'icon' && currentIcon) {
-      onIconChange(currentIcon, 'icon', color)
+    if (currentIconType === 'fontawesome' && currentIcon) {
+      onIconChange(currentIcon, 'fontawesome', color)
     }
   }
 
@@ -89,7 +89,7 @@ export function IconPicker({
       <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as IconType)}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="emoji">Emoji</TabsTrigger>
-          <TabsTrigger value="icon">Icons</TabsTrigger>
+          <TabsTrigger value="fontawesome">Icons</TabsTrigger>
           <TabsTrigger value="image">Upload</TabsTrigger>
         </TabsList>
 
@@ -138,7 +138,7 @@ export function IconPicker({
           </div>
 
           {/* Icon Grid */}
-          <ScrollArea className="h-[300px] border rounded-lg p-4">
+          <ScrollArea className="h-75 border rounded-lg p-4">
             <div className="grid grid-cols-5 gap-3">
               {AVAILABLE_ICONS.map((iconName) => {
                 const IconComponent = getIconComponent(iconName)
@@ -151,7 +151,7 @@ export function IconPicker({
                     onClick={() => handleIconClick(iconName)}
                     className={cn(
                       'p-3 rounded-lg border-2 transition-all hover:scale-110',
-                      currentIcon === iconName && currentIconType === 'icon'
+                      currentIcon === iconName && currentIconType === 'fontawesome'
                         ? 'border-primary bg-accent'
                         : 'border-transparent hover:border-muted-foreground/20'
                     )}
@@ -183,7 +183,7 @@ export function IconPicker({
                     variant="outline"
                     onClick={() => {
                       setImagePreview(null)
-                      onIconChange('FaCircleArrowUp', 'icon', selectedColor)
+                      onIconChange('FaCircleArrowUp', 'fontawesome', selectedColor)
                     }}
                   >
                     Remove Image

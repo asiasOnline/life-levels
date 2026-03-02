@@ -1,7 +1,16 @@
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types'
 import { calculateXPForLevel } from '@/lib/utils/skills'
-import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR  } from '@/components/layout/app/icon-picker/types'
+import { 
+  IconType, 
+  DEFAULT_ICON, 
+  DEFAULT_ICON_TYPE, 
+  DEFAULT_ICON_COLOR  
+} from '@/lib/types/icon'
+
+// =======================================
+// DATABASE & INPUT TYPES
+// =======================================
 
 type SkillRow = Database['public']['Tables']['skills']['Row']
 type SkillInsert = Database['public']['Tables']['skills']['Insert']
@@ -15,6 +24,10 @@ export interface CreateSkillInput {
   iconColor?: string
   tags?: string[]
 }
+
+// =======================================
+// DATABASE FUNCTIONS
+// =======================================
 
 /** -------------------------------------
  * Fetch all skills for the current user

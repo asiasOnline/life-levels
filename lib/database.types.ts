@@ -3,7 +3,7 @@ export type TaskDifficulty = 'easy' | 'normal' | 'hard' | 'expert'
 export type TaskPriority = 'critical' | 'high' | 'mid' | 'low'
 
 export interface IconData {
-  type: 'emoji' | 'icon' | 'image'
+  type: 'emoji' | 'fontawesome' | 'image'
   value: string
   color?: string
 }

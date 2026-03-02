@@ -10,25 +10,24 @@ import {
     DialogHeader,
     DialogTitle,
     DialogDescription,
-    DialogFooter
 } from "@/components/ui/dialog"
 import { 
     Field, 
-    FieldContent,
     FieldDescription,
     FieldError,
     FieldGroup,
     FieldLabel,
-    FieldSet,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { IconPicker } from "@/components/layout/app/icon-picker/icon-picker"
-import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR } from "@/components/layout/app/icon-picker/types"
+import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR } from "@/lib/types/icon"
 import { toast } from "sonner"
 import { FaPlus, FaXmark } from "react-icons/fa6";
+
+// ─── Skill Schema ─────────────────────
 
 const createSkillSchema = z.object({
     title: z
@@ -52,11 +51,15 @@ const createSkillSchema = z.object({
 
 type CreateSkillFormValues = z.infer<typeof createSkillSchema>
 
+// ─── Object Types ──────────────────────────
+
 interface CreateSkillModalProps {
     isOpen: boolean
     onOpenChange: (open: boolean) => void
     onSkillCreated: () => void
 }
+
+// ─── Main Component ───────────────────────
 
 export function CreateSkillModal({ isOpen, onOpenChange, onSkillCreated }: CreateSkillModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false)

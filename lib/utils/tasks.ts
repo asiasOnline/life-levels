@@ -1,4 +1,14 @@
-import { TaskDifficulty, BASE_XP_VALUES, DEFAULT_GOLD_REWARDS, Task, TASK_STATUS, TaskStatus, TASK_DIFFICULTY, TaskPriority, TASK_PRIORITY } from "../types/tasks";
+import { 
+  TaskDifficulty, 
+  BASE_XP_VALUES, 
+  DEFAULT_GOLD_REWARDS, 
+  Task, 
+  TASK_STATUS, 
+  TaskStatus, 
+  TASK_DIFFICULTY, 
+  TaskPriority, 
+  TASK_PRIORITY 
+} from "@/lib/types/tasks";
 
 
 /**
@@ -35,10 +45,10 @@ export function validateSkillCount(skillIds: string[]): boolean {
  * Check if a task is overdue
  */
 export function isTaskOverdue(task: Task): boolean {
-  if (!task.due_date || task.status === TASK_STATUS.COMPLETED) {
+  if (!task.dueDate || task.status === TASK_STATUS.COMPLETED) {
     return false;
   }
-  return new Date(task.due_date) < new Date();
+  return new Date(task.dueDate) < new Date();
 }
 
 /**

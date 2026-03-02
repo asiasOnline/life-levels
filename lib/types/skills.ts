@@ -1,7 +1,7 @@
-import { IconData } from "@/components/layout/app/icon-picker/types";
+import { IconData } from "@/lib/types/icon";
 
 // =====================================================
-// DATABASE TYPE
+// MAIN TYPE
 // =====================================================
 export interface Skill extends IconData {
     id: string;

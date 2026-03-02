@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
-import { IconType } from "@/components/layout/app/icon-picker/types";
+import { IconType } from "@/lib/types/icon";
 import { ViewMode } from "@/lib/types";
 import { Skill } from "@/lib/types/skills";
 import { SkillCard } from "@/components/features/skills/skill-card";
@@ -101,6 +101,7 @@ export default function SkillsPage() {
         title="Skills"
         subtitle="Track long-term mastery and capability development across all life contexts, with clear progression milestones that unlock meaningful rewards."
       />
+      {/* Skill Log Container */}
       <ItemContainer>
       <ItemContainerHeader 
         title="Skill Log"
@@ -113,9 +114,10 @@ export default function SkillsPage() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
-
+      {/* Skills */}
       {skills.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg">
+          {/* No Skills View */}
           <p className="text-muted-foreground mb-4">No skills yet</p>
           <Button onClick={() => setIsCreateModalOpen(true)}>
             <FaPlus className="h-4 w-4 mr-2" />

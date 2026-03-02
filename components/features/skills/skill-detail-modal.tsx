@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Skill } from '@/lib/types/skills'
-import { renderIcon } from '@/components/layout/app/icon-picker/icon-utils'
+import { renderIcon } from '@/lib/utils/icon'
 import { getProgressPercentage } from '../../../lib/utils/skills'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

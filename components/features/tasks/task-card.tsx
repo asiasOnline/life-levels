@@ -10,7 +10,7 @@ import {
 import { calculateTaskXP } from '@/lib/utils/tasks'
 import StatusAccent from './status-accent'
 import { RewardPill } from '@/components/layout/app/reward-pill'
-import { renderIcon } from '@/components/layout/app/icon-picker/icon-utils'
+import { renderIcon } from '@/lib/utils/icon'
 import PriorityBadge from './priority-badge'
 import {
   Card, 
@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils'
 import { formatDueDate } from '@/lib/utils'
 import { FaRegCalendarDays, FaClock, FaCoins, FaStar, FaCircleArrowUp, FaUserGroup } from "react-icons/fa6";
 import { TbAlertCircleFilled } from "react-icons/tb";
+import { TaskWithSkills } from '@/lib/actions/tasks'
 
 // TYPES -------------------------
 
@@ -32,7 +33,7 @@ interface LinkedSkill {
 }
 
 interface TaskCardProps {
-  task: Task
+  task: TaskWithSkills
   linkedSkills: LinkedSkill[]
   linkedCharacterCount?: number
   onClick?: (taskId: string) => void
@@ -79,7 +80,7 @@ const TaskCard = ({ task, linkedSkills, linkedCharacterCount = 1, onClick, class
         {/* Icon */}
         <div className="flex">
           <div className="text-2xl">
-              {renderIcon(task.icon, task.iconType, task.iconColor, 'w-6 h-6')}
+              {renderIcon(task.icon.value, task.icon.type, task.icon.color, 'w-6 h-6')}
             </div>
         </div>
 

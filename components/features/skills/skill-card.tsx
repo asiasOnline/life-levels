@@ -3,7 +3,7 @@
 import React from 'react' 
 import { Skill } from '@/lib/types/skills'
 import { getProgressPercentage } from '@/lib/utils/skills'
-import { renderIcon } from '@/components/layout/app/icon-picker/icon-utils'
+import { renderIcon } from '@/lib/utils/icon'
 import { Badge } from '@/components/ui/badge'
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter} from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'

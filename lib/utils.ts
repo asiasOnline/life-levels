@@ -5,8 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatDueDate(dateString: string): { label: string; overdue: boolean; urgent: boolean } {
-  const due = new Date(dateString)
+export function formatDueDate(date: string | Date): { label: string; overdue: boolean; urgent: boolean } {
+  const due = typeof date === 'string' ? new Date(date) : date
   const now = new Date()
   const diffMs = due.getTime() - now.getTime()
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))

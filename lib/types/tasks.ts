@@ -1,8 +1,8 @@
-import { IconData } from "@/components/layout/app/icon-picker/types";
+import { IconData } from "@/lib/types/icon";
 
-// =====================================================
+// ==================================
 // ENUMS & CONSTANTS
-// =====================================================
+// ==================================
 export const TASK_STATUS = {
   BACKLOG: 'backlog',
   IN_PROGRESS: 'in_progress',
@@ -52,7 +52,6 @@ export const TASK_PRIORITY_LABELS: Record<TaskPriority, string> = {
   [TASK_PRIORITY.LOW]: 'Low',
 };
 
-
 // Default gold rewards by difficulty
 export const DEFAULT_GOLD_REWARDS: Record<TaskDifficulty, number> = {
   [TASK_DIFFICULTY.EASY]: 10,
@@ -68,102 +67,25 @@ export const BASE_XP_VALUES: Record<TaskDifficulty, number> = {
   [TASK_DIFFICULTY.HARD]: 200,
   [TASK_DIFFICULTY.EXPERT]: 400,
 };
+
 // =====================================================
-// DATABASE TYPES
+// MAIN TYPE
 // =====================================================
 export interface Task extends IconData {
   id: string;
-  user_id: string;
+  userId: string;
   title: string;
-  description: string | null;
+  description?: string;
   status: TaskStatus;
   difficulty: TaskDifficulty;
   priority: TaskPriority;
-  start_date: string | null;
-  due_date: string | null;
-  completed_at: string | null;
-  gold_reward: number;
-  use_custom_xp: boolean;
-  custom_character_xp: number | null;
-  custom_skill_xp: number | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface TaskSkill {
-  id: string;
-  task_id: string;
-  skill_id: string;
-  created_at: string;
-}
-
-export interface TaskCharacter {
-  id: string;
-  task_id: string;
-  character_id: string;
-  created_at: string;
-}
-
-export interface TaskGoal {
-  id: string;
-  task_id: string;
-  goal_id: string;
-  created_at: string;
-}
-
-// =====================================================
-// EXTENDED TYPES WITH RELATIONSHIPS
-// =====================================================
-export interface TaskWithSkills extends Task {
-  task_skills: (TaskSkill & {
-    skills: {
-      id: string;
-      title: string;
-      icon: IconData;
-      level: number;
-    };
-  })[];
-}
-
-export interface TaskWithRelations extends Task {
-  skills: {
-    id: string;
-    title: string;
-    icon: IconData;
-    level: number;
-  }[];
-  characters?: {
-    id: string;
-    name: string;
-    icon: IconData;
-  }[];
-  goals?: {
-    id: string;
-    title: string;
-    icon: IconData;
-  }[];
-}
-
-// =====================================================
-// FORM TYPES
-// =====================================================
-export interface CreateTaskInput {
-  title: string;
-  description?: string;
-  icon: IconData;
-  status?: TaskStatus; // Optional, defaults to 'backlog'
-  priority?: TaskPriority  // Optional, defaults to 'mid'
-  difficulty: TaskDifficulty;
-  start_date?: string;
-  due_date?: string;
-  gold_reward?: number; // Optional, will use default if not provided
-  use_custom_xp?: boolean;
-  custom_character_xp?: number;
-  custom_skill_xp?: number;
-  skill_ids: string[]; // Must have 1-3 skills
-}
-
-export interface UpdateTaskInput extends Partial<CreateTaskInput> {
-  id: string;
-  skill_ids?: string[]; // Optional for updates
+  startDate?: Date;
+  dueDate?: Date;
+  completedAt?: Date;
+  goldReward: number;
+  useCustomXP: boolean;
+  customCharacterXP?: number;
+  customSkillXP?: number;
+  createdAt: Date;
+  updatedAt: Date;
 }

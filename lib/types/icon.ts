@@ -1,4 +1,4 @@
-export type IconType = 'emoji' | 'icon' | 'image';
+export type IconType = 'emoji' | 'fontawesome' | 'image';
 
 export interface IconData {
     icon: string //Emoji character, Icon name, or Image URL
@@ -8,5 +8,5 @@ export interface IconData {
 
 // Default Values
 export const DEFAULT_ICON = 'FaCircleArrowUp'
-export const DEFAULT_ICON_TYPE: IconType = 'icon'
+export const DEFAULT_ICON_TYPE: IconType = 'fontawesome'
 export const DEFAULT_ICON_COLOR = '#3b82f6'
