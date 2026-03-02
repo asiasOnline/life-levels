@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Upload, Palette } from 'lucide-react'
-import { AVAILABLE_ICONS, getIconComponent, renderIcon } from '../../../../lib/utils/icon'
+import { AVAILABLE_ICONS, getIconComponent, renderIcon } from '@/lib/utils/icon'
 import { IconType, DEFAULT_ICON_COLOR } from '@/lib/types/icon'
 import { cn } from '@/lib/utils'
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react'
@@ -104,7 +104,7 @@ export function IconPicker({
         </TabsContent>
 
         {/* Icons Tab */}
-        <TabsContent value="icon" className="space-y-4">
+        <TabsContent value="fontawesome" className="space-y-4">
           {/* Color Selector */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">

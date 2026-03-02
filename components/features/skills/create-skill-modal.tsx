@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { IconPicker } from "@/components/layout/app/icon-picker/icon-picker"
+import { IconPicker } from "@/components/layout/app/icon-picker"
 import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR } from "@/lib/types/icon"
 import { toast } from "sonner"
 import { FaPlus, FaXmark } from "react-icons/fa6";
@@ -40,7 +40,7 @@ const createSkillSchema = z.object({
     .string()
     .optional(),
     iconType: z
-    .enum(['emoji', 'icon', 'image']),
+    .enum(['emoji', 'fontawesome', 'image']),
     iconColor: z
     .string()
     .optional(),

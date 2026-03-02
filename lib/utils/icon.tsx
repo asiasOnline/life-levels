@@ -33,7 +33,7 @@ export function renderIcon(
     return <span className={className}>{icon || '⭐'}</span>
   }
   
-  if (iconType === 'icon') {
+  if (iconType === 'fontawesome') {
     const IconComponent = getIconComponent(icon || 'FaCircleArrowUp')
     if (IconComponent) {
       return <IconComponent className={className} style={{ color: iconColor }} />

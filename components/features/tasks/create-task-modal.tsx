@@ -33,7 +33,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { IconPicker } from "@/components/layout/app/icon-picker/icon-picker"
+import { IconPicker } from "@/components/layout/app/icon-picker"
 import { 
   IconType, 
   DEFAULT_ICON, 
@@ -384,10 +384,9 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
             ) : (
               <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto rounded-lg border p-3">
                 {skills.map((skill) => (
-                  <button
+                  <Field
                     key={skill.id}
-                    type="button"
-                    onClick={() => toggleSkillSelection(skill.id)}
+                    orientation="horizontal"
                     className={`flex items-center gap-2 rounded-lg border p-2 text-left transition-colors ${
                       watchedSkillIds.includes(skill.id)
                         ? 'border-primary bg-primary/10'
@@ -404,7 +403,7 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
                     <Badge variant="outline" className="text-xs">
                       Lv {skill.level}
                     </Badge>
-                  </button>
+                  </Field>
                 ))}
               </div>
             )}
@@ -505,7 +504,10 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || skills.length === 0}>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || skills.length === 0}
+            >
               {isSubmitting ? 'Creating...' : 'Create Task'}
             </Button>
           </DialogFooter>

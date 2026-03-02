@@ -1,4 +1,3 @@
-// components/features/skills/edit-skill-modal.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -23,7 +22,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { IconPicker } from '@/components/layout/app/icon-picker/icon-picker'
+import { IconPicker } from '@/components/layout/app/icon-picker'
 import { IconType } from '@/lib/types/icon'
 import { Skill } from '@/lib/types/skills'
 import { updateSkill } from '@/lib/actions/skill'
@@ -34,7 +33,7 @@ const editSkillSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
   description: z.string().max(500, 'Description is too long').optional(),
   icon: z.string().optional(),
-  iconType: z.enum(['emoji', 'icon', 'image']),
+  iconType: z.enum(['emoji', 'fontawesome', 'image']),
   iconColor: z.string().optional(),
   tags: z.array(z.string()).optional(),
 })
