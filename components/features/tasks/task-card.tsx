@@ -36,7 +36,7 @@ interface TaskCardProps {
   task: TaskWithSkills
   linkedSkills: LinkedSkill[]
   linkedCharacterCount?: number
-  onClick?: (taskId: string) => void
+  onClick?: (task: TaskWithSkills) => void
   className?: string
 }
 
@@ -63,12 +63,17 @@ const TaskCard = ({ task, linkedSkills, linkedCharacterCount = 1, onClick, class
 
   const dueInfo = task.due_date ? formatDueDate(task.due_date) : null
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick(task)
+    }
+  }
+
   return (
     <Card 
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      onClick={() => onClick?.(task.id)}
-      onKeyDown={(e) => e.key === 'Enter' && onClick?.(task.id)}
+      onClick={handleClick}
       className={cn(
       'w-full max-w-120 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.005]', 
       className)}

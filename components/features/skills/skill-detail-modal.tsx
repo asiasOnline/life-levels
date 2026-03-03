@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Skill } from '@/lib/types/skills'
 import { renderIcon } from '@/lib/utils/icon'
-import { getProgressPercentage } from '../../../lib/utils/skills'
+import { getProgressPercentage } from '@/lib/utils/skills'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -39,16 +39,16 @@ import { deleteSkill } from '@/lib/actions/skill'
 
 interface SkillDetailModalProps {
   skill: Skill | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  isOpen: boolean
+  onClose: (isOpen: boolean) => void
   onSkillUpdated: () => void
   onSkillDeleted: () => void
 }
 
 export function SkillDetailModal({
   skill,
-  open,
-  onOpenChange,
+  isOpen,
+  onClose,
   onSkillUpdated,
   onSkillDeleted,
 }: SkillDetailModalProps) {
@@ -66,7 +66,7 @@ export function SkillDetailModal({
       await deleteSkill(skill.id)
       toast(`${skill.title} has been removed from your skill log.`)
       onSkillDeleted()
-      onOpenChange(false)
+      onClose(false)
     } catch (error) {
       console.error('Error deleting skill:', error)
       toast.error('Failed to delete skill. Please try again.')
@@ -78,7 +78,7 @@ export function SkillDetailModal({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-175 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-start justify-between">

@@ -24,3 +24,23 @@ export function formatDueDate(date: string | Date): { label: string; overdue: bo
     urgent: false,
   }
 }
+
+export function formatDateShort(dateString: string): string {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+export function formatDateLong(dateString: string): string {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+export function isOverdue(dateString: string): boolean {
+  return new Date(dateString) < new Date()
+}

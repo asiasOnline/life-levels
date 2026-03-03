@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { formatDate, isOverdue } from '@/lib/utils/tasks'
+import { formatDateShort, isOverdue } from '@/lib/utils'
 import { renderIcon } from '@/lib/utils/icon'
 import { cn } from '@/lib/utils'
 import {
@@ -104,7 +104,7 @@ function DateCell({ dateString }: { dateString: string | null }) {
         overdue ? 'text-red-400 font-medium' : 'text-muted-foreground'
       )}
     >
-      {formatDate(dateString)}
+      {formatDateShort(dateString)}
     </span>
   )
 }
@@ -131,10 +131,10 @@ export function TaskTableRow({
   const isCompleted = task.status === TASK_STATUS.COMPLETED
 
   const { characterXP, skillXP } = useMemo(() => {
-    if (task.use_custom_xp) {
+    if (task.useCustomXP) {
       return {
-        characterXP: task.custom_character_xp ?? 0,
-        skillXP: task.custom_skill_xp ?? 0,
+        characterXP: task.customCharacterXP ?? 0,
+        skillXP: task.customSkillXP ?? 0,
       }
     }
     return calculateTaskXP(
@@ -200,12 +200,12 @@ export function TaskTableRow({
 
       {/* Start Date */}
       <td className="py-3 pr-4">
-        <DateCell dateString={task.start_date} />
+        <DateCell dateString={task.startDate} />
       </td>
 
       {/* Due Date */}
       <td className="py-3 pr-4">
-        <DateCell dateString={task.due_date} />
+        <DateCell dateString={task.dueDate} />
       </td>
 
       {/* Priority */}
@@ -222,7 +222,7 @@ export function TaskTableRow({
       <td className="py-3 pr-4 text-right">
         <span className="inline-flex items-center justify-end gap-1 text-xs font-semibold text-amber-400">
           <Coins className="h-3.5 w-3.5" />
-          {task.gold_reward}
+          {task.goldReward}
         </span>
       </td>
 
