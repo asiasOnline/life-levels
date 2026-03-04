@@ -64,7 +64,9 @@ export function SkillDetailModal({
     setIsDeleting(true)
     try {
       await deleteSkill(skill.id)
+
       toast(`${skill.title} has been removed from your skill log.`)
+      
       onSkillDeleted()
       onClose(false)
     } catch (error) {

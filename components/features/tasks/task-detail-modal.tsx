@@ -44,7 +44,7 @@ import { TASK_DIFFICULTY_LABELS, TASK_PRIORITY_LABELS } from '@/lib/types/tasks'
 interface TaskDetailModalProps {
   task: TaskWithSkills | null
   isOpen: boolean
-  onClose: () => void
+  onClose: (isOpen: boolean) => void
   onTaskUpdated: () => void
   onTaskDeleted: () => void
 }
@@ -69,14 +69,14 @@ export function TaskDetailModal({
 
       toast.success(`"${task.title}" has been successfully deleted.`)
       
-      setIsDeleteDialogOpen(false)
-      onClose()
+      onClose(false)
       onTaskDeleted()
     } catch (error) {
       console.error('Error deleting task:', error)
       toast.error('Error deleting task. Please try again.')
     } finally {
       setIsDeleting(false)
+      setIsDeleteDialogOpen(false)
     }
   }
 

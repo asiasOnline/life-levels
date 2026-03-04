@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Skill } from '@/lib/types/skills';
-import { getProgressPercentage } from '../../../lib/utils/skills';
+import { getProgressPercentage } from '@/lib/utils/skills';
 import { Badge } from '@/components/ui/badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 

@@ -114,7 +114,7 @@ export default function SkillsPage() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
-      {/* Skills */}
+      {/* Skills Display */}
       {skills.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg">
           {/* No Skills View */}
@@ -169,15 +169,15 @@ export default function SkillsPage() {
         {/* Create Skill Modal */}
         <CreateSkillModal
         isOpen={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
+        onClose={setIsCreateModalOpen}
         onSkillCreated={handleSkillCreated}
       />
 
       {/* Skill Detail Modal */}
       <SkillDetailModal
         skill={selectedSkill}
-        open={isDetailModalOpen}
-        onOpenChange={setIsDetailModalOpen}
+        isOpen={isDetailModalOpen}
+        onClose={setIsDetailModalOpen}
         onSkillUpdated={handleSkillUpdated}
         onSkillDeleted={handleSkillDeleted}
       />

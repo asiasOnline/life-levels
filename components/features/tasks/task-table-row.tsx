@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { formatDateShort, isOverdue } from '@/lib/utils'
 import { renderIcon } from '@/lib/utils/icon'
 import { cn } from '@/lib/utils'
@@ -16,10 +16,11 @@ import {
   TASK_STATUS,
 } from '@/lib/types/tasks'
 import { calculateTaskXP } from '@/lib/utils/tasks'
-import TaskTableViewHeader from './task-table-view-header'
+import { TableCell, TableRow } from '@/components/ui/table'
 import { Coins, Sparkles, Swords, AlertCircle, ChevronUp, Minus, ChevronDown, Minus as Dash } from 'lucide-react'
+import { TaskWithSkills } from '@/lib/actions/tasks'
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ───────────────────────────
 
 interface LinkedSkill {
   id: string
@@ -27,13 +28,13 @@ interface LinkedSkill {
 }
 
 interface TaskTableRowProps {
-  task: Task
+  task: TaskWithSkills
   linkedSkills: LinkedSkill[]
   linkedCharacterCount?: number
-  onClick?: (taskId: string) => void
+  onClick?: (task: TaskWithSkills) => void
   className?: string
 }
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Sub-components ──────────────────
 
 function PriorityChip({ priority }: { priority: TaskPriority }) {
   const configs: Record<TaskPriority, { icon: React.ReactNode; classes: string }> = {
@@ -119,7 +120,7 @@ function StatusBar({ status }: { status: TaskStatus }) {
   return <div className={cn('h-full w-0.75 rounded-full shrink-0', colorMap[status])} />
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main Component ──────────────
 
 export function TaskTableRow({
   task,
@@ -131,10 +132,10 @@ export function TaskTableRow({
   const isCompleted = task.status === TASK_STATUS.COMPLETED
 
   const { characterXP, skillXP } = useMemo(() => {
-    if (task.useCustomXP) {
+    if (task.use_custom_xp) {
       return {
-        characterXP: task.customCharacterXP ?? 0,
-        skillXP: task.customSkillXP ?? 0,
+        characterXP: task.custom_character_xp ?? 0,
+        skillXP: task.custom_skill_xp ?? 0,
       }
     }
     return calculateTaskXP(
@@ -147,18 +148,18 @@ export function TaskTableRow({
   const totalSkillXP = skillXP * linkedSkills.length
   const totalCharacterXP = characterXP * linkedCharacterCount
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick(task)
+    }
+  }
+
   return (
-    <tr
+    <TableRow
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      onClick={() => onClick?.(task.id)}
-      onKeyDown={(e) => e.key === 'Enter' && onClick?.(task.id)}
-      className={cn(
-        'group border-b border-border/40 transition-colors',
-        onClick && 'cursor-pointer hover:bg-muted/30',
-        isCompleted && 'opacity-50',
-        className
-      )}
+      onClick={handleClick}
+      className="cursor-pointer hover:bg-accent"
     >
       {/* Status accent bar */}
       <td className="py-3 pr-3">
@@ -173,7 +174,7 @@ export function TaskTableRow({
           {/* Icon */}
             <div className="flex">
               <div className="text-2xl">
-                  {renderIcon(task.icon, task.iconType, task.iconColor, 'w-6 h-6')}
+                  {renderIcon(task.icon.value, task.icon.value, task.icon.color, 'w-6 h-6')}
                 </div>
             </div>
           <span
@@ -200,12 +201,14 @@ export function TaskTableRow({
 
       {/* Start Date */}
       <td className="py-3 pr-4">
-        <DateCell dateString={task.startDate} />
+        <DateCell dateString={task.start_date} />
       </td>
 
       {/* Due Date */}
       <td className="py-3 pr-4">
-        <DateCell dateString={task.dueDate} />
+        <TableCell>
+          {task.due_date ? task.due_date : 'No due date'}
+        </TableCell>
       </td>
 
       {/* Priority */}
@@ -222,7 +225,7 @@ export function TaskTableRow({
       <td className="py-3 pr-4 text-right">
         <span className="inline-flex items-center justify-end gap-1 text-xs font-semibold text-amber-400">
           <Coins className="h-3.5 w-3.5" />
-          {task.goldReward}
+          {task.gold_reward}
         </span>
       </td>
 
@@ -241,6 +244,6 @@ export function TaskTableRow({
           {totalSkillXP}
         </span>
       </td>
-    </tr>
+    </TableRow>
   )
 }

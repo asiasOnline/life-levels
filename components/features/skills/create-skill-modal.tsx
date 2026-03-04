@@ -55,13 +55,13 @@ type CreateSkillFormValues = z.infer<typeof createSkillSchema>
 
 interface CreateSkillModalProps {
     isOpen: boolean
-    onOpenChange: (open: boolean) => void
+    onClose: (open: boolean) => void
     onSkillCreated: () => void
 }
 
 // ─── Main Component ───────────────────────
 
-export function CreateSkillModal({ isOpen, onOpenChange, onSkillCreated }: CreateSkillModalProps) {
+export function CreateSkillModal({ isOpen, onClose, onSkillCreated }: CreateSkillModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [tagInput, setTagInput] = useState("")
     
@@ -123,7 +123,7 @@ export function CreateSkillModal({ isOpen, onOpenChange, onSkillCreated }: Creat
       toast.success(`${values.title} has been added to your skill log.`)
 
       form.reset()
-      onOpenChange(false)
+      onClose(false)
       onSkillCreated()
     } catch (error) {
       console.error('Error creating skill:', error)
@@ -134,7 +134,7 @@ export function CreateSkillModal({ isOpen, onOpenChange, onSkillCreated }: Creat
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Skill</DialogTitle>
@@ -248,7 +248,7 @@ export function CreateSkillModal({ isOpen, onOpenChange, onSkillCreated }: Creat
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => onClose(false)}
                 disabled={isSubmitting}
               >
                 Cancel
