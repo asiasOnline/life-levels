@@ -36,7 +36,7 @@ export function getProgressPercentage(currentXP: number, xpToNextLevel: number):
  * Add XP to a skill and calculate new level
  */
 export function addXPToSkill(skill: Skill, xpGained: number): Skill {
-  const newCurrentXP = skill.currentXP + xpGained
+  const newCurrentXP = skill.current_xp + xpGained
   const newLevel = calculateLevelFromXP(newCurrentXP)
   const xpForCurrentLevel = calculateXPForLevel(newLevel)
   const xpForNextLevel = calculateXPForLevel(newLevel + 1)
@@ -44,8 +44,8 @@ export function addXPToSkill(skill: Skill, xpGained: number): Skill {
   return {
     ...skill,
     level: newLevel,
-    currentXP: newCurrentXP - xpForCurrentLevel,
-    xpToNextLevel: xpForNextLevel - xpForCurrentLevel,
-    updatedAt: new Date(),
+    current_xp: newCurrentXP - xpForCurrentLevel,
+    xp_to_next_level: xpForNextLevel - xpForCurrentLevel,
+    updated_at: new Date(),
   }
 }

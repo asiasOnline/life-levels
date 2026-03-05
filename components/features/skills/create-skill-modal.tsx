@@ -98,11 +98,11 @@ export function CreateSkillModal({ isOpen, onClose, onSkillCreated }: CreateSkil
     }
   }
 
-  const handleIconChange = (icon: string, iconType: IconType, iconColor?: string) => {
+  const handleIconChange = (icon: string, icon_type: IconType, icon_color?: string) => {
     form.setValue('icon', icon)
-    form.setValue('iconType', iconType)
-    if (iconColor) {
-      form.setValue('iconColor', iconColor)
+    form.setValue('iconType', icon_type)
+    if (icon_color) {
+      form.setValue('iconColor', icon_color)
     }
   }
 
@@ -115,8 +115,8 @@ export function CreateSkillModal({ isOpen, onClose, onSkillCreated }: CreateSkil
         title: values.title,
         description: values.description,
         icon: values.icon || DEFAULT_ICON,
-        iconType: values.iconType,
-        iconColor: values.iconColor,
+        icon_type: values.iconType,
+        icon_color: values.iconColor,
         tags: values.tags,
       })
 

@@ -45,10 +45,10 @@ export function validateSkillCount(skillIds: string[]): boolean {
  * Check if a task is overdue
  */
 export function isTaskOverdue(task: Task): boolean {
-  if (!task.dueDate || task.status === TASK_STATUS.COMPLETED) {
+  if (!task.due_date || task.status === TASK_STATUS.COMPLETED) {
     return false;
   }
-  return new Date(task.dueDate) < new Date();
+  return new Date(task.due_date) < new Date();
 }
 
 /**

@@ -8,9 +8,85 @@ export interface IconData {
   color?: string
 }
 
+export interface CharacterAvatarData {
+  archetype_id: string
+  skin_tone: string
+  clothing_color: string | null // null = clothing inherits character's color theme
+}
+
 export interface Database {
   public: {
     Tables: {
+      characters: {
+        Row: {
+          id: string
+          user_id: string
+          icon: IconData
+          title: string
+          color_theme: string
+          description: string | null
+          avatar: CharacterAvatarData | null
+          level: number
+          current_xp: number
+          xp_to_next_level: number
+          total_xp: number
+          is_archived: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          icon?: IconData
+          title: string
+          color_theme: string
+          description?: string | null
+          avatar?: CharacterAvatarData | null
+          level?: number
+          current_xp?: number
+          xp_to_next_level?: number
+          total_xp?: number
+          is_archived?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          icon?: IconData
+          title?: string
+          color_theme?: string
+          description?: string | null
+          avatar?: CharacterAvatarData | null
+          level?: number
+          current_xp?: number
+          xp_to_next_level?: number
+          total_xp?: number
+          is_archived?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      skill_characters: {
+        Row: {
+          id: string
+          skill_id: string
+          character_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          skill_id: string
+          character_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          skill_id?: string
+          character_id?: string
+          created_at?: string
+        }
+      }
       skills: {
         Row: {
           id: string
@@ -24,7 +100,6 @@ export interface Database {
           current_xp: number
           xp_to_next_level: number
           tags: string[]
-          character_id: string | null
           created_at: string
           updated_at: string
         }

@@ -15,8 +15,8 @@ export type AvailableIconName = typeof AVAILABLE_ICONS[number]
 /**
  * Get icon component by name
  */
-export function getIconComponent(iconName: string): IconType | null {
-  const IconComponent = (FaIcons as any)[iconName]
+export function getIconComponent(icon_name: string): IconType | null {
+  const IconComponent = (FaIcons as any)[icon_name]
   return IconComponent || null
 }
 
@@ -25,22 +25,22 @@ export function getIconComponent(iconName: string): IconType | null {
  */
 export function renderIcon(
   icon: string | undefined,
-  iconType: string,
-  iconColor: string | undefined,
+  icon_type: string,
+  icon_color: string | undefined,
   className?: string
 ): React.ReactNode {
-  if (iconType === 'emoji') {
+  if (icon_type === 'emoji') {
     return <span className={className}>{icon || '⭐'}</span>
   }
   
-  if (iconType === 'fontawesome') {
+  if (icon_type === 'fontawesome') {
     const IconComponent = getIconComponent(icon || 'FaCircleArrowUp')
     if (IconComponent) {
-      return <IconComponent className={className} style={{ color: iconColor }} />
+      return <IconComponent className={className} style={{ color: icon_color }} />
     }
   }
   
-  if (iconType === 'image' && icon) {
+  if (icon_type === 'image' && icon) {
     return (
       <img 
         src={icon} 
@@ -53,5 +53,5 @@ export function renderIcon(
   
   // Fallback
   const FallbackIcon = FaIcons.FaCircleArrowUp
-  return <FallbackIcon className={className} style={{ color: iconColor }} />
+  return <FallbackIcon className={className} style={{ color: icon_color }} />
 }

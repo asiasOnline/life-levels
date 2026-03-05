@@ -48,7 +48,6 @@ export default function SkillsPage() {
         currentXP: row.current_xp,
         xpToNextLevel: row.xp_to_next_level,
         tags: row.tags,
-        characterId: row.character_id || undefined,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
       }))

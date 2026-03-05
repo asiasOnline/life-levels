@@ -9,7 +9,7 @@ import {
 } from '@/lib/types/icon'
 
 // =======================================
-// DATABASE & INPUT TYPES
+// DATABASE & INPUT TYPE
 // =======================================
 
 type SkillRow = Database['public']['Tables']['skills']['Row']
@@ -20,8 +20,8 @@ export interface CreateSkillInput {
   title: string
   description?: string
   icon?: string
-  iconType: IconType
-  iconColor?: string
+  icon_type: IconType
+  icon_color?: string
   tags?: string[]
 }
 
@@ -64,8 +64,8 @@ export async function createSkill(input: CreateSkillInput): Promise<SkillRow> {
     title: input.title,
     description: input.description || null,
     icon: input.icon || DEFAULT_ICON,
-    icon_type: input.iconType || DEFAULT_ICON_TYPE,
-    icon_color: input.iconColor || DEFAULT_ICON_COLOR,
+    icon_type: input.icon_type || DEFAULT_ICON_TYPE,
+    icon_color: input.icon_color || DEFAULT_ICON_COLOR,
     tags: input.tags || [],
     level: 1,
     current_xp: 0,
@@ -97,8 +97,8 @@ export async function updateSkill(id: string, updates: Partial<CreateSkillInput>
     title: updates.title,
     description: updates.description,
     icon: updates.icon,
-    icon_type: updates.iconType,
-    icon_color: updates.iconColor,
+    icon_type: updates.icon_type,
+    icon_color: updates.icon_color,
     tags: updates.tags,
   }
 

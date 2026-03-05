@@ -12,7 +12,7 @@ interface SkillTableRowProps {
 }
 
 export function SkillTableRow({ skill, onClick }: SkillTableRowProps) {
-  const progressPercentage = getProgressPercentage(skill.currentXP, skill.xpToNextLevel)
+  const progressPercentage = getProgressPercentage(skill.current_xp, skill.xp_to_next_level)
 
   const handleClick = () => {
     if (onClick) {
@@ -26,12 +26,12 @@ export function SkillTableRow({ skill, onClick }: SkillTableRowProps) {
         onClick={handleClick}
     >
     {/* Icon */}
-      <TableCell className="text-2xl w-16">{skill.icon}</TableCell>
+      <TableCell className="text-2xl w-16">{skill.icon.icon}</TableCell>
 
       <TableCell className="font-medium">{skill.title}</TableCell>
       <TableCell>{skill.level}</TableCell>
       <TableCell>
-        <Badge variant="secondary">{skill.currentXP} XP</Badge>
+        <Badge variant="secondary">{skill.current_xp} XP</Badge>
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">

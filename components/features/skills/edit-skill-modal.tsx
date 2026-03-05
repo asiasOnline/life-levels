@@ -61,9 +61,9 @@ export function EditSkillModal({
     defaultValues: {
       title: skill.title,
       description: skill.description || '',
-      icon: skill.icon,
-      iconType: skill.iconType,
-      iconColor: skill.iconColor,
+      icon: skill.icon.icon,
+      iconType: skill.icon.icon_type,
+      iconColor: skill.icon.icon_color,
       tags: skill.tags || [],
     },
   })
@@ -73,9 +73,9 @@ export function EditSkillModal({
     form.reset({
       title: skill.title,
       description: skill.description || '',
-      icon: skill.icon,
-      iconType: skill.iconType,
-      iconColor: skill.iconColor,
+      icon: skill.icon.icon,
+      iconType: skill.icon.icon_type,
+      iconColor: skill.icon.icon_color,
       tags: skill.tags || [],
     })
   }, [skill, form])
@@ -101,11 +101,11 @@ export function EditSkillModal({
     }
   }
 
-  const handleIconChange = (icon: string, iconType: IconType, iconColor?: string) => {
+  const handleIconChange = (icon: string, icon_type: IconType, icon_color?: string) => {
     form.setValue('icon', icon)
-    form.setValue('iconType', iconType)
-    if (iconColor) {
-      form.setValue('iconColor', iconColor)
+    form.setValue('iconType', icon_type)
+    if (icon_color) {
+      form.setValue('iconColor', icon_color)
     }
   }
 
@@ -117,8 +117,8 @@ export function EditSkillModal({
         title: values.title,
         description: values.description,
         icon: values.icon,
-        iconType: values.iconType,
-        iconColor: values.iconColor,
+        icon_type: values.iconType,
+        icon_color: values.iconColor,
         tags: values.tags,
       })
 

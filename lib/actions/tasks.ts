@@ -30,14 +30,14 @@ export interface CreateTaskInput {
     title: string
     description?: string
     icon?: string
-    iconType: IconType
-    iconColor?: string
+    icon_type: IconType
+    icon_color?: string
     status?: TaskStatus
     priority: TaskPriority
     difficulty: TaskDifficulty
     start_date?: string
     due_date?: string
-    skillIds: string[] // 1-3 skill IDs required
+    skill_ids: string[] // 1-3 skill IDs required
     gold_reward?: number
     use_custom_xp?: boolean
     custom_character_xp?: number
@@ -48,8 +48,8 @@ export interface UpdateTaskInput {
     title?: string
     description?: string
     icon?: string
-    iconType?: IconType
-    iconColor?: string
+    icon_type?: IconType
+    icon_color?: string
     status?: TaskStatus
     priority?: TaskPriority
     difficulty?: TaskDifficulty
@@ -159,7 +159,7 @@ export async function createTask(input: CreateTaskInput): Promise<TaskRow> {
   if (!user) throw new Error('User not authenticated')
 
   // Validate skill count (1-3)
-  if (input.skillIds.length < 1 || input.skillIds.length > 3) {
+  if (input.skill_ids.length < 1 || input.skill_ids.length > 3) {
     throw new Error('Tasks must be linked to 1-3 skills')
   }
 
@@ -169,9 +169,9 @@ export async function createTask(input: CreateTaskInput): Promise<TaskRow> {
     title: input.title,
     description: input.description || null,
     icon: {
-      type: input.iconType || DEFAULT_ICON_TYPE,
+      type: input.icon_type || DEFAULT_ICON_TYPE,
       value: input.icon || DEFAULT_ICON,
-      color: input.iconColor || DEFAULT_ICON_COLOR,
+      color: input.icon_color || DEFAULT_ICON_COLOR,
     },
     status: input.status || 'backlog',
     priority: input.priority,
@@ -197,7 +197,7 @@ export async function createTask(input: CreateTaskInput): Promise<TaskRow> {
   }
 
   // Insert task-skill relationships
-  const taskSkills = input.skillIds.map((skill_id) => ({
+  const taskSkills = input.skill_ids.map((skill_id) => ({
     task_id: task.id,
     skill_id,
   }))
@@ -228,11 +228,11 @@ export async function updateTask(id: string, updates: UpdateTaskInput): Promise<
   
   if (updates.title !== undefined) taskUpdate.title = updates.title
   if (updates.description !== undefined) taskUpdate.description = updates.description
-  if (updates.icon !== undefined || updates.iconType !== undefined) {
+  if (updates.icon !== undefined || updates.icon_type !== undefined) {
     taskUpdate.icon = {
-      type: updates.iconType || 'emoji',
+      type: updates.icon_type || 'emoji',
       value: updates.icon || DEFAULT_ICON,
-      color: updates.iconColor,
+      color: updates.icon_color,
     }
   }
   if (updates.status !== undefined) taskUpdate.status = updates.status

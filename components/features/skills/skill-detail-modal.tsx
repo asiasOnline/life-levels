@@ -58,7 +58,7 @@ export function SkillDetailModal({
 
   if (!skill) return null
 
-  const progressPercentage = getProgressPercentage(skill.currentXP, skill.xpToNextLevel)
+  const progressPercentage = getProgressPercentage(skill.current_xp, skill.xp_to_next_level)
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -86,7 +86,7 @@ export function SkillDetailModal({
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <div className="text-5xl">
-                  {renderIcon(skill.icon, skill.iconType, skill.iconColor, 'w-12 h-12')}
+                  {renderIcon(skill.icon.icon, skill.icon.icon_type, skill.icon.icon_color, 'w-12 h-12')}
                 </div>
                 <div>
                   <DialogTitle className="text-2xl">{skill.title}</DialogTitle>
@@ -135,12 +135,12 @@ export function SkillDetailModal({
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">XP Progress</span>
                     <span className="font-medium">
-                      {skill.currentXP} / {skill.xpToNextLevel} XP
+                      {skill.current_xp} / {skill.xp_to_next_level} XP
                     </span>
                   </div>
                   <Progress value={progressPercentage} className="h-3" />
                   <p className="text-xs text-muted-foreground text-right">
-                    {skill.xpToNextLevel - skill.currentXP} XP to Level {skill.level + 1}
+                    {skill.xp_to_next_level - skill.current_xp} XP to Level {skill.level + 1}
                   </p>
                 </div>
               </div>
@@ -166,13 +166,13 @@ export function SkillDetailModal({
                   <div>
                     <p className="text-muted-foreground">Created</p>
                     <p className="font-medium">
-                      {skill.createdAt.toLocaleDateString()}
+                      {skill.created_at.toLocaleDateString()}
                     </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Last Updated</p>
                     <p className="font-medium">
-                      {skill.updatedAt.toLocaleDateString()}
+                      {skill.updated_at.toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -196,7 +196,7 @@ export function SkillDetailModal({
                       <div>
                         <h4 className="font-medium">Character</h4>
                         <p className="text-sm text-muted-foreground">
-                          {skill.characterId ? 'Linked to character' : 'Not linked'}
+                          
                         </p>
                       </div>
                     </div>

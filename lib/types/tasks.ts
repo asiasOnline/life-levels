@@ -71,21 +71,22 @@ export const BASE_XP_VALUES: Record<TaskDifficulty, number> = {
 // =====================================================
 // MAIN TYPE
 // =====================================================
-export interface Task extends IconData {
+export interface Task {
   id: string;
   userId: string;
+  icon: IconData;
   title: string;
   description?: string;
   status: TaskStatus;
   difficulty: TaskDifficulty;
   priority: TaskPriority;
-  startDate?: Date;
-  dueDate?: Date;
-  completedAt?: Date;
-  goldReward: number;
-  useCustomXP: boolean;
-  customCharacterXP?: number;
-  customSkillXP?: number;
-  createdAt: Date;
-  updatedAt: Date;
+  start_date?: Date;
+  due_date?: Date;
+  completed_at?: Date;
+  gold_reward: number;
+  use_custom_xp: boolean;
+  custom_character_xp?: number;
+  custom_skill_xp?: number;
+  created_at: Date;
+  updated_at: Date;
 }

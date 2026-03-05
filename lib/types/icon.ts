@@ -2,8 +2,8 @@ export type IconType = 'emoji' | 'fontawesome' | 'image';
 
 export interface IconData {
     icon: string //Emoji character, Icon name, or Image URL
-    iconType: IconType
-    iconColor?: string // Hex color for icons
+    icon_type: IconType
+    icon_color?: string // Hex color for icons
 }
 
 // Default Values

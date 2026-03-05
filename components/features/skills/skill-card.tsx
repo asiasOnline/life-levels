@@ -17,7 +17,7 @@ interface SkillCardProps {
 }
 
 export function SkillCard ({ skill, onClick, className }: SkillCardProps) {
-  const progressPercentage = getProgressPercentage(skill.currentXP, skill.xpToNextLevel)
+  const progressPercentage = getProgressPercentage(skill.current_xp, skill.xp_to_next_level)
 
   const handleClick = () => {
     if (onClick) {
@@ -35,7 +35,7 @@ export function SkillCard ({ skill, onClick, className }: SkillCardProps) {
       <CardHeader className='min-h-12'>
         <div className='flex items-start justify-between space-x-4'>
           <div className="text-2xl">
-            {renderIcon(skill.icon, skill.iconType, skill.iconColor, 'w-6 h-6')}
+            {renderIcon(skill.icon.icon, skill.icon.icon_type, skill.icon.icon_color, 'w-6 h-6')}
           </div>
           <CardTitle className='leading-[150%]'>{skill.title}</CardTitle>
           <Badge variant="secondary">LVL | {skill.level}</Badge>
@@ -49,11 +49,11 @@ export function SkillCard ({ skill, onClick, className }: SkillCardProps) {
         {/* XP Progress */}
         <div className="space-y-2 pt-4">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">{skill.xpToNextLevel - skill.currentXP} to level up!</div>
-            <div className="text-sm text-muted-foreground">XP: {skill.currentXP} / {skill.xpToNextLevel}</div>
+            <div className="text-sm text-muted-foreground">{skill.xp_to_next_level - skill.current_xp} to level up!</div>
+            <div className="text-sm text-muted-foreground">XP: {skill.current_xp} / {skill.xp_to_next_level}</div>
           </div>
           <div className='flex items-center justify-between gap-4'>
-            <span className="text-sm text-muted-foreground">{Math.floor((skill.currentXP / skill.xpToNextLevel) * 100)}%</span>
+            <span className="text-sm text-muted-foreground">{Math.floor((skill.current_xp / skill.xp_to_next_level) * 100)}%</span>
             <Progress value={progressPercentage} className="h-2" />
           </div>
         </div>
