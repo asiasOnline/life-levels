@@ -93,9 +93,7 @@ export interface Database {
           user_id: string
           title: string
           description: string | null
-          icon: string
-          icon_type: string
-          icon_color: string
+          icon: IconData
           level: number
           current_xp: number
           xp_to_next_level: number
@@ -108,9 +106,7 @@ export interface Database {
           user_id: string
           title: string
           description?: string | null
-          icon?: string
-          icon_type?: string
-          icon_color?: string
+          icon: IconData
           level?: number
           current_xp?: number
           xp_to_next_level?: number
@@ -124,9 +120,7 @@ export interface Database {
           user_id?: string
           title?: string
           description?: string | null
-          icon?: string
-          icon_type?: string
-          icon_color?: string
+          icon: IconData
           level?: number
           current_xp?: number
           xp_to_next_level?: number
