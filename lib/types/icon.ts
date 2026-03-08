@@ -7,4 +7,4 @@ export interface IconData {
 }
 
 // Default Value
-export const DEFAULT_ICON = {type: "fontawesome", color: "#3b82f6", value: 'FaCircleArrowUp'}
+export const DEFAULT_ICON = {icon: 'FaCircleArrowUp', icon_type: "fontawesome", icon_color: "#3b82f6",}
