@@ -97,9 +97,7 @@ type CreateTaskFormValues = z.infer<typeof createTaskSchema>
 interface Skill {
   id: string
   title: string
-  icon: string
-  icon_type: string
-  icon_color: string
+  icon: { type: string; value: string; color?: string }
   level: number
 }
 
@@ -161,7 +159,7 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
       const supabase = createClient()
       const { data, error } = await supabase
         .from('skills')
-        .select('id, title, icon, icon_type, icon_color, level')
+        .select('id, title, icon, level')
         .order('title')
 
       if (error) throw error

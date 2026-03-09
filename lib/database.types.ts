@@ -120,7 +120,7 @@ export interface Database {
           user_id?: string
           title?: string
           description?: string | null
-          icon: IconData
+          icon?: IconData
           level?: number
           current_xp?: number
           xp_to_next_level?: number

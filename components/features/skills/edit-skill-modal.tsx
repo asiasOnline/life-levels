@@ -61,9 +61,9 @@ export function EditSkillModal({
     defaultValues: {
       title: skill.title,
       description: skill.description || '',
-      icon: skill.icon.icon,
-      iconType: skill.icon.icon_type,
-      iconColor: skill.icon.icon_color,
+      icon: skill.icon.value,
+      iconType: skill.icon.type,
+      iconColor: skill.icon.color,
       tags: skill.tags || [],
     },
   })
@@ -73,9 +73,9 @@ export function EditSkillModal({
     form.reset({
       title: skill.title,
       description: skill.description || '',
-      icon: skill.icon.icon,
-      iconType: skill.icon.icon_type,
-      iconColor: skill.icon.icon_color,
+      icon: skill.icon.value,
+      iconType: skill.icon.type,
+      iconColor: skill.icon.color,
       tags: skill.tags || [],
     })
   }, [skill, form])

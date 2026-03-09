@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types'
 import { calculateXPForLevel } from '@/lib/utils/skills'
-import { IconData, DEFAULT_ICON } from '@/lib/types/icon'
+import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR } from '@/lib/types/icon'
 
 // =======================================
 // DATABASE & INPUT TYPE
@@ -14,7 +14,9 @@ type SkillUpdate = Database['public']['Tables']['skills']['Update']
 export interface CreateSkillInput {
   title: string
   description?: string
-  icon?: IconData
+  icon?: string
+  icon_type?: IconType
+  icon_color?: string
   tags?: string[]
 }
 
@@ -56,7 +58,11 @@ export async function createSkill(input: CreateSkillInput): Promise<SkillRow> {
     user_id: user.id,
     title: input.title,
     description: input.description || null,
-    icon: input.icon ?? DEFAULT_ICON,
+    icon: {
+      type: input.icon_type || DEFAULT_ICON_TYPE,
+      value: input.icon || DEFAULT_ICON,
+      color: input.icon_color || DEFAULT_ICON_COLOR,
+    },
     tags: input.tags || [],
     level: 1,
     current_xp: 0,
@@ -87,8 +93,15 @@ export async function updateSkill(id: string, updates: Partial<CreateSkillInput>
   const skillUpdate: SkillUpdate = {
     title: updates.title,
     description: updates.description,
-    icon: updates.icon,
     tags: updates.tags,
+  }
+
+  if (updates.icon !== undefined || updates.icon_type !== undefined) {
+    skillUpdate.icon = {
+      type: updates.icon_type || DEFAULT_ICON_TYPE,
+      value: updates.icon || DEFAULT_ICON,
+      color: updates.icon_color,
+    }
   }
 
   const { data, error } = await supabase

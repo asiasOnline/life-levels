@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
-import { IconType } from "@/lib/types/icon";
 import { ViewMode } from "@/lib/types";
 import { Skill } from "@/lib/types/skills";
 import { SkillCard } from "@/components/features/skills/skill-card";
@@ -42,14 +41,12 @@ export default function SkillsPage() {
         title: row.title,
         description: row.description || undefined,
         icon: row.icon,
-        iconType: row.icon_type as IconType,
-        iconColor: row.icon_color,
         level: row.level,
-        currentXP: row.current_xp,
-        xpToNextLevel: row.xp_to_next_level,
+        current_xp: row.current_xp,
+        xp_to_next_level: row.xp_to_next_level,
         tags: row.tags,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at),
+        created_at: new Date(row.created_at),
+        updated_at: new Date(row.updated_at),
       }))
       
       setSkills(skillsData)

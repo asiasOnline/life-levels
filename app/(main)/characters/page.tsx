@@ -20,14 +20,14 @@ export default function CharactersPage() {
       <>
         <PageHeader 
         title="Characters"
-        subtitle="Track long-term mastery and capability development across all life contexts, with clear progression milestones that unlock meaningful rewards."
+        subtitle="Create characters to define different versions of yourself."
       />
       {/* Character Log Container */}
       <ItemContainer>
         <ItemContainerHeader 
-          title="Skill Log"
-          searchPlaceholder="Search skills..."
-          addButtonLabel="New Skill"
+          title="Character Log"
+          searchPlaceholder="Search characters..."
+          addButtonLabel="New Character"
           onAddNew={() => setIsCreateModalOpen(true)}
           onSearch={(query) => console.log('Search:', query)}
           onFilterChange={() => console.log('Filter')}

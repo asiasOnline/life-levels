@@ -86,7 +86,7 @@ export function SkillDetailModal({
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <div className="text-5xl">
-                  {renderIcon(skill.icon.icon, skill.icon.icon_type, skill.icon.icon_color, 'w-12 h-12')}
+                  {renderIcon(skill.icon.value, skill.icon.type, skill.icon.color, 'w-12 h-12')}
                 </div>
                 <div>
                   <DialogTitle className="text-2xl">{skill.title}</DialogTitle>

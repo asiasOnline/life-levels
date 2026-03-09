@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types'
 import { 
-  IconData, 
+  IconType, 
   DEFAULT_ICON, 
   DEFAULT_ICON_TYPE, 
   DEFAULT_ICON_COLOR  
@@ -30,7 +30,7 @@ export interface CreateTaskInput {
     title: string
     description?: string
     icon?: string
-    icon_type: IconType
+    icon_type?: IconType
     icon_color?: string
     status?: TaskStatus
     priority: TaskPriority
@@ -72,7 +72,7 @@ export interface TaskWithSkills extends TaskRow {
       id: string
       title: string
       icon: string
-      icon_type: string
+      icon_type: IconType
       icon_color: string
       level: number
     }
@@ -99,8 +99,6 @@ export async function fetchTasks(): Promise<TaskWithSkills[]> {
           id,
           title,
           icon,
-          icon_type,
-          icon_color,
           level
         )
       )
@@ -131,8 +129,6 @@ export async function fetchTaskById(id: string): Promise<TaskWithSkills | null> 
           id,
           title,
           icon,
-          icon_type,
-          icon_color,
           level
         )
       )

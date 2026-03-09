@@ -35,7 +35,7 @@ export function SkillCard ({ skill, onClick, className }: SkillCardProps) {
       <CardHeader className='min-h-12'>
         <div className='flex items-start justify-between space-x-4'>
           <div className="text-2xl">
-            {renderIcon(skill.icon.icon, skill.icon.icon_type, skill.icon.icon_color, 'w-6 h-6')}
+            {renderIcon(skill.icon.value, skill.icon.type, skill.icon.color, 'w-6 h-6')}
           </div>
           <CardTitle className='leading-[150%]'>{skill.title}</CardTitle>
           <Badge variant="secondary">LVL | {skill.level}</Badge>

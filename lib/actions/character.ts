@@ -1,11 +1,12 @@
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types'
 import { 
-  IconType, 
+  IconData, 
   DEFAULT_ICON, 
   DEFAULT_ICON_TYPE, 
   DEFAULT_ICON_COLOR  
 } from '@/lib/types/icon'
+import { CharacterAvatarData } from '@/lib/types/character'
 
 // =======================================
 // DATABASE & INPUT TYPE
@@ -18,10 +19,9 @@ type CharacterUpdate = Database['public']['Tables']['characters']['Update']
 export interface CreateCharacterInput {
   title: string
   description?: string
-  icon?: string
-  icon_type: IconType
-  icon_color?: string
+  icon?: IconData
   color_theme: string
+  avatar?: CharacterAvatarData | null 
 }
 
 // =======================================
@@ -29,6 +29,6 @@ export interface CreateCharacterInput {
 // =======================================
 
 /** -------------------------------------
- * Fetch all skills for the current user
+ * Fetch all characters for the current user
  * --------------------------------------
  */
