@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { renderIcon } from '@/lib/utils/icon';
 import { Skill } from '@/lib/types/skills';
 import { getProgressPercentage } from '@/lib/utils/skills';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +12,10 @@ interface SkillTableRowProps {
   onClick: (skill: Skill) => void;
 }
 
-export function SkillTableRow({ skill, onClick }: SkillTableRowProps) {
+export function SkillTableRow({ 
+  skill, 
+  onClick 
+}: SkillTableRowProps) {
   const progressPercentage = getProgressPercentage(skill.current_xp, skill.xp_to_next_level)
 
   const handleClick = () => {
@@ -22,11 +26,13 @@ export function SkillTableRow({ skill, onClick }: SkillTableRowProps) {
 
   return (
     <TableRow 
-        className="cursor-pointer hover:bg-accent"
         onClick={handleClick}
+        className="cursor-pointer hover:bg-accent"
     >
     {/* Icon */}
-      <TableCell className="text-2xl w-16">{skill.icon.icon}</TableCell>
+      <TableCell className="text-2xl w-16">
+        {renderIcon(skill.icon.value, skill.icon.type, skill.icon.color, 'w-6 h-6')}
+      </TableCell>
 
       <TableCell className="font-medium">{skill.title}</TableCell>
       <TableCell>{skill.level}</TableCell>

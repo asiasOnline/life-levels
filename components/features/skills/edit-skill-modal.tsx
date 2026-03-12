@@ -40,12 +40,20 @@ const editSkillSchema = z.object({
 
 type EditSkillFormValues = z.infer<typeof editSkillSchema>
 
+// =======================================
+// PROPS
+// =======================================
+
 interface EditSkillModalProps {
   skill: Skill
   open: boolean
   onOpenChange: (open: boolean) => void
   onSkillUpdated: () => void
 }
+
+// =======================================
+// MAIN COMPONENT
+// =======================================
 
 export function EditSkillModal({
   skill,

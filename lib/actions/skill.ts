@@ -1,7 +1,12 @@
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types'
 import { calculateXPForLevel } from '@/lib/utils/skills'
-import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR } from '@/lib/types/icon'
+import { 
+  IconType, 
+  DEFAULT_ICON, 
+  DEFAULT_ICON_TYPE, 
+  DEFAULT_ICON_COLOR 
+} from '@/lib/types/icon'
 
 // =======================================
 // DATABASE & INPUT TYPE

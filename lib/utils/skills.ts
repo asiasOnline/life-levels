@@ -1,5 +1,3 @@
-// components/features/skills/utils.ts
-
 import { Skill } from "../types/skills"
 
 /**

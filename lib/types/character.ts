@@ -11,16 +11,15 @@ export interface CharacterAvatarData {
 // =================================
 export interface Character {
     id: string;
-    userId: string;
     title: string;
     icon: IconData
     description?: string;
     color_theme: string;
     avatar: CharacterAvatarData | null;
     level: number;
-    current_xP: number;
+    current_xp: number;
     xp_to_next_level: number;
-    total_xP: number;
+    total_xp: number;
     is_archived: boolean;
     created_at: Date;
     updated_at: Date;

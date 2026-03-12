@@ -5,7 +5,14 @@ import { Skill } from '@/lib/types/skills'
 import { getProgressPercentage } from '@/lib/utils/skills'
 import { renderIcon } from '@/lib/utils/icon'
 import { Badge } from '@/components/ui/badge'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter} from '@/components/ui/card'
+import {
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle, 
+  CardFooter
+} from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 
@@ -16,7 +23,12 @@ interface SkillCardProps {
   className?: string;
 }
 
-export function SkillCard ({ skill, onClick, className }: SkillCardProps) {
+export function SkillCard ({ 
+  skill, 
+  onClick, 
+  className 
+}: SkillCardProps) 
+{
   const progressPercentage = getProgressPercentage(skill.current_xp, skill.xp_to_next_level)
 
   const handleClick = () => {
@@ -26,10 +38,11 @@ export function SkillCard ({ skill, onClick, className }: SkillCardProps) {
   }
 
   return (
-    <Card className={cn(
+    <Card 
+      onClick={handleClick}
+      className={cn(
       'w-full max-w-120 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.005]', 
       className)}
-      onClick={handleClick}
       >
       {/* Icon, Title & Level */}
       <CardHeader className='min-h-12'>

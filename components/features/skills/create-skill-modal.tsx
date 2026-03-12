@@ -61,7 +61,11 @@ interface CreateSkillModalProps {
 
 // ─── Main Component ───────────────────────
 
-export function CreateSkillModal({ isOpen, onClose, onSkillCreated }: CreateSkillModalProps) {
+export function CreateSkillModal({ 
+  isOpen, 
+  onClose, 
+  onSkillCreated 
+}: CreateSkillModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [tagInput, setTagInput] = useState("")
     

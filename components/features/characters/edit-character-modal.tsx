@@ -1,38 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { 
-  Field,
-  FieldLabel
-} from '@/components/ui/field'
+import * as z from 'zod'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { IconPicker } from '@/components/layout/app/icon-picker'
-import { 
-  IconType, 
-  DEFAULT_ICON, 
-  DEFAULT_ICON_TYPE, 
-  DEFAULT_ICON_COLOR 
-} from "@/lib/types/icon"
-import { CharacterAvatarData } from '@/lib/types/character'
-import { createCharacter } from '@/lib/actions/character'
+import { IconData, IconType } from '@/lib/types/icon'
+import { Character, CharacterAvatarData } from '@/lib/types/character'
+import { updateCharacter } from '@/lib/actions/character'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
 // =======================================
-// CONSTANTS
+// CONSTANTS (mirrors CreateCharacterModal)
 // =======================================
 
 const COLOR_PALETTE = [
@@ -59,7 +51,6 @@ const SKIN_TONES = [
   { value: '#4A2C15', label: 'Deep'         },
 ]
 
-// Avatar archetypes — swap emoji for real SVG assets when the library is ready
 const AVATAR_ARCHETYPES = [
   { id: 'warrior',   label: 'Warrior',   emoji: '⚔️'  },
   { id: 'scholar',   label: 'Scholar',   emoji: '📚'  },
@@ -75,125 +66,144 @@ const AVATAR_ARCHETYPES = [
 // SCHEMA
 // =======================================
 
-const createCharacterSchema = z.object({
+const editCharacterSchema = z.object({
   title: z.string()
     .min(1, 'Title is required')
     .max(50, 'Title must be 50 characters or fewer'),
-  icon: z
-      .string()
-      .optional(),
-      iconType: z
-      .enum(['emoji', 'fontawesome', 'image']),
-      iconColor: z
-      .string()
-      .optional(),
+  icon: z.string().optional(),
+    iconType: z.enum(['emoji', 'fontawesome', 'image']),
+    iconColor: z.string().optional(),
   color_theme: z.string()
     .regex(/^#[0-9A-Fa-f]{6}$/, 'Please select a color theme'),
-  description: z.string().max(500, 'Description must be 500 characters or fewer').optional(),
+  description: z.string()
+    .max(500, 'Description must be 500 characters or fewer')
+    .optional(),
 })
 
-type CreateCharacterFormValues = z.infer<typeof createCharacterSchema>
+type EditCharacterFormValues = z.infer<typeof editCharacterSchema>
 
 // =======================================
 // PROPS
 // =======================================
 
-interface CreateCharacterModalProps {
-  isOpen: boolean
-  onClose: (open: boolean) => void
-  onCharacterCreated?: () => void
+interface EditCharacterModalProps {
+  character: Character
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onCharacterUpdated: () => void
 }
 
 // =======================================
-// COMPONENT
+// MAIN COMPONENT
 // =======================================
 
-export function CreateCharacterModal({
-  isOpen,
-  onClose,
-  onCharacterCreated,
-}: CreateCharacterModalProps) {
-  const [activeTab, setActiveTab]           = useState<'basics' | 'avatar'>('basics')
-  const [selectedArchetype, setSelectedArchetype] = useState<string | null>(null)
-  const [skinTone, setSkinTone]             = useState<string>(SKIN_TONES[0].value)
-  const [clothingColor, setClothingColor]   = useState<string | null>(null) // null = follows color_theme
-  const [isSubmitting, setIsSubmitting]     = useState(false)
-  const [submitError, setSubmitError]       = useState<string | null>(null)
+export function EditCharacterModal({
+  character,
+  open,
+  onOpenChange,
+  onCharacterUpdated,
+}: EditCharacterModalProps) {
+  const existingAvatar = character.avatar as CharacterAvatarData | null
+  const existingIcon   = character.icon   as IconData
 
-  const form = useForm<CreateCharacterFormValues>({
-    resolver: zodResolver(createCharacterSchema),
+  // ── Local state for fields outside RHF ──────────────────────────────────
+  const [icon, setIcon]                         = useState<IconData>(existingIcon)
+  const [selectedArchetype, setSelectedArchetype] = useState<string | null>(
+    existingAvatar?.archetype_id ?? null
+  )
+  const [skinTone, setSkinTone]                 = useState<string>(
+    existingAvatar?.skin_tone ?? SKIN_TONES[0].value
+  )
+  // null = follow color_theme; string = explicit override
+  const [clothingColor, setClothingColor]       = useState<string | null>(
+    existingAvatar?.clothing_color ?? null
+  )
+  const [isSubmitting, setIsSubmitting]         = useState(false)
+
+  const form = useForm<EditCharacterFormValues>({
+    resolver: zodResolver(editCharacterSchema),
     defaultValues: {
-      title: '',
-      icon: DEFAULT_ICON,
-      iconType: DEFAULT_ICON_TYPE,
-      iconColor: DEFAULT_ICON_COLOR,
-      color_theme: COLOR_PALETTE[0].hex,
-      description: '',
+      title:       character.title,
+      icon: character.icon.value,
+      iconType: character.icon.type,
+      iconColor: character.icon.color,
+      color_theme: character.color_theme,
+      description: character.description || '',
     },
   })
 
-  const selectedColor = form.watch('color_theme')
+  // Reset all state when the character prop changes (e.g. opening on a different character)
+  useEffect(() => {
+    const latestAvatar = character.avatar as CharacterAvatarData | null
+    const latestIcon   = character.icon   as IconData
 
-  // The effective clothing color — either manually set or inheriting the character's theme
-  const effectiveClothingColor = clothingColor ?? selectedColor
+    form.reset({
+      title:       character.title,
+      icon: character.icon.value,
+      iconType: character.icon.type,
+      iconColor: character.icon.color,
+      color_theme: character.color_theme,
+      description: character.description || '',
+    })
+    setIcon(latestIcon)
+    setSelectedArchetype(latestAvatar?.archetype_id ?? null)
+    setSkinTone(latestAvatar?.skin_tone ?? SKIN_TONES[0].value)
+    setClothingColor(latestAvatar?.clothing_color ?? null)
+  }, [character, form])
 
-  function handleClose() {
-    form.reset()
-    setSelectedArchetype(null)
-    setSkinTone(SKIN_TONES[0].value)
-    setClothingColor(null)
-    setActiveTab('basics')
-    setSubmitError(null)
-    onClose(false)
+  const selectedColor     = form.watch('color_theme')
+  const effectiveClothing = clothingColor ?? selectedColor
+
+  // When the color theme changes and clothing is following the theme, nothing extra
+  // is needed — effectiveClothing derives from selectedColor automatically.
+  // But if the user had previously set the clothing to match the OLD theme color
+  // explicitly, we leave that alone (it's their explicit choice).
+
+  function handleIconChange(value: string, type: IconType, color?: string) {
+    setIcon({ type, value, color })
   }
 
-  const handleIconChange = (icon: string, icon_type: IconType, icon_color?: string) => {
-      form.setValue('icon', icon)
-      form.setValue('iconType', icon_type)
-      if (icon_color) {
-        form.setValue('iconColor', icon_color)
-      }
-    }
-
-  async function onSubmit(values: CreateCharacterFormValues) {
+  async function onSubmit(values: EditCharacterFormValues) {
     setIsSubmitting(true)
-    setSubmitError(null)
-
     try {
       const avatar: CharacterAvatarData | null = selectedArchetype
         ? {
             archetype_id:   selectedArchetype,
             skin_tone:      skinTone,
-            clothing_color: clothingColor, // null = inherits color_theme at render time
+            clothing_color: clothingColor,
           }
         : null
 
-      await createCharacter({
-        title: values.title,
+      await updateCharacter(character.id, {
+        title:       values.title,
         color_theme: values.color_theme,
-        icon: values.icon || DEFAULT_ICON,
+        icon: values.icon,
         icon_type: values.iconType,
         icon_color: values.iconColor,
         description: values.description || undefined,
         avatar,
       })
 
-      handleClose()
-      onCharacterCreated?.()
+      toast.success(`${values.title} has been updated.`)
+      onCharacterUpdated()
+      onOpenChange(false)
     } catch (error: any) {
-      console.error('Failed to create character:', error)
+      console.error('Error updating character:', error)
 
       if (error?.code === '23505') {
-        // Unique violation — could be title or color_theme
         if (error.message?.includes('unique_character_title_per_user')) {
-          setSubmitError('You already have a character with this title. Please choose a different name.')
+          form.setError('title', {
+            message: 'You already have a character with this title.',
+          })
         } else if (error.message?.includes('unique_color_theme_per_user')) {
-          setSubmitError('You already have a character using this color. Please choose a different one.')
+          form.setError('color_theme', {
+            message: 'You already have a character using this color.',
+          })
         } else {
-          setSubmitError('A character with this title or color already exists.')
+          toast.error('A character with this title or color already exists.')
         }
       } else {
-        setSubmitError('Something went wrong. Please try again.')
+        toast.error('Failed to update character. Please try again.')
       }
     } finally {
       setIsSubmitting(false)
@@ -201,17 +211,17 @@ export function CreateCharacterModal({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-140 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New Character</DialogTitle>
+          <DialogTitle>Edit Character</DialogTitle>
+          <DialogDescription>
+            Update your character's details and appearance.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <Tabs
-            value={activeTab}
-            onValueChange={(v) => setActiveTab(v as 'basics' | 'avatar')}
-          >
+          <Tabs defaultValue="basics">
             <TabsList className="w-full">
               <TabsTrigger value="basics" className="flex-1">Basics</TabsTrigger>
               <TabsTrigger value="avatar" className="flex-1">Avatar</TabsTrigger>
@@ -221,38 +231,35 @@ export function CreateCharacterModal({
             <TabsContent value="basics" className="space-y-5 pt-2">
 
               {/* Icon */}
-              <Field>
-              <FieldLabel htmlFor="skill-icon">Icon</FieldLabel>
-              <IconPicker
-                currentIcon={form.watch('icon')}
-                currentIconType={form.watch('iconType')}
-                currentIconColor={form.watch('iconColor')}
-                onIconChange={handleIconChange}
-              />
-              {form.formState.errors.icon && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.icon.message}
-                </p>
-              )}
-            </Field>
+              <div className="space-y-2">
+                <Label>Icon</Label>
+                <IconPicker
+                  currentIcon={icon.value}
+                  currentIconType={icon.type}
+                  currentIconColor={icon.color}
+                  onIconChange={handleIconChange}
+                />
+              </div>
 
               {/* Title */}
-              <Field className="space-y-2">
-                <FieldLabel htmlFor="title">
+              <div className="space-y-2">
+                <Label htmlFor="edit-char-title">
                   Title <span className="text-destructive">*</span>
-                </FieldLabel>
+                </Label>
                 <Input
-                  id="title"
+                  id="edit-char-title"
                   placeholder="e.g. Work Self, The Athlete, Aphrodite"
                   {...form.register('title')}
                 />
                 {form.formState.errors.title && (
-                  <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.title.message}
+                  </p>
                 )}
-              </Field>
+              </div>
 
               {/* Color Theme */}
-              <Field className="space-y-3">
+              <div className="space-y-3">
                 <Label>
                   Color Theme <span className="text-destructive">*</span>
                 </Label>
@@ -262,13 +269,9 @@ export function CreateCharacterModal({
                       key={color.hex}
                       type="button"
                       title={color.label}
-                      onClick={() => {
+                      onClick={() =>
                         form.setValue('color_theme', color.hex, { shouldValidate: true })
-                        // If clothing color was following the old theme, keep following
-                        if (clothingColor === null) {
-                          // no-op: clothing will auto-follow the new theme
-                        }
-                      }}
+                      }
                       className={cn(
                         'w-8 h-8 rounded-full border-2 transition-all',
                         selectedColor === color.hex
@@ -293,36 +296,30 @@ export function CreateCharacterModal({
                 </div>
 
                 {form.formState.errors.color_theme && (
-                  <p className="text-sm text-destructive">{form.formState.errors.color_theme.message}</p>
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.color_theme.message}
+                  </p>
                 )}
-              </Field>
+              </div>
 
               {/* Description */}
-              <Field className="space-y-2">
-                <FieldLabel htmlFor="description">
+              <div className="space-y-2">
+                <Label htmlFor="edit-char-description">
                   Description{' '}
                   <span className="text-muted-foreground text-xs font-normal">(optional)</span>
-                </FieldLabel>
+                </Label>
                 <Textarea
-                  id="description"
-                  placeholder="What does this character represent? What life context does it cover?"
+                  id="edit-char-description"
+                  placeholder="What does this character represent?"
                   rows={3}
                   className="resize-none"
                   {...form.register('description')}
                 />
                 {form.formState.errors.description && (
-                  <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.description.message}
+                  </p>
                 )}
-              </Field>
-
-              <div className="flex justify-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setActiveTab('avatar')}
-                >
-                  Customize Avatar →
-                </Button>
               </div>
             </TabsContent>
 
@@ -336,7 +333,7 @@ export function CreateCharacterModal({
                   <span className="text-muted-foreground text-xs font-normal">(optional)</span>
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Choose an avatar to represent this character. You can skip this and add one later.
+                  Select an archetype or deselect the current one to remove the avatar entirely.
                 </p>
                 <div className="grid grid-cols-4 gap-2">
                   {AVATAR_ARCHETYPES.map((archetype) => (
@@ -362,7 +359,7 @@ export function CreateCharacterModal({
                 </div>
               </div>
 
-              {/* Customization — only shown if an archetype is selected */}
+              {/* Customization — only shown when an archetype is selected */}
               {selectedArchetype && (
                 <>
                   {/* Skin Tone */}
@@ -415,7 +412,6 @@ export function CreateCharacterModal({
                       />
                     </div>
 
-                    {/* Palette override */}
                     <div className="flex flex-wrap gap-2">
                       {COLOR_PALETTE.map((color) => (
                         <button
@@ -435,20 +431,21 @@ export function CreateCharacterModal({
                     </div>
                   </div>
 
-                  {/* Live avatar preview */}
-                  <Field>
-                    <FieldLabel>Preview</FieldLabel>
+                  {/* Live preview */}
+                  <div className="space-y-2">
+                    <Label>Preview</Label>
                     <div className="flex items-center gap-4 p-4 rounded-xl border bg-muted/30">
                       <div
                         className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl shadow-sm border"
-                        style={{ backgroundColor: effectiveClothingColor + '22', borderColor: effectiveClothingColor + '66' }}
+                        style={{
+                          backgroundColor: effectiveClothing + '22',
+                          borderColor: effectiveClothing + '66',
+                        }}
                       >
                         {AVATAR_ARCHETYPES.find(a => a.id === selectedArchetype)?.emoji}
                       </div>
                       <div className="space-y-1 text-sm">
-                        <p className="font-medium">
-                          {AVATAR_ARCHETYPES.find(a => a.id === selectedArchetype)?.label}
-                        </p>
+                        <p className="font-medium capitalize">{selectedArchetype}</p>
                         <div className="flex items-center gap-2">
                           <div
                             className="w-3 h-3 rounded-full"
@@ -461,46 +458,37 @@ export function CreateCharacterModal({
                         <div className="flex items-center gap-2">
                           <div
                             className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: effectiveClothingColor }}
+                            style={{ backgroundColor: effectiveClothing }}
                           />
                           <span className="text-muted-foreground text-xs">
                             {clothingColor === null
                               ? `${COLOR_PALETTE.find(c => c.hex === selectedColor)?.label ?? 'Theme'} (theme)`
-                              : COLOR_PALETTE.find(c => c.hex === clothingColor)?.label ?? 'Custom'}{' '}
-                            clothing
+                              : COLOR_PALETTE.find(c => c.hex === clothingColor)?.label ?? 'Custom'
+                            }{' '}clothing
                           </span>
                         </div>
                       </div>
                     </div>
-                  </Field>
+                  </div>
                 </>
               )}
-
-              <div className="flex justify-between">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setActiveTab('basics')}
-                >
-                  ← Back to Basics
-                </Button>
-              </div>
             </TabsContent>
           </Tabs>
 
-          {/* Error message */}
-          {submitError && (
-            <p className="text-sm text-destructive text-center">{submitError}</p>
-          )}
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
+          {/* Footer */}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Character'}
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

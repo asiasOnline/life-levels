@@ -73,7 +73,6 @@ export const BASE_XP_VALUES: Record<TaskDifficulty, number> = {
 // =====================================================
 export interface Task {
   id: string;
-  userId: string;
   icon: IconData;
   title: string;
   description?: string;
