@@ -1,395 +1,959 @@
-export interface IconData {
-  type: 'emoji' | 'fontawesome' | 'image'
-  value: string
-  color?: string
-}
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
-export interface CharacterAvatarData {
-  archetype_id: string
-  skin_tone: string
-  clothing_color: string | null // null = clothing inherits character's color theme
-}
-
-export type HabitStatus = 'active' | 'paused' | 'archived'
-export type HabitRecurrence = 'daily' | 'weekdays' | 'x_per_week' | 'weekly' | 'bi_weekly' | 'monthly' | 'custom'
-export type HabitCompletionTime = 'morning' | 'afternoon' | 'evening' | 'overnight'
-
-export type TaskStatus = 'backlog' | 'in_progress' | 'completed' | 'paused'
-export type TaskDifficulty = 'easy' | 'normal' | 'hard' | 'expert'
-export type TaskPriority = 'critical' | 'high' | 'mid' | 'low'
-
-export interface Database {
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.1"
+  }
   public: {
     Tables: {
-      // Main Tables
       characters: {
         Row: {
-          id: string
-          user_id: string
-          icon: IconData
-          title: string
+          avatar: Json | null
           color_theme: string
-          description: string | null
-          avatar: CharacterAvatarData | null
-          level: number
+          created_at: string
           current_xp: number
-          xp_to_next_level: number
-          total_xp: number
+          description: string | null
+          icon: Json
+          id: string
           is_archived: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          icon?: IconData
-          title: string
-          color_theme: string
-          description?: string | null
-          avatar?: CharacterAvatarData | null
-          level?: number
-          current_xp?: number
-          xp_to_next_level?: number
-          total_xp?: number
-          is_archived?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          icon?: IconData
-          title?: string
-          color_theme?: string
-          description?: string | null
-          avatar?: CharacterAvatarData | null
-          level?: number
-          current_xp?: number
-          xp_to_next_level?: number
-          total_xp?: number
-          is_archived?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      skills: {
-        Row: {
-          id: string
-          user_id: string
-          title: string
-          description: string | null
-          icon: IconData
           level: number
-          current_xp: number
+          title: string
+          total_xp: number
+          updated_at: string
+          user_id: string
           xp_to_next_level: number
-          tags: string[]
-          created_at: string
-          updated_at: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          title: string
-          description?: string | null
-          icon: IconData
-          level?: number
+          avatar?: Json | null
+          color_theme: string
+          created_at?: string
           current_xp?: number
-          xp_to_next_level?: number
-          tags?: string[]
-          character_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          title?: string
           description?: string | null
-          icon?: IconData
+          icon?: Json
+          id?: string
+          is_archived?: boolean
           level?: number
-          current_xp?: number
+          title: string
+          total_xp?: number
+          updated_at?: string
+          user_id: string
           xp_to_next_level?: number
-          tags?: string[]
-          character_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      habits: {
-        Row: {
-          id: string
-          user_id: string
-          title: string
-          description: string | null
-          icon: IconData
-          status: HabitStatus
-          recurrence: HabitRecurrence
-          x_per_week_count: number | null
-          x_per_week_days: number[] | null
-          weekly_day: number | null
-          monthly_day: number | null
-          custom_recurrence_description: string | null
-          time_consumption: number
-          completion_time: HabitCompletionTime | null
-          gold_reward: number
-          use_custom_xp: boolean
-          custom_character_xp: number | null
-          custom_skill_xp: number | null
-          paused_at: string | null
-          archived_at: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          title: string
-          description?: string | null
-          icon?: IconData
-          status?: HabitStatus
-          recurrence: HabitRecurrence
-          x_per_week_count?: number | null
-          x_per_week_days?: number[] | null
-          weekly_day?: number | null
-          monthly_day?: number | null
-          custom_recurrence_description?: string | null
-          time_consumption: number
-          completion_time?: HabitCompletionTime | null
-          gold_reward?: number
-          use_custom_xp?: boolean
-          custom_character_xp?: number | null
-          custom_skill_xp?: number | null
-          paused_at?: string | null
-          archived_at?: string | null
-          created_at?: string
-          updated_at?: string
         }
         Update: {
+          avatar?: Json | null
+          color_theme?: string
+          created_at?: string
+          current_xp?: number
+          description?: string | null
+          icon?: Json
           id?: string
-          user_id?: string
+          is_archived?: boolean
+          level?: number
           title?: string
-          description?: string | null
-          icon?: IconData
-          status?: HabitStatus
-          recurrence?: HabitRecurrence
-          x_per_week_count?: number | null
-          x_per_week_days?: number[] | null
-          weekly_day?: number | null
-          monthly_day?: number | null
-          custom_recurrence_description?: string | null
-          time_consumption?: number
-          completion_time?: HabitCompletionTime | null
-          gold_reward?: number
-          use_custom_xp?: boolean
-          custom_character_xp?: number | null
-          custom_skill_xp?: number | null
-          paused_at?: string | null
-          archived_at?: string | null
-          created_at?: string
+          total_xp?: number
           updated_at?: string
-        }
-      }
-      tasks: {
-        Row: {
-          id: string
-          user_id: string
-          title: string
-          description: string | null
-          icon: IconData
-          status: TaskStatus
-          difficulty: TaskDifficulty
-          priority: TaskPriority
-          start_date: string | null
-          due_date: string | null
-          completed_at: string | null
-          gold_reward: number
-          use_custom_xp: boolean
-          custom_character_xp: number | null
-          custom_skill_xp: number | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          title: string
-          description?: string | null
-          icon?: IconData
-          status?: TaskStatus
-          difficulty?: TaskDifficulty
-          priority: TaskPriority
-          start_date?: string | null
-          due_date?: string | null
-          completed_at?: string | null
-          gold_reward?: number
-          use_custom_xp?: boolean
-          custom_character_xp?: number | null
-          custom_skill_xp?: number | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
           user_id?: string
-          title?: string
-          description?: string | null
-          icon?: IconData
-          status?: TaskStatus
-          difficulty?: TaskDifficulty
-          priority: TaskPriority
-          start_date?: string | null
-          due_date?: string | null
-          completed_at?: string | null
-          gold_reward?: number
-          use_custom_xp?: boolean
-          custom_character_xp?: number | null
-          custom_skill_xp?: number | null
-          created_at?: string
-          updated_at?: string
+          xp_to_next_level?: number
         }
+        Relationships: []
       }
-      
-      // Junction Tables
-      skill_characters: {
+      goal_characters: {
         Row: {
-          id: string
-          skill_id: string
           character_id: string
           created_at: string
+          goal_id: string
+          id: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          skill_id: string
           character_id: string
           created_at?: string
+          goal_id: string
+          id?: string
+          user_id: string
         }
         Update: {
-          id?: string
-          skill_id?: string
           character_id?: string
           created_at?: string
+          goal_id?: string
+          id?: string
+          user_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "goal_characters_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_characters_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      habit_skills: {
+      goal_skills: {
         Row: {
-          id: string
-          habit_id: string
-          skill_id: string
           created_at: string
+          goal_id: string
+          id: string
+          skill_id: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          habit_id: string
-          skill_id: string
           created_at?: string
+          goal_id: string
+          id?: string
+          skill_id: string
+          user_id: string
         }
         Update: {
-          id?: string
-          habit_id?: string
-          skill_id?: string
           created_at?: string
+          goal_id?: string
+          id?: string
+          skill_id?: string
+          user_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "goal_skills_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          custom_character_xp: number | null
+          custom_skill_xp: number | null
+          description: string | null
+          difficulty: Database["public"]["Enums"]["task_difficulty"]
+          goal_type: string | null
+          goal_type_config: Json | null
+          gold_reward: number
+          icon: Json
+          id: string
+          overdue_notification_sent: boolean
+          resilience_reward: number | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["task_status"]
+          target_completion_date: string | null
+          title: string
+          updated_at: string
+          use_custom_xp: boolean
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          custom_character_xp?: number | null
+          custom_skill_xp?: number | null
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["task_difficulty"]
+          goal_type?: string | null
+          goal_type_config?: Json | null
+          gold_reward?: number
+          icon?: Json
+          id?: string
+          overdue_notification_sent?: boolean
+          resilience_reward?: number | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          target_completion_date?: string | null
+          title: string
+          updated_at?: string
+          use_custom_xp?: boolean
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          custom_character_xp?: number | null
+          custom_skill_xp?: number | null
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["task_difficulty"]
+          goal_type?: string | null
+          goal_type_config?: Json | null
+          gold_reward?: number
+          icon?: Json
+          id?: string
+          overdue_notification_sent?: boolean
+          resilience_reward?: number | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          target_completion_date?: string | null
+          title?: string
+          updated_at?: string
+          use_custom_xp?: boolean
+          user_id?: string
+        }
+        Relationships: []
       }
       habit_characters: {
         Row: {
-          id: string
-          habit_id: string
           character_id: string
           created_at: string
+          habit_id: string
+          id: string
         }
         Insert: {
-          id?: string
-          habit_id: string
           character_id: string
           created_at?: string
+          habit_id: string
+          id?: string
         }
         Update: {
-          id?: string
-          habit_id?: string
           character_id?: string
           created_at?: string
+          habit_id?: string
+          id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "habit_characters_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "habit_characters_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       habit_goals: {
         Row: {
-          id: string
-          habit_id: string
-          goal_id: string
           created_at: string
+          goal_id: string
+          habit_id: string
+          id: string
         }
         Insert: {
-          id?: string
-          habit_id: string
-          goal_id: string
           created_at?: string
+          goal_id: string
+          habit_id: string
+          id?: string
         }
         Update: {
-          id?: string
-          habit_id?: string
+          created_at?: string
           goal_id?: string
-          created_at?: string
+          habit_id?: string
+          id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "habit_goals_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      task_skills: {
+      habit_skills: {
         Row: {
-          id: string
-          task_id: string
-          skill_id: string
           created_at: string
+          habit_id: string
+          id: string
+          skill_id: string
         }
         Insert: {
-          id?: string
-          task_id: string
-          skill_id: string
           created_at?: string
+          habit_id: string
+          id?: string
+          skill_id: string
         }
         Update: {
-          id?: string
-          task_id?: string
-          skill_id?: string
           created_at?: string
+          habit_id?: string
+          id?: string
+          skill_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "habit_skills_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "habit_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habits: {
+        Row: {
+          archived_at: string | null
+          completion_time:
+            | Database["public"]["Enums"]["habit_completion_time"]
+            | null
+          created_at: string
+          custom_character_xp: number | null
+          custom_skill_xp: number | null
+          description: string | null
+          gold_reward: number
+          icon: Json
+          id: string
+          monthly_day: number | null
+          paused_at: string | null
+          recurrence: Database["public"]["Enums"]["habit_recurrence"]
+          status: Database["public"]["Enums"]["habit_status"]
+          time_consumption: number
+          title: string
+          updated_at: string
+          use_custom_xp: boolean
+          user_id: string
+          weekly_day: number | null
+          x_per_week_count: number | null
+          x_per_week_days: number[] | null
+        }
+        Insert: {
+          archived_at?: string | null
+          completion_time?:
+            | Database["public"]["Enums"]["habit_completion_time"]
+            | null
+          created_at?: string
+          custom_character_xp?: number | null
+          custom_skill_xp?: number | null
+          description?: string | null
+          gold_reward?: number
+          icon?: Json
+          id?: string
+          monthly_day?: number | null
+          paused_at?: string | null
+          recurrence: Database["public"]["Enums"]["habit_recurrence"]
+          status?: Database["public"]["Enums"]["habit_status"]
+          time_consumption: number
+          title: string
+          updated_at?: string
+          use_custom_xp?: boolean
+          user_id: string
+          weekly_day?: number | null
+          x_per_week_count?: number | null
+          x_per_week_days?: number[] | null
+        }
+        Update: {
+          archived_at?: string | null
+          completion_time?:
+            | Database["public"]["Enums"]["habit_completion_time"]
+            | null
+          created_at?: string
+          custom_character_xp?: number | null
+          custom_skill_xp?: number | null
+          description?: string | null
+          gold_reward?: number
+          icon?: Json
+          id?: string
+          monthly_day?: number | null
+          paused_at?: string | null
+          recurrence?: Database["public"]["Enums"]["habit_recurrence"]
+          status?: Database["public"]["Enums"]["habit_status"]
+          time_consumption?: number
+          title?: string
+          updated_at?: string
+          use_custom_xp?: boolean
+          user_id?: string
+          weekly_day?: number | null
+          x_per_week_count?: number | null
+          x_per_week_days?: number[] | null
+        }
+        Relationships: []
+      }
+      login_history: {
+        Row: {
+          comeback_triggered: boolean
+          created_at: string
+          days_missed: number
+          id: string
+          login_date: string
+          momentum_after: number
+          momentum_before: number
+          momentum_decayed: number
+          momentum_gained: number
+          resilience_awarded: number
+          user_id: string
+        }
+        Insert: {
+          comeback_triggered?: boolean
+          created_at?: string
+          days_missed?: number
+          id?: string
+          login_date: string
+          momentum_after?: number
+          momentum_before?: number
+          momentum_decayed?: number
+          momentum_gained?: number
+          resilience_awarded?: number
+          user_id: string
+        }
+        Update: {
+          comeback_triggered?: boolean
+          created_at?: string
+          days_missed?: number
+          id?: string
+          login_date?: string
+          momentum_after?: number
+          momentum_before?: number
+          momentum_decayed?: number
+          momentum_gained?: number
+          resilience_awarded?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      skill_characters: {
+        Row: {
+          character_id: string
+          created_at: string
+          id: string
+          skill_id: string
+        }
+        Insert: {
+          character_id: string
+          created_at?: string
+          id?: string
+          skill_id: string
+        }
+        Update: {
+          character_id?: string
+          created_at?: string
+          id?: string
+          skill_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_characters_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_characters_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skills: {
+        Row: {
+          created_at: string | null
+          current_xp: number | null
+          description: string | null
+          icon: Json | null
+          id: string
+          level: number | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          xp_to_next_level: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_xp?: number | null
+          description?: string | null
+          icon?: Json | null
+          id?: string
+          level?: number | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          xp_to_next_level?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          current_xp?: number | null
+          description?: string | null
+          icon?: Json | null
+          id?: string
+          level?: number | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          xp_to_next_level?: number | null
+        }
+        Relationships: []
       }
       task_characters: {
         Row: {
-          id: string
-          task_id: string
           character_id: string
           created_at: string
+          id: string
+          task_id: string
         }
         Insert: {
-          id?: string
-          task_id: string
           character_id: string
           created_at?: string
+          id?: string
+          task_id: string
         }
         Update: {
-          id?: string
-          task_id?: string
           character_id?: string
           created_at?: string
+          id?: string
+          task_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "fk_task_characters_character_id"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_characters_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       task_goals: {
         Row: {
+          created_at: string
+          goal_id: string
           id: string
           task_id: string
-          goal_id: string
-          created_at: string
         }
         Insert: {
+          created_at?: string
+          goal_id: string
           id?: string
           task_id: string
-          goal_id: string
-          created_at?: string
         }
         Update: {
+          created_at?: string
+          goal_id?: string
           id?: string
           task_id?: string
-          goal_id?: string
-          created_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "fk_task_goals_goal_id"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_goals_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
+      task_skills: {
+        Row: {
+          created_at: string
+          id: string
+          skill_id: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          skill_id: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          skill_id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_skills_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          custom_character_xp: number | null
+          custom_skill_xp: number | null
+          description: string | null
+          difficulty: Database["public"]["Enums"]["task_difficulty"]
+          due_date: string | null
+          gold_reward: number
+          icon: Json
+          id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          start_date: string | null
+          status: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at: string
+          use_custom_xp: boolean
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          custom_character_xp?: number | null
+          custom_skill_xp?: number | null
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["task_difficulty"]
+          due_date?: string | null
+          gold_reward?: number
+          icon?: Json
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at?: string
+          use_custom_xp?: boolean
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          custom_character_xp?: number | null
+          custom_skill_xp?: number | null
+          description?: string | null
+          difficulty?: Database["public"]["Enums"]["task_difficulty"]
+          due_date?: string | null
+          gold_reward?: number
+          icon?: Json
+          id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          title?: string
+          updated_at?: string
+          use_custom_xp?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          created_at: string
+          energy_baseline: number
+          energy_current: number
+          energy_last_checkin_date: string | null
+          energy_reset_time: string
+          gold: number
+          id: string
+          last_login_date: string | null
+          momentum: number
+          momentum_all_time_high: number
+          resilience: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          energy_baseline?: number
+          energy_current?: number
+          energy_last_checkin_date?: string | null
+          energy_reset_time?: string
+          gold?: number
+          id?: string
+          last_login_date?: string | null
+          momentum?: number
+          momentum_all_time_high?: number
+          resilience?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          energy_baseline?: number
+          energy_current?: number
+          energy_last_checkin_date?: string | null
+          energy_reset_time?: string
+          gold?: number
+          id?: string
+          last_login_date?: string | null
+          momentum?: number
+          momentum_all_time_high?: number
+          resilience?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          notes: string | null
+          referral_source: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          notes?: string | null
+          referral_source?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          notes?: string | null
+          referral_source?: string | null
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      calculate_task_xp: {
+        Args: {
+          character_count?: number
+          difficulty: Database["public"]["Enums"]["task_difficulty"]
+          skill_count: number
+        }
+        Returns: {
+          character_xp: number
+          skill_xp: number
+        }[]
+      }
+      get_default_gold_reward: {
+        Args: { difficulty: Database["public"]["Enums"]["task_difficulty"] }
+        Returns: number
+      }
+    }
+    Enums: {
+      habit_completion_time: "morning" | "afternoon" | "evening" | "overnight"
+      habit_recurrence:
+        | "daily"
+        | "weekdays"
+        | "x_per_week"
+        | "weekly"
+        | "bi_weekly"
+        | "monthly"
+        | "custom"
+      habit_status: "active" | "paused" | "archived"
+      task_difficulty: "easy" | "normal" | "hard" | "expert"
+      task_priority: "critical" | "high" | "mid" | "low"
+      task_status: "backlog" | "in_progress" | "completed" | "paused"
+    }
+    CompositeTypes: {
+      [_ in never]: never
     }
   }
 }
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      habit_completion_time: ["morning", "afternoon", "evening", "overnight"],
+      habit_recurrence: [
+        "daily",
+        "weekdays",
+        "x_per_week",
+        "weekly",
+        "bi_weekly",
+        "monthly",
+        "custom",
+      ],
+      habit_status: ["active", "paused", "archived"],
+      task_difficulty: ["easy", "normal", "hard", "expert"],
+      task_priority: ["critical", "high", "mid", "low"],
+      task_status: ["backlog", "in_progress", "completed", "paused"],
+    },
+  },
+} as const
