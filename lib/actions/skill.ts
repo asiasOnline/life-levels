@@ -27,7 +27,7 @@ type SkillRowWithCharacters = SkillRow & {
       id: string
       title: string 
       color_theme: string 
-      icon: IconData
+      icon: JSON
     } | null
   }[]
 }
@@ -37,7 +37,7 @@ type SkillRowWithLinks = SkillRowWithCharacters & {
     id: string
     title: string 
     status: string
-    icon: IconData
+    icon: JSON
   }
 }
 
@@ -79,9 +79,9 @@ export async function createSkill(input: CreateSkillInput): Promise<SkillRow> {
     title: input.title,
     description: input.description || null,
     icon: {
-      type: input.icon_type || DEFAULT_ICON_TYPE,
-      value: input.icon || DEFAULT_ICON,
-      color: input.icon_color || DEFAULT_ICON_COLOR,
+      type: input.icon.type || DEFAULT_ICON_TYPE,
+      value: input.icon.value || DEFAULT_ICON,
+      color: input.icon.color || DEFAULT_ICON_COLOR,
     },
     tags: input.tags || [],
     level: 1,
@@ -116,11 +116,11 @@ export async function updateSkill(id: string, updates: Partial<CreateSkillInput>
     tags: updates.tags,
   }
 
-  if (updates.icon !== undefined || updates.icon_type !== undefined) {
+  if (updates.icon !== undefined) {
     skillUpdate.icon = {
-      type: updates.icon_type || DEFAULT_ICON_TYPE,
-      value: updates.icon || DEFAULT_ICON,
-      color: updates.icon_color,
+      type: updates.icon.type || DEFAULT_ICON_TYPE,
+      value: updates.icon.value || DEFAULT_ICON,
+      color: updates.icon.color || DEFAULT_ICON_COLOR,
     }
   }
 
