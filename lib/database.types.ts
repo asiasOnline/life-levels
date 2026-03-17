@@ -145,68 +145,68 @@ export type Database = {
       }
       goals: {
         Row: {
+          character_xp: number
           completed_at: string | null
           created_at: string
-          custom_character_xp: number | null
-          custom_skill_xp: number | null
           description: string | null
-          difficulty: Database["public"]["Enums"]["task_difficulty"]
-          goal_type: string | null
+          difficulty: Database["public"]["Enums"]["goal_difficulty"]
+          due_date: string | null
+          goal_type: Database["public"]["Enums"]["goal_type"] | null
           goal_type_config: Json | null
           gold_reward: number
           icon: Json
           id: string
           overdue_notification_sent: boolean
-          resilience_reward: number | null
+          skill_xp: number
           start_date: string | null
-          status: Database["public"]["Enums"]["task_status"]
-          target_completion_date: string | null
+          status: Database["public"]["Enums"]["goal_status"]
           title: string
           updated_at: string
+          use_custom_gold: boolean
           use_custom_xp: boolean
           user_id: string
         }
         Insert: {
+          character_xp: number
           completed_at?: string | null
           created_at?: string
-          custom_character_xp?: number | null
-          custom_skill_xp?: number | null
           description?: string | null
-          difficulty?: Database["public"]["Enums"]["task_difficulty"]
-          goal_type?: string | null
+          difficulty?: Database["public"]["Enums"]["goal_difficulty"]
+          due_date?: string | null
+          goal_type?: Database["public"]["Enums"]["goal_type"] | null
           goal_type_config?: Json | null
           gold_reward?: number
           icon?: Json
           id?: string
           overdue_notification_sent?: boolean
-          resilience_reward?: number | null
+          skill_xp: number
           start_date?: string | null
-          status?: Database["public"]["Enums"]["task_status"]
-          target_completion_date?: string | null
+          status?: Database["public"]["Enums"]["goal_status"]
           title: string
           updated_at?: string
+          use_custom_gold?: boolean
           use_custom_xp?: boolean
           user_id: string
         }
         Update: {
+          character_xp?: number
           completed_at?: string | null
           created_at?: string
-          custom_character_xp?: number | null
-          custom_skill_xp?: number | null
           description?: string | null
-          difficulty?: Database["public"]["Enums"]["task_difficulty"]
-          goal_type?: string | null
+          difficulty?: Database["public"]["Enums"]["goal_difficulty"]
+          due_date?: string | null
+          goal_type?: Database["public"]["Enums"]["goal_type"] | null
           goal_type_config?: Json | null
           gold_reward?: number
           icon?: Json
           id?: string
           overdue_notification_sent?: boolean
-          resilience_reward?: number | null
+          skill_xp?: number
           start_date?: string | null
-          status?: Database["public"]["Enums"]["task_status"]
-          target_completion_date?: string | null
+          status?: Database["public"]["Enums"]["goal_status"]
           title?: string
           updated_at?: string
+          use_custom_gold?: boolean
           use_custom_xp?: boolean
           user_id?: string
         }
@@ -316,12 +316,12 @@ export type Database = {
       habits: {
         Row: {
           archived_at: string | null
+          character_xp: number
           completion_time:
             | Database["public"]["Enums"]["habit_completion_time"]
             | null
           created_at: string
-          custom_character_xp: number | null
-          custom_skill_xp: number | null
+          custom_recurrence_config: Json | null
           description: string | null
           gold_reward: number
           icon: Json
@@ -329,10 +329,12 @@ export type Database = {
           monthly_day: number | null
           paused_at: string | null
           recurrence: Database["public"]["Enums"]["habit_recurrence"]
+          skill_xp: number
           status: Database["public"]["Enums"]["habit_status"]
           time_consumption: number
           title: string
           updated_at: string
+          use_custom_gold: boolean
           use_custom_xp: boolean
           user_id: string
           weekly_day: number | null
@@ -341,12 +343,12 @@ export type Database = {
         }
         Insert: {
           archived_at?: string | null
+          character_xp: number
           completion_time?:
             | Database["public"]["Enums"]["habit_completion_time"]
             | null
           created_at?: string
-          custom_character_xp?: number | null
-          custom_skill_xp?: number | null
+          custom_recurrence_config?: Json | null
           description?: string | null
           gold_reward?: number
           icon?: Json
@@ -354,10 +356,12 @@ export type Database = {
           monthly_day?: number | null
           paused_at?: string | null
           recurrence: Database["public"]["Enums"]["habit_recurrence"]
+          skill_xp: number
           status?: Database["public"]["Enums"]["habit_status"]
           time_consumption: number
           title: string
           updated_at?: string
+          use_custom_gold: boolean
           use_custom_xp?: boolean
           user_id: string
           weekly_day?: number | null
@@ -366,12 +370,12 @@ export type Database = {
         }
         Update: {
           archived_at?: string | null
+          character_xp?: number
           completion_time?:
             | Database["public"]["Enums"]["habit_completion_time"]
             | null
           created_at?: string
-          custom_character_xp?: number | null
-          custom_skill_xp?: number | null
+          custom_recurrence_config?: Json | null
           description?: string | null
           gold_reward?: number
           icon?: Json
@@ -379,10 +383,12 @@ export type Database = {
           monthly_day?: number | null
           paused_at?: string | null
           recurrence?: Database["public"]["Enums"]["habit_recurrence"]
+          skill_xp?: number
           status?: Database["public"]["Enums"]["habit_status"]
           time_consumption?: number
           title?: string
           updated_at?: string
+          use_custom_gold?: boolean
           use_custom_xp?: boolean
           user_id?: string
           weekly_day?: number | null
@@ -430,6 +436,33 @@ export type Database = {
           momentum_gained?: number
           resilience_awarded?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          display_name: string | null
+          email: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          email: string
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          email?: string
+          id?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -621,10 +654,9 @@ export type Database = {
       }
       tasks: {
         Row: {
+          character_xp: number
           completed_at: string | null
           created_at: string
-          custom_character_xp: number | null
-          custom_skill_xp: number | null
           description: string | null
           difficulty: Database["public"]["Enums"]["task_difficulty"]
           due_date: string | null
@@ -632,18 +664,19 @@ export type Database = {
           icon: Json
           id: string
           priority: Database["public"]["Enums"]["task_priority"]
+          skill_xp: number
           start_date: string | null
           status: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at: string
+          use_custom_gold: boolean
           use_custom_xp: boolean
           user_id: string
         }
         Insert: {
+          character_xp: number
           completed_at?: string | null
           created_at?: string
-          custom_character_xp?: number | null
-          custom_skill_xp?: number | null
           description?: string | null
           difficulty?: Database["public"]["Enums"]["task_difficulty"]
           due_date?: string | null
@@ -651,18 +684,19 @@ export type Database = {
           icon?: Json
           id?: string
           priority?: Database["public"]["Enums"]["task_priority"]
+          skill_xp: number
           start_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at?: string
+          use_custom_gold?: boolean
           use_custom_xp?: boolean
           user_id: string
         }
         Update: {
+          character_xp?: number
           completed_at?: string | null
           created_at?: string
-          custom_character_xp?: number | null
-          custom_skill_xp?: number | null
           description?: string | null
           difficulty?: Database["public"]["Enums"]["task_difficulty"]
           due_date?: string | null
@@ -670,10 +704,12 @@ export type Database = {
           icon?: Json
           id?: string
           priority?: Database["public"]["Enums"]["task_priority"]
+          skill_xp?: number
           start_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title?: string
           updated_at?: string
+          use_custom_gold?: boolean
           use_custom_xp?: boolean
           user_id?: string
         }
@@ -727,33 +763,6 @@ export type Database = {
         }
         Relationships: []
       }
-      users: {
-        Row: {
-          avatar_url: string | null
-          created_at: string | null
-          display_name: string | null
-          email: string | null
-          id: string
-          updated_at: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          email?: string | null
-          id: string
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          email?: string | null
-          id?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       waitlist: {
         Row: {
           created_at: string
@@ -800,6 +809,9 @@ export type Database = {
       }
     }
     Enums: {
+      goal_difficulty: "easy" | "normal" | "hard" | "expert"
+      goal_status: "backlog" | "in_progress" | "paused" | "completed"
+      goal_type: "time_based" | "skill_level_based" | "habit_consistency_based"
       habit_completion_time: "morning" | "afternoon" | "evening" | "overnight"
       habit_recurrence:
         | "daily"
@@ -940,6 +952,9 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      goal_difficulty: ["easy", "normal", "hard", "expert"],
+      goal_status: ["backlog", "in_progress", "paused", "completed"],
+      goal_type: ["time_based", "skill_level_based", "habit_consistency_based"],
       habit_completion_time: ["morning", "afternoon", "evening", "overnight"],
       habit_recurrence: [
         "daily",

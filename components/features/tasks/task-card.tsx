@@ -85,7 +85,7 @@ const TaskCard = ({ task, linkedSkills, linkedCharacterCount = 1, onClick, class
         {/* Icon */}
         <div className="flex">
           <div className="text-2xl">
-              {renderIcon(task.icon.value, task.icon.type, task.icon.color, 'w-6 h-6')}
+              {renderIcon(task.icon, task.icon.type, task.icon.color, 'w-6 h-6')}
             </div>
         </div>
 

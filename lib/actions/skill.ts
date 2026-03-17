@@ -1,34 +1,49 @@
 import { createClient } from '@/lib/supabase/client'
-import { Database } from '@/lib/database.types'
+import { Database } from '@/lib/database.types' 
 import { calculateXPForLevel } from '@/lib/utils/skills'
 import { 
-  IconType, 
+  IconData,
   DEFAULT_ICON, 
   DEFAULT_ICON_TYPE, 
   DEFAULT_ICON_COLOR 
 } from '@/lib/types/icon'
+import { 
+  Skill,
+  SkillCharacterLink,
+  CreateSkillInput,
+  UpdateSkillInput
+} from '../types/skills'
 
 // =======================================
-// DATABASE & INPUT TYPE
+// DATABASE TYPES
 // =======================================
-
 type SkillRow = Database['public']['Tables']['skills']['Row']
 type SkillInsert = Database['public']['Tables']['skills']['Insert']
 type SkillUpdate = Database['public']['Tables']['skills']['Update']
 
-export interface CreateSkillInput {
-  title: string
-  description?: string
-  icon?: string
-  icon_type?: IconType
-  icon_color?: string
-  tags?: string[]
+type SkillRowWithCharacters = SkillRow & {
+  skill_characters: {
+    characters: {
+      id: string
+      title: string 
+      color_theme: string 
+      icon: IconData
+    } | null
+  }[]
+}
+
+type SkillRowWithLinks = SkillRowWithCharacters & {
+  task_skills: {
+    id: string
+    title: string 
+    status: string
+    icon: IconData
+  }
 }
 
 // =======================================
 // DATABASE FUNCTIONS
 // =======================================
-
 /** -------------------------------------
  * Fetch all skills for the current user
  * --------------------------------------

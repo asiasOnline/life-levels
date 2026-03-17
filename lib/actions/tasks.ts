@@ -38,10 +38,10 @@ export interface CreateTaskInput {
     start_date?: string
     due_date?: string
     skill_ids: string[] // 1-3 skill IDs required
-    gold_reward?: number
+    gold_reward: number
     use_custom_xp?: boolean
-    custom_character_xp?: number
-    custom_skill_xp?: number
+    character_xp: number
+    skill_xp: number
 }
 
 export interface UpdateTaskInput {

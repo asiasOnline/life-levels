@@ -1,4 +1,12 @@
 import { IconData } from "@/lib/types/icon";
+import { Skill } from "./skills";
+import { Character } from "./character";
+import { Goal } from "./goals";
+
+// =================================
+// SHARED / SUMMARY
+// =================================
+
 
 // ==================================
 // ENUMS & CONSTANTS
@@ -17,7 +25,8 @@ export const HABIT_RECURRENCE = {
   X_PER_WEEK: 'x_per_week',
   WEEKLY: 'weekly',
   BI_WEEKLY: 'bi_weekly',
-  MONTHLY: 'monthly'
+  MONTHLY: 'monthly',
+  CUSTOM: 'custom' 
 } as const;
 
 export type HabitRecurrence = typeof HABIT_RECURRENCE[keyof typeof HABIT_RECURRENCE];

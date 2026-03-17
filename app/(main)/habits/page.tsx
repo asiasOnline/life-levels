@@ -5,7 +5,7 @@ export default function Habits() {
       <>
       <PageHeader 
         title="Habits"
-        subtitle="Track long-term mastery and capability development across all life contexts, with clear progression milestones that unlock meaningful rewards."
+        subtitle="Recurring activiites that represent consistent behaviors to develop and maintain."
       />
       </>
     );
