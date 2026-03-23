@@ -1,20 +1,19 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { 
-    Dialog, 
-    DialogContent, 
+import {
+    Dialog,
+    DialogContent,
     DialogHeader,
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog"
-import { 
-    Field, 
+import {
+    Field,
     FieldDescription,
-    FieldError,
     FieldGroup,
     FieldLabel,
 } from "@/components/ui/field"
@@ -25,7 +24,11 @@ import { Badge } from "@/components/ui/badge"
 import { IconPicker } from "@/components/layout/app/icon-picker"
 import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR } from "@/lib/types/icon"
 import { toast } from "sonner"
-import { FaPlus, FaXmark } from "react-icons/fa6";
+import { FaPlus, FaXmark, FaCheck } from "react-icons/fa6";
+import { fetchActiveCharacters } from "@/lib/actions/character"
+import type { Database } from "@/lib/database.types"
+
+type CharacterRow = Database['public']['Tables']['characters']['Row']
 
 // ─── Skill Schema ─────────────────────
 
@@ -47,6 +50,9 @@ const createSkillSchema = z.object({
     tags: z
     .array(z.string())
     .optional(),
+    character_ids: z
+    .array(z.string())
+    .optional(),
 })
 
 type CreateSkillFormValues = z.infer<typeof createSkillSchema>
@@ -61,14 +67,15 @@ interface CreateSkillModalProps {
 
 // ─── Main Component ───────────────────────
 
-export function CreateSkillModal({ 
-  isOpen, 
-  onClose, 
-  onSkillCreated 
+export function CreateSkillModal({
+  isOpen,
+  onClose,
+  onSkillCreated
 }: CreateSkillModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [tagInput, setTagInput] = useState("")
-    
+    const [availableCharacters, setAvailableCharacters] = useState<CharacterRow[]>([])
+
     const form = useForm<CreateSkillFormValues>({
         resolver: zodResolver(createSkillSchema),
         defaultValues: {
@@ -78,10 +85,19 @@ export function CreateSkillModal({
             iconType: DEFAULT_ICON_TYPE,
             iconColor: DEFAULT_ICON_COLOR,
             tags: [],
+            character_ids: [],
         },
     })
 
+    useEffect(() => {
+        if (!isOpen) return
+        fetchActiveCharacters()
+            .then(setAvailableCharacters)
+            .catch((err) => console.error('Failed to load characters:', err))
+    }, [isOpen])
+
     const tags = form.watch("tags") || []
+    const selectedCharacterIds = form.watch("character_ids") || []
 
     const handleAddTag = () => {
         const newTag = tagInput.trim()
@@ -96,46 +112,57 @@ export function CreateSkillModal({
     }
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleAddTag()
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            handleAddTag()
+        }
     }
-  }
 
-  const handleIconChange = (icon: string, icon_type: IconType, icon_color?: string) => {
-    form.setValue('icon', icon)
-    form.setValue('iconType', icon_type)
-    if (icon_color) {
-      form.setValue('iconColor', icon_color)
+    const handleIconChange = (icon: string, icon_type: IconType, icon_color?: string) => {
+        form.setValue('icon', icon)
+        form.setValue('iconType', icon_type)
+        if (icon_color) {
+            form.setValue('iconColor', icon_color)
+        }
     }
-  }
 
-  const onSubmit = async (values: CreateSkillFormValues) => {
-    setIsSubmitting(true)
-
-    try {
-      const { createSkill } = await import('@/lib/actions/skill')
-      await createSkill({
-        title: values.title,
-        description: values.description,
-        icon: values.icon || DEFAULT_ICON,
-        icon_type: values.iconType,
-        icon_color: values.iconColor,
-        tags: values.tags,
-      })
-
-      toast.success(`${values.title} has been added to your skill log.`)
-
-      form.reset()
-      onClose(false)
-      onSkillCreated()
-    } catch (error) {
-      console.error('Error creating skill:', error)
-      toast.error("Failed to create skill. Please try again.")
-    } finally {
-      setIsSubmitting(false)
+    const toggleCharacter = (id: string) => {
+        const current = form.getValues('character_ids') || []
+        form.setValue(
+            'character_ids',
+            current.includes(id) ? current.filter((c) => c !== id) : [...current, id]
+        )
     }
-  }
+
+    const onSubmit = async (values: CreateSkillFormValues) => {
+        setIsSubmitting(true)
+
+        try {
+            const { createSkill } = await import('@/lib/actions/skill')
+            await createSkill({
+                title: values.title,
+                description: values.description,
+                icon: {
+                    type: values.iconType,
+                    value: values.icon || DEFAULT_ICON,
+                    color: values.iconColor || DEFAULT_ICON_COLOR,
+                },
+                tags: values.tags,
+                character_ids: values.character_ids,
+            })
+
+            toast.success(`${values.title} has been added to your skill log.`)
+
+            form.reset()
+            onClose(false)
+            onSkillCreated()
+        } catch (error) {
+            console.error('Error creating skill:', error)
+            toast.error("Failed to create skill. Please try again.")
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -240,10 +267,38 @@ export function CreateSkillModal({
               </FieldDescription>
             </Field>
 
-            {/* Future fields placeholder */}
-            <div className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
-              Link to Characters, Habits, Tasks & Goals (Coming Soon)
-            </div>
+            {/* Characters Field */}
+            <Field>
+              <FieldLabel>Link to Characters</FieldLabel>
+              {availableCharacters.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No characters found.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {availableCharacters.map((character) => {
+                    const isSelected = selectedCharacterIds.includes(character.id)
+                    return (
+                      <button
+                        key={character.id}
+                        type="button"
+                        onClick={() => toggleCharacter(character.id)}
+                        className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors"
+                        style={{
+                          borderColor: character.color_theme,
+                          backgroundColor: isSelected ? character.color_theme : 'transparent',
+                          color: isSelected ? '#fff' : 'inherit',
+                        }}
+                      >
+                        {isSelected && <FaCheck className="h-3 w-3" />}
+                        {character.title}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+              <FieldDescription>
+                Select characters this skill will contribute XP to.
+              </FieldDescription>
+            </Field>
 
             <Field orientation="horizontal">
               <Button type="submit" disabled={isSubmitting}>

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types' 
+import { Json } from '@/lib/database.types'
 import { calculateXPForLevel } from '@/lib/utils/skills'
 import { 
   IconData,
@@ -21,39 +22,72 @@ type SkillRow = Database['public']['Tables']['skills']['Row']
 type SkillInsert = Database['public']['Tables']['skills']['Insert']
 type SkillUpdate = Database['public']['Tables']['skills']['Update']
 
+type HabitStatus = Database["public"]["Enums"]["habit_status"]
+type TypeStatus = Database["public"]["Enums"]["task_status"]
+type GoalStatus = Database["public"]["Enums"]["goal_status"]
+
 type SkillRowWithCharacters = SkillRow & {
   skill_characters: {
     characters: {
       id: string
       title: string 
+      icon: unknown
       color_theme: string 
-      icon: JSON
     } | null
   }[]
 }
 
 type SkillRowWithLinks = SkillRowWithCharacters & {
+  habit_skills: {
+    habits: {
+      id: string
+      title: string 
+      icon: Json 
+      status: HabitStatus
+    } | null
+  }[]
   task_skills: {
-    id: string
-    title: string 
-    status: string
-    icon: JSON
-  }
+    tasks: {
+      id: string
+      title: string 
+      icon: Json
+      status: TypeStatus
+    } | null
+  }[]
+  goal_skills: {
+    goals: {
+      id: string 
+      title: string 
+      icon: Json 
+      status: GoalStatus
+    } | null
+  }[]
 }
 
 // =======================================
 // DATABASE FUNCTIONS
 // =======================================
 /** -------------------------------------
- * Fetch all skills for the current user
+ * Fetch all skills for the current user,
+ * including any linked characters
  * --------------------------------------
  */
-export async function fetchSkills(): Promise<SkillRow[]> {
+export async function fetchSkills(): Promise<Skill[]> {
   const supabase = createClient()
-  
+
   const { data, error } = await supabase
     .from('skills')
-    .select('*')
+    .select(`
+      *,
+      skill_characters (
+        characters (
+          id,
+          title,
+          icon,
+          color_theme
+        )
+      )
+    `)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -61,7 +95,27 @@ export async function fetchSkills(): Promise<SkillRow[]> {
     throw error
   }
 
-  return data || []
+  return (data || []).map((row: SkillRowWithCharacters): Skill => ({
+    id: row.id,
+    title: row.title,
+    icon: row.icon as unknown as IconData,
+    description: row.description ?? undefined,
+    tags: row.tags ?? undefined,
+    level: row.level ?? 1,
+    current_xp: row.current_xp ?? 0,
+    xp_to_next_level: row.xp_to_next_level ?? 0,
+    created_at: row.created_at ?? '',
+    updated_at: row.updated_at ?? '',
+    characters: row.skill_characters
+      .map((sc) => sc.characters)
+      .filter((sc): sc is NonNullable<typeof sc> => sc !== null)
+      .map((sc) => ({
+        id: sc.id,
+        title: sc.title,
+        icon: sc.icon as unknown as IconData,
+        color_theme: sc.color_theme,
+      })),
+  }))
 }
 
 /**-------------------------------------
@@ -98,6 +152,18 @@ export async function createSkill(input: CreateSkillInput): Promise<SkillRow> {
   if (error) {
     console.error('Error creating skill:', error)
     throw error
+  }
+
+  if (input.character_ids && input.character_ids.length > 0) {
+    const links = input.character_ids.map((character_id) => ({
+      skill_id: data.id,
+      character_id,
+    }))
+    const { error: linkError } = await supabase.from('skill_characters').insert(links)
+    if (linkError) {
+      console.error('Error linking characters to skill:', linkError)
+      throw linkError
+    }
   }
 
   return data

@@ -6,6 +6,7 @@ import { IconData } from '@/lib/types/icon'
 import { renderIcon } from '@/lib/utils/icon'
 import { Character } from '@/lib/types/character'
 import { CharacterAvatarData } from '@/lib/types/character'
+import { AvatarRenderer } from './avatars/avatar-renderer'
 import { getProgressPercentage } from '@/lib/utils/character'
 import { Progress } from '@/components/ui/progress'
 import {
@@ -24,21 +25,6 @@ interface CharacterCardProps {
 }
 
 // =======================================
-// AVATAR ARCHETYPES (mirrors CreateCharacterModal)
-// =======================================
-
-const AVATAR_ARCHETYPES: Record<string, string> = {
-  warrior:   '⚔️',
-  scholar:   '📚',
-  explorer:  '🧭',
-  athlete:   '🏃',
-  artisan:   '🎨',
-  mystic:    '🔮',
-  healer:    '💚',
-  architect: '🏛️',
-}
-
-// =======================================
 // MAIN COMPONENT
 // =======================================
 
@@ -48,10 +34,8 @@ export function CharacterCard({
     className 
   }: CharacterCardProps) {
   const progressPercentage = getProgressPercentage(character.current_xp, character.xp_to_next_level)
-  
-  const avatar = character.avatar as unknown as CharacterAvatarData | null
 
-  const avatarEmoji = avatar ? AVATAR_ARCHETYPES[avatar.archetype_id] : null
+  const avatar = character.avatar
 
   // Effective clothing color: explicit override, or falls back to character's color theme
   const clothingColor = avatar?.clothing_color ?? character.color_theme
@@ -123,39 +107,44 @@ export function CharacterCard({
         </CardHeader>
 
         {/* Avatar Preview (if set) */}
-        {avatarEmoji && (
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl border"
-              style={{
-                backgroundColor: clothingColor + '22',
-                borderColor: clothingColor + '55',
-              }}
-            >
-              {avatarEmoji}
+        {avatar && (
+        <div className="flex items-center gap-3">
+          <div
+            className="shrink-0 rounded-xl border overflow-hidden"
+            style={{
+              backgroundColor: clothingColor + '22',
+              borderColor: clothingColor + '55',
+            }}
+          >
+            <AvatarRenderer
+              archetypeId={avatar.archetype_id}
+              skinTone={avatar.skin_tone}
+              clothingColor={clothingColor}
+              size={48}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1.5">
+              <div
+                className="w-2.5 h-2.5 rounded-full border border-border/50"
+                style={{ backgroundColor: avatar.skin_tone }}
+              />
+              <span className="text-xs text-muted-foreground capitalize">
+                {avatar.archetype_id}
+              </span>
             </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-1.5">
-                <div
-                  className="w-2.5 h-2.5 rounded-full border border-border/50"
-                  style={{ backgroundColor: avatar!.skin_tone }}
-                />
-                <span className="text-xs text-muted-foreground capitalize">
-                  {avatar!.archetype_id}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div
-                  className="w-2.5 h-2.5 rounded-full border border-border/50"
-                  style={{ backgroundColor: clothingColor }}
-                />
-                <span className="text-xs text-muted-foreground">
-                  {avatar!.clothing_color ? 'Custom color' : 'Theme color'}
-                </span>
-              </div>
+            <div className="flex items-center gap-1.5">
+              <div
+                className="w-2.5 h-2.5 rounded-full border border-border/50"
+                style={{ backgroundColor: clothingColor }}
+              />
+              <span className="text-xs text-muted-foreground">
+                {avatar.clothing_color ? 'Custom color' : 'Theme color'}
+              </span>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
         {/* Description */}
         <CardDescription>

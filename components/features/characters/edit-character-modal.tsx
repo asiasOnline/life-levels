@@ -19,6 +19,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { IconPicker } from '@/components/layout/app/icon-picker'
 import { IconData, IconType } from '@/lib/types/icon'
 import { Character, CharacterAvatarData } from '@/lib/types/character'
+import { AVATAR_REGISTRY } from './avatars/avatar-registry'
+import { AvatarRenderer } from './avatars/avatar-renderer'
 import { updateCharacter } from '@/lib/actions/character'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -49,17 +51,6 @@ const SKIN_TONES = [
   { value: '#B07D50', label: 'Medium Dark'  },
   { value: '#7C4E2A', label: 'Dark'         },
   { value: '#4A2C15', label: 'Deep'         },
-]
-
-const AVATAR_ARCHETYPES = [
-  { id: 'warrior',   label: 'Warrior',   emoji: '⚔️'  },
-  { id: 'scholar',   label: 'Scholar',   emoji: '📚'  },
-  { id: 'explorer',  label: 'Explorer',  emoji: '🧭'  },
-  { id: 'athlete',   label: 'Athlete',   emoji: '🏃'  },
-  { id: 'artisan',   label: 'Artisan',   emoji: '🎨'  },
-  { id: 'mystic',    label: 'Mystic',    emoji: '🔮'  },
-  { id: 'healer',    label: 'Healer',    emoji: '💚'  },
-  { id: 'architect', label: 'Architect', emoji: '🏛️'  },
 ]
 
 // =======================================
@@ -336,26 +327,43 @@ export function EditCharacterModal({
                   Select an archetype or deselect the current one to remove the avatar entirely.
                 </p>
                 <div className="grid grid-cols-4 gap-2">
-                  {AVATAR_ARCHETYPES.map((archetype) => (
-                    <button
-                      key={archetype.id}
-                      type="button"
-                      onClick={() =>
-                        setSelectedArchetype(
-                          selectedArchetype === archetype.id ? null : archetype.id
-                        )
-                      }
-                      className={cn(
-                        'flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all text-xs',
-                        selectedArchetype === archetype.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-muted-foreground/40 hover:bg-muted/40'
-                      )}
-                    >
-                      <span className="text-2xl">{archetype.emoji}</span>
-                      <span className="font-medium text-foreground">{archetype.label}</span>
-                    </button>
-                  ))}
+                  {AVATAR_REGISTRY.map((archetype) => {
+                    const isLocked = archetype.lockedUntilLevel
+                      ? character.level < archetype.lockedUntilLevel
+                      : false
+                    const isSelected = selectedArchetype === archetype.id
+
+                    return (
+                      <button
+                        key={archetype.id}
+                        type="button"
+                        disabled={isLocked}
+                        onClick={() =>
+                          setSelectedArchetype(isSelected ? null : archetype.id)
+                        }
+                        className={cn(
+                          'relative flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all text-xs overflow-hidden',
+                          isSelected
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-muted-foreground/40 hover:bg-muted/40',
+                          isLocked && 'opacity-40 cursor-not-allowed hover:border-border hover:bg-transparent'
+                        )}
+                      >
+                        <AvatarRenderer
+                          archetypeId={archetype.id}
+                          skinTone={skinTone}
+                          clothingColor={effectiveClothing}
+                          size={48}
+                        />
+                        <span className="font-medium text-foreground">{archetype.label}</span>
+                        {isLocked && (
+                          <span className="absolute top-1 right-1 text-[10px] text-muted-foreground">
+                            Lv{archetype.lockedUntilLevel}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -436,16 +444,23 @@ export function EditCharacterModal({
                     <Label>Preview</Label>
                     <div className="flex items-center gap-4 p-4 rounded-xl border bg-muted/30">
                       <div
-                        className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl shadow-sm border"
+                        className="rounded-xl shadow-sm border overflow-hidden shrink-0"
                         style={{
                           backgroundColor: effectiveClothing + '22',
                           borderColor: effectiveClothing + '66',
                         }}
                       >
-                        {AVATAR_ARCHETYPES.find(a => a.id === selectedArchetype)?.emoji}
+                        <AvatarRenderer
+                          archetypeId={selectedArchetype!}
+                          skinTone={skinTone}
+                          clothingColor={effectiveClothing}
+                          size={64}
+                        />
                       </div>
                       <div className="space-y-1 text-sm">
-                        <p className="font-medium capitalize">{selectedArchetype}</p>
+                        <p className="font-medium capitalize">
+                          {AVATAR_REGISTRY.find(a => a.id === selectedArchetype)?.label}
+                        </p>
                         <div className="flex items-center gap-2">
                           <div
                             className="w-3 h-3 rounded-full"

@@ -27,6 +27,8 @@ import {
   DEFAULT_ICON_TYPE, 
   DEFAULT_ICON_COLOR 
 } from "@/lib/types/icon"
+import { AVATAR_REGISTRY } from './avatars/avatar-registry'
+import { AvatarRenderer } from './avatars/avatar-renderer'
 import { CharacterAvatarData } from '@/lib/types/character'
 import { createCharacter } from '@/lib/actions/character'
 import { cn } from '@/lib/utils'
@@ -57,18 +59,6 @@ const SKIN_TONES = [
   { value: '#B07D50', label: 'Medium Dark'  },
   { value: '#7C4E2A', label: 'Dark'         },
   { value: '#4A2C15', label: 'Deep'         },
-]
-
-// Avatar archetypes — swap emoji for real SVG assets when the library is ready
-const AVATAR_ARCHETYPES = [
-  { id: 'warrior',   label: 'Warrior',   emoji: '⚔️'  },
-  { id: 'scholar',   label: 'Scholar',   emoji: '📚'  },
-  { id: 'explorer',  label: 'Explorer',  emoji: '🧭'  },
-  { id: 'athlete',   label: 'Athlete',   emoji: '🏃'  },
-  { id: 'artisan',   label: 'Artisan',   emoji: '🎨'  },
-  { id: 'mystic',    label: 'Mystic',    emoji: '🔮'  },
-  { id: 'healer',    label: 'Healer',    emoji: '💚'  },
-  { id: 'architect', label: 'Architect', emoji: '🏛️'  },
 ]
 
 // =======================================
@@ -102,6 +92,7 @@ interface CreateCharacterModalProps {
   isOpen: boolean
   onClose: (open: boolean) => void
   onCharacterCreated?: () => void
+  characterLevel?: number // defaults to 1 for creation
 }
 
 // =======================================
@@ -112,13 +103,14 @@ export function CreateCharacterModal({
   isOpen,
   onClose,
   onCharacterCreated,
+  characterLevel = 1,
 }: CreateCharacterModalProps) {
-  const [activeTab, setActiveTab]           = useState<'basics' | 'avatar'>('basics')
+  const [activeTab, setActiveTab] = useState<'basics' | 'avatar'>('basics')
   const [selectedArchetype, setSelectedArchetype] = useState<string | null>(null)
-  const [skinTone, setSkinTone]             = useState<string>(SKIN_TONES[0].value)
-  const [clothingColor, setClothingColor]   = useState<string | null>(null) // null = follows color_theme
-  const [isSubmitting, setIsSubmitting]     = useState(false)
-  const [submitError, setSubmitError]       = useState<string | null>(null)
+  const [skinTone, setSkinTone] = useState<string>(SKIN_TONES[0].value)
+  const [clothingColor, setClothingColor] = useState<string | null>(null) // null = follow color_theme
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const form = useForm<CreateCharacterFormValues>({
     resolver: zodResolver(createCharacterSchema),
@@ -339,26 +331,42 @@ export function CreateCharacterModal({
                   Choose an avatar to represent this character. You can skip this and add one later.
                 </p>
                 <div className="grid grid-cols-4 gap-2">
-                  {AVATAR_ARCHETYPES.map((archetype) => (
-                    <button
-                      key={archetype.id}
-                      type="button"
-                      onClick={() =>
-                        setSelectedArchetype(
-                          selectedArchetype === archetype.id ? null : archetype.id
-                        )
-                      }
-                      className={cn(
-                        'flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all text-xs',
-                        selectedArchetype === archetype.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-muted-foreground/40 hover:bg-muted/40'
-                      )}
-                    >
-                      <span className="text-2xl">{archetype.emoji}</span>
-                      <span className="font-medium text-foreground">{archetype.label}</span>
-                    </button>
-                  ))}
+                  {AVATAR_REGISTRY.map((archetype) => {
+                    const isLocked = archetype.lockedUntilLevel
+                      ? characterLevel < archetype.lockedUntilLevel
+                      : false
+                    const isSelected = selectedArchetype === archetype.id
+
+                    return (
+                      <button
+                        key={archetype.id}
+                        type="button"
+                        disabled={isLocked}
+                        onClick={() =>
+                          setSelectedArchetype(isSelected ? null : archetype.id)
+                        }
+                        className={cn(
+                          'relative flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all text-xs overflow-hidden', // add overflow-hidden
+                          isSelected
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-muted-foreground/40 hover:bg-muted/40',
+                          isLocked && 'opacity-40 cursor-not-allowed hover:border-border hover:bg-transparent'
+                        )}
+                      >
+                        <AvatarRenderer
+                          archetypeId={archetype.id}
+                          skinTone={skinTone}
+                          clothingColor={effectiveClothingColor}
+                        />
+                        <span className="font-medium text-foreground">{archetype.label}</span>
+                        {isLocked && (
+                          <span className="absolute top-1 right-1 text-[10px] text-muted-foreground">
+                            Lv{archetype.lockedUntilLevel}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -438,17 +446,23 @@ export function CreateCharacterModal({
                   {/* Live avatar preview */}
                   <Field>
                     <FieldLabel>Preview</FieldLabel>
-                    <div className="flex items-center gap-4 p-4 rounded-xl border bg-muted/30">
-                      <div
-                        className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl shadow-sm border"
-                        style={{ backgroundColor: effectiveClothingColor + '22', borderColor: effectiveClothingColor + '66' }}
-                      >
-                        {AVATAR_ARCHETYPES.find(a => a.id === selectedArchetype)?.emoji}
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        <p className="font-medium">
-                          {AVATAR_ARCHETYPES.find(a => a.id === selectedArchetype)?.label}
-                        </p>
+                    <div
+                      className="w-16 h-16 rounded-xl flex items-center justify-center shadow-sm border overflow-hidden"
+                      style={{ backgroundColor: effectiveClothingColor + '22', borderColor: effectiveClothingColor + '66' }}
+                    >
+                      {selectedArchetype && (
+                        <AvatarRenderer
+                          archetypeId={selectedArchetype}
+                          skinTone={skinTone}
+                          clothingColor={effectiveClothingColor}
+                          size={56}
+                        />
+                      )}
+                    </div>
+                    <div className="space-y-1 text-sm">
+                      <p className="font-medium">
+                        {AVATAR_REGISTRY.find(a => a.id === selectedArchetype)?.label}
+                      </p>
                         <div className="flex items-center gap-2">
                           <div
                             className="w-3 h-3 rounded-full"
@@ -471,7 +485,6 @@ export function CreateCharacterModal({
                           </span>
                         </div>
                       </div>
-                    </div>
                   </Field>
                 </>
               )}

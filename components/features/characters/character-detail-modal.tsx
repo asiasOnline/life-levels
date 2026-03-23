@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Character } from '@/lib/types/character'
 import { IconData } from '@/lib/types/icon'
+import { AVATAR_REGISTRY } from './avatars/avatar-registry'
+import { AvatarRenderer } from './avatars/avatar-renderer'
 import { CharacterAvatarData } from '@/lib/types/character'
 import { renderIcon } from '@/lib/utils/icon'
 import { Badge } from '@/components/ui/badge'
@@ -40,22 +42,6 @@ import {
   deleteCharacter 
 } from '@/lib/actions/character'
 
-
-// =======================================
-// CONSTANTS
-// =======================================
-
-const AVATAR_ARCHETYPES: Record<string, string> = {
-  warrior:   '⚔️',
-  scholar:   '📚',
-  explorer:  '🧭',
-  athlete:   '🏃',
-  artisan:   '🎨',
-  mystic:    '🔮',
-  healer:    '💚',
-  architect: '🏛️',
-}
-
 // =======================================
 // PROPS
 // =======================================
@@ -90,12 +76,11 @@ export function CharacterDetailModal({
   const avatar = character.avatar as CharacterAvatarData | null
   const icon   = character.icon   as IconData
 
-  const avatarEmoji    = avatar ? AVATAR_ARCHETYPES[avatar.archetype_id] : null
   const clothingColor  = avatar?.clothing_color ?? character.color_theme
   const progressPct    = Math.min(100, Math.round((character.current_xp / character.xp_to_next_level) * 100))
   const xpRemaining    = character.xp_to_next_level - character.current_xp
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  // ── Handlers ───────────────────────────────
 
   async function handleArchiveToggle() {
     if (!character) return
@@ -143,7 +128,7 @@ export function CharacterDetailModal({
     }
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────
 
   return (
     <>
@@ -215,7 +200,7 @@ export function CharacterDetailModal({
               <TabsTrigger value="activity">Activity</TabsTrigger>
             </TabsList>
 
-            {/* ── OVERVIEW TAB ──────────────────────────────────────── */}
+            {/* ── OVERVIEW TAB ─────────────*/}
             <TabsContent value="overview" className="space-y-6">
 
               {/* Level & XP */}
@@ -261,25 +246,32 @@ export function CharacterDetailModal({
               </div>
 
               {/* Avatar */}
-              {avatarEmoji && (
+              {avatar && (
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold">Avatar</h3>
                   <div className="flex items-center gap-4 rounded-lg border bg-muted/30 px-4 py-3">
                     <div
-                      className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border text-3xl"
+                      className="shrink-0 rounded-xl border overflow-hidden"
                       style={{
                         backgroundColor: clothingColor + '22',
                         borderColor: clothingColor + '55',
                       }}
                     >
-                      {avatarEmoji}
+                      <AvatarRenderer
+                        archetypeId={avatar.archetype_id}
+                        skinTone={avatar.skin_tone}
+                        clothingColor={clothingColor}
+                        size={56}
+                      />
                     </div>
                     <div className="space-y-1.5 text-sm">
-                      <p className="font-medium capitalize">{avatar!.archetype_id}</p>
+                      <p className="font-medium">
+                        {AVATAR_REGISTRY.find(a => a.id === avatar.archetype_id)?.label ?? avatar.archetype_id}
+                      </p>
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <div
                           className="w-3 h-3 rounded-full border border-border/50"
-                          style={{ backgroundColor: avatar!.skin_tone }}
+                          style={{ backgroundColor: avatar.skin_tone }}
                         />
                         <span>Skin tone</span>
                       </div>
@@ -289,7 +281,7 @@ export function CharacterDetailModal({
                           style={{ backgroundColor: clothingColor }}
                         />
                         <span>
-                          {avatar!.clothing_color ? 'Custom clothing color' : 'Theme color clothing'}
+                          {avatar.clothing_color ? 'Custom clothing color' : 'Theme color clothing'}
                         </span>
                       </div>
                     </div>
@@ -335,7 +327,7 @@ export function CharacterDetailModal({
               </div>
             </TabsContent>
 
-            {/* ── ACTIVITY TAB ──────────────────────────────────────── */}
+            {/* ── ACTIVITY TAB ──────────── */}
             <TabsContent value="activity" className="space-y-4">
               <p className="text-sm text-muted-foreground">
                 Activities linked to this character contribute XP and Gold on completion.
@@ -409,7 +401,7 @@ export function CharacterDetailModal({
         </DialogContent>
       </Dialog>
 
-      {/* ── Edit Modal ───────────────────────────────────────────────────────── */}
+      {/* ── Edit Modal ──────────────────── */}
       <EditCharacterModal
         character={character}
         open={isEditModalOpen}
@@ -420,7 +412,7 @@ export function CharacterDetailModal({
         }}
       />
 
-      {/* ── Archive / Reactivate Confirmation ────────────────────────────────── */}
+      {/* ── Archive / Reactivate Confirmation ───────── */}
       <AlertDialog open={isArchiveDialogOpen} onOpenChange={setIsArchiveDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -446,7 +438,7 @@ export function CharacterDetailModal({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ── Delete Confirmation ───────────────────────────────────────────────── */}
+      {/* ── Delete Confirmation ─────────── */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

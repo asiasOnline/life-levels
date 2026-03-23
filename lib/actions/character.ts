@@ -92,7 +92,7 @@ export async function createCharacter(input: CreateCharacterInput): Promise<Char
       color: input.icon_color || DEFAULT_ICON_COLOR,
     },
     description: input.description || null,
-    avatar: input.avatar ?? null,
+    avatar: (input.avatar ?? null) as unknown as CharacterInsert['avatar'],
     level: 1,
     current_xp: 0,
     xp_to_next_level: calculateXPForLevel(1),
@@ -125,15 +125,17 @@ export async function updateCharacter(
   const supabase = createClient()
 
   const characterUpdate: CharacterUpdate = {
-    ...(updates.title !== undefined       && { title: updates.title }),
+    ...(updates.title !== undefined && { title: updates.title }),
     ...(updates.color_theme !== undefined && { color_theme: updates.color_theme }),
-    ...(updates.icon !== undefined        && {
-                                                type: updates.icon_type || DEFAULT_ICON_TYPE,
-                                                value: updates.icon || DEFAULT_ICON,
-                                                color: updates.icon_color,
-                                              }),
+    ...(updates.icon !== undefined && {
+      icon: {
+        type: updates.icon_type || DEFAULT_ICON_TYPE,
+        value: updates.icon || DEFAULT_ICON,
+        color: updates.icon_color,
+      },
+    }),
     ...(updates.description !== undefined && { description: updates.description }),
-    ...(updates.avatar !== undefined      && { avatar: updates.avatar }),
+    ...(updates.avatar !== undefined && { avatar: updates.avatar as unknown as CharacterUpdate['avatar'] }),
   }
 
   const { data, error } = await supabase
@@ -203,14 +205,20 @@ export async function reactivateCharacter(id: string): Promise<CharacterRow> {
 export async function deleteCharacter(id: string): Promise<void> {
   const supabase = createClient()
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('characters')
     .delete()
     .eq('id', id)
+    .select()
 
   if (error) {
     console.error('Error deleting character:', error)
     throw error
+  }
+
+  if (!data || data.length === 0) {
+    console.error('Delete character: no rows deleted (RLS may be blocking deletion for id:', id, ')')
+    throw new Error('Character could not be deleted.')
   }
 }
 
