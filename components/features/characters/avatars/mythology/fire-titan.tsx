@@ -1,52 +1,54 @@
+import { useId } from 'react'
 import type { AvatarProps } from "../avatar-registry"; 
 
 export const FireTitan: React.FC<AvatarProps> = ({
     skinTone, 
     clothingColor,
     className
-}) => (
+}) => {
+    const uid = useId().replace(/:/g, '') 
+    
+    return (
     <svg 
     id="icons" 
-    height="512" 
     viewBox="0 0 500 500" 
-    width="512" 
     xmlns="http://www.w3.org/2000/svg" 
     xmlnsXlink="http://www.w3.org/1999/xlink"
     >
-    <linearGradient id="linear-gradient" gradientUnits="userSpaceOnUse" x1="149.625" x2="66.736" y1="224.176" y2="114.257">
-        <stop offset="0" stop-color="#ffd3d1"/>
-        <stop offset="1" stop-color="#f59f9b"/>
+    <linearGradient id={`${uid}-lg1`} gradientUnits="userSpaceOnUse" x1="149.625" x2="66.736" y1="224.176" y2="114.257">
+        <stop offset="0" stopColor="#ffd3d1"/>
+        <stop offset="1" stopColor="#f59f9b"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-2" gradientUnits="userSpaceOnUse" x1="456.517" x2="307.862" y1="132.611" y2="322.709">
-        <stop offset="0" stop-color="#ed4b56"/>
-        <stop offset="1" stop-color="#a13856"/>
+        <stop offset="0" stopColor="#ed4b56"/>
+        <stop offset="1" stopColor="#a13856"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-3" x1="254.728" x2="320.239" xlinkHref="#linear-gradient" y1="311.386" y2="453.495"/>
     
     <linearGradient id="linear-gradient-4" gradientUnits="userSpaceOnUse" x1="140.984" x2="24.098" y1="-26.731" y2="105.045">
-        <stop offset="0" stop-color="#ffc275"/>
-        <stop offset="1" stop-color="#ff556b"/>
+        <stop offset="0" stopColor="#ffc275"/>
+        <stop offset="1" stopColor="#ff556b"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-5" gradientUnits="userSpaceOnUse" x1="401.481" x2="228.561" y1="97.912" y2="307.051">
-        <stop offset="0" stop-color="#ff6b5b"/>
-        <stop offset="1" stop-color="#ff835b"/>
+        <stop offset="0" stopColor="#ff6b5b"/>
+        <stop offset="1" stopColor="#ff835b"/>
     </linearGradient>
 
     <linearGradient id="linear-gradient-6" x1="379.186" x2="247.868" xlinkHref="#linear-gradient-2" y1="108.744" y2="254.323"/>
     
     <linearGradient id="linear-gradient-7" gradientUnits="userSpaceOnUse" x1="257.288" x2="257.288" y1="120.452" y2="293.483">
-        <stop offset="0" stop-color="#545676"/>
-        <stop offset=".996" stop-color="#473e61"/>
+        <stop offset="0" stopColor="#545676"/>
+        <stop offset=".996" stopColor="#473e61"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-8" x1="233.116" x2="233.116" xlinkHref="#linear-gradient" y1="205.132" y2="157.273"/>
     
     <linearGradient id="linear-gradient-9" gradientUnits="userSpaceOnUse" x1="54.513" x2="55.519" y1="198.172" y2="78.422">
-        <stop offset="0" stop-color="#6b1c39"/>
-        <stop offset="1" stop-color="#a94d71"/>
+        <stop offset="0" stopColor="#6b1c39"/>
+        <stop offset="1" stopColor="#a94d71"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-10" x1="51.562" x2="45.82" xlinkHref="#linear-gradient" y1="117.652" y2="166.075"/>
@@ -108,4 +110,5 @@ export const FireTitan: React.FC<AvatarProps> = ({
         <path d="m346.6 195.958c5.379-.091 5.379-8.094 0-8.184-5.376.091-5.376 8.094 0 8.184z"/>
     </g>
     </svg>
-)
+    )
+}

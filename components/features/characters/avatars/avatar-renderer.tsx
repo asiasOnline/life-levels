@@ -10,7 +10,7 @@ export const AvatarRenderer: React.FC<Props> = ({
   archetypeId,
   skinTone,
   clothingColor,
-  size = 48,
+  size = 96,
   className,
   fallback = null,
 }) => {

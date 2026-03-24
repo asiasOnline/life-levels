@@ -14,13 +14,13 @@ export const HarvestGoddess: React.FC<AvatarProps> = ({
     xmlnsXlink="http://www.w3.org/1999/xlink"
     >
     <linearGradient id="linear-gradient" gradientUnits="userSpaceOnUse" x1="241.481" x2="280.266" y1="40.268" y2="80.413">
-        <stop offset="0" stop-color="#ffc175"/>
-        <stop offset="1" stop-color="#ed9e4f"/>
+        <stop offset="0" stopColor="#ffc175"/>
+        <stop offset="1" stopColor="#ed9e4f"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-2" gradientUnits="userSpaceOnUse" x1="409.361" x2="385.912" y1="40.186" y2="70.083">
-        <stop offset="0" stop-color="#f5916b"/>
-        <stop offset="1" stop-color="#e36e45"/>
+        <stop offset="0" stopColor="#f5916b"/>
+        <stop offset="1" stopColor="#e36e45"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-3" gradientTransform="matrix(.998 .064 -.064 .998 2.923 -18.076)" x1="274.293" x2="313.077" xlinkHref="#linear-gradient" y1="14.129" y2="54.274"/>
@@ -28,13 +28,13 @@ export const HarvestGoddess: React.FC<AvatarProps> = ({
     <linearGradient id="linear-gradient-4" x1="387.085" x2="348.981" xlinkHref="#linear-gradient-2" y1="14.397" y2="47.225"/>
     
     <linearGradient id="linear-gradient-5" gradientUnits="userSpaceOnUse" x1="338.375" x2="338.375" y1="72.359" y2="348.358">
-        <stop offset="0" stop-color="#b36d8c"/>
-        <stop offset="1" stop-color="#7f4a67"/>
+        <stop offset="0" stopColor="#b36d8c"/>
+        <stop offset="1" stopColor="#7f4a67"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-6" gradientUnits="userSpaceOnUse" x1="311.438" x2="311.438" y1="171.514" y2="234.038">
-        <stop offset="0" stop-color="#ffd3d1"/>
-        <stop offset="1" stop-color="#f59f9b"/>
+        <stop offset="0" stopColor="#ffd3d1"/>
+        <stop offset="1" stopColor="#f59f9b"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-7" x1="318.731" x2="318.731" xlinkHref="#linear-gradient-6" y1="142.339" y2="67.989"/>
@@ -42,18 +42,18 @@ export const HarvestGoddess: React.FC<AvatarProps> = ({
     <linearGradient id="linear-gradient-8" x1="387.459" x2="450.706" xlinkHref="#linear-gradient-6" y1="218.466" y2="429.292"/>
     
     <linearGradient id="linear-gradient-9" gradientUnits="userSpaceOnUse" x1="327.239" x2="303.457" y1="428.377" y2="259.069">
-        <stop offset="0" stop-color="#80bcbe"/>
-        <stop offset="1" stop-color="#97c4ae"/>
+        <stop offset="0" stopColor="#80bcbe"/>
+        <stop offset="1" stopColor="#97c4ae"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-10" gradientUnits="userSpaceOnUse" x1="374.778" x2="353.553" y1="384.307" y2="478.23">
-        <stop offset="0" stop-color="#ffe0a6"/>
-        <stop offset="1" stop-color="#ffae85"/>
+        <stop offset="0" stopColor="#ffe0a6"/>
+        <stop offset="1" stopColor="#ffae85"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-11" gradientUnits="userSpaceOnUse" x1="305.574" x2="274.334" y1="200.695" y2="360.994">
-        <stop offset="0" stop-color="#659380"/>
-        <stop offset="1" stop-color="#3d687c"/>
+        <stop offset="0" stopColor="#659380"/>
+        <stop offset="1" stopColor="#3d687c"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-12" x1="106.698" x2="250.137" xlinkHref="#linear-gradient-2" y1="44.432" y2="350.304"/>

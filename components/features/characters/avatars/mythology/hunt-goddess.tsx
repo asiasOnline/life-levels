@@ -7,35 +7,33 @@ export const HuntGoddess: React.FC<AvatarProps> = ({
 }) => (
     <svg 
     id="icons" 
-    height="512" 
     viewBox="0 0 500 500" 
-    width="512" 
     xmlns="http://www.w3.org/2000/svg" 
     xmlnsXlink="http://www.w3.org/1999/xlink"
     >
     <linearGradient id="linear-gradient" gradientUnits="userSpaceOnUse" x1="146.493" x2="202.501" y1="172.036" y2="31.334">
-        <stop offset="0" stop-color="#ad5248"/>
-        <stop offset="1" stop-color="#eb8380"/>
+        <stop offset="0" stopColor="#ad5248"/>
+        <stop offset="1" stopColor="#eb8380"/>
     </linearGradient>
 
     <linearGradient id="linear-gradient-2" gradientUnits="userSpaceOnUse" x1="115.235" x2="213.27" y1="181.442" y2="428.697">
-        <stop offset="0" stop-color="#d19798"/>
-        <stop offset="1" stop-color="#bc7983"/>
+        <stop offset="0" stopColor="#d19798"/>
+        <stop offset="1" stopColor="#bc7983"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-3" gradientUnits="userSpaceOnUse" x1="186.527" x2="246.389" y1="206.717" y2="414.064">
-        <stop offset="0" stop-color="#8e4a55"/>
-        <stop offset="1" stop-color="#873b4a"/>
+        <stop offset="0" stopColor="#8e4a55"/>
+        <stop offset="1" stopColor="#873b4a"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-4" gradientUnits="userSpaceOnUse" x1="198.625" x2="217.626" y1="146.041" y2="187.319">
-        <stop offset="0" stop-color="#afc3ed"/>
-        <stop offset="1" stop-color="#889bdb"/>
+        <stop offset="0" stopColor="#afc3ed"/>
+        <stop offset="1" stopColor="#889bdb"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-5" gradientUnits="userSpaceOnUse" x1="184.026" x2="203.028" y1="152.761" y2="194.039">
-        <stop offset="0" stop-color="#eafeff"/>
-        <stop offset="1" stop-color="#c3d6ff"/>
+        <stop offset="0" stopColor="#eafeff"/>
+        <stop offset="1" stopColor="#c3d6ff"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-6" x1="214.856" x2="233.857" xlinkHref="#linear-gradient-5" y1="138.569" y2="179.848"/>
@@ -45,30 +43,30 @@ export const HuntGoddess: React.FC<AvatarProps> = ({
     <linearGradient id="linear-gradient-8" x1="411.808" x2="460.986" xlinkHref="#linear-gradient" y1="397.634" y2="189.996"/>
     
     <linearGradient id="linear-gradient-9" gradientTransform="matrix(.996 .085 -.085 .996 27.365 -32.708)" gradientUnits="userSpaceOnUse" x1="386.616" x2="429.861" y1="399.756" y2="426.905">
-        <stop offset="0" stop-color="#ffd3d1"/>
-        <stop offset="1" stop-color="#f59f9b"/>
+        <stop offset="0" stopColor="#ffd3d1"/>
+        <stop offset="1" stopColor="#f59f9b"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-10" gradientUnits="userSpaceOnUse" x1="272.035" x2="234.503" y1="257.548" y2="221.19">
-        <stop offset="0" stop-color="#893d55"/>
-        <stop offset="1" stop-color="#c76e8d"/>
+        <stop offset="0" stopColor="#893d55"/>
+        <stop offset="1" stopColor="#c76e8d"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-11" gradientUnits="userSpaceOnUse" x1="288.439" x2="312.496" y1="304.097" y2="447.984">
-        <stop offset="0" stop-color="#fff"/>
-        <stop offset="1" stop-color="#ced9ff"/>
+        <stop offset="0" stopColor="#fff"/>
+        <stop offset="1" stopColor="#ced9ff"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-12" gradientUnits="userSpaceOnUse" x1="344.99" x2="287.21" y1="500.411" y2="238.753">
-        <stop offset="0" stop-color="#7a89b9"/>
-        <stop offset="1" stop-color="#a6b4e7"/>
+        <stop offset="0" stopColor="#7a89b9"/>
+        <stop offset="1" stopColor="#a6b4e7"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-13" x1="293.688" x2="241.079" xlinkHref="#linear-gradient-9" y1="235.014" y2="480.854"/>
     
     <linearGradient id="linear-gradient-14" gradientUnits="userSpaceOnUse" x1="293.841" x2="304.975" y1="88.629" y2="154.781">
-        <stop offset="0" stop-color="#9e5b7a"/>
-        <stop offset="1" stop-color="#723d5a"/>
+        <stop offset="0" stopColor="#9e5b7a"/>
+        <stop offset="1" stopColor="#723d5a"/>
     </linearGradient>
     
     <linearGradient id="linear-gradient-15" x1="308.166" x2="308.166" xlinkHref="#linear-gradient-9" y1="208.346" y2="134.388"/>

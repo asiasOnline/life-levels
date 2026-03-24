@@ -1,6 +1,6 @@
 import type { AvatarProps } from "../avatar-registry"; 
 
-export const Centaur: React.FC<AvatarProps> = ({
+export const LoveGod: React.FC<AvatarProps> = ({
     skinTone, 
     clothingColor,
     className
