@@ -1,10 +1,14 @@
+import { useId } from 'react'
 import type { AvatarProps } from "../avatar-registry"; 
 
 export const ThunderGod: React.FC<AvatarProps> = ({
     skinTone, 
     clothingColor,
     className
-}) => (
+}) => {
+    const uid = useId().replace(/:/g, '') 
+
+    return (
     <svg 
     id="icons" 
     viewBox="0 0 500 500" 
@@ -14,83 +18,83 @@ export const ThunderGod: React.FC<AvatarProps> = ({
     >
     
     <linearGradient 
-    id="linear-gradient" 
+    id={`${uid}-lg1`} 
     gradientUnits="userSpaceOnUse" x1="172.232" x2="161.675" y1="271.669" y2="413.128">
         <stop offset="0" stopColor="#bbccf7"/>
         <stop offset="1" stopColor="#a1b0dd"/>
     </linearGradient>
     
-    <linearGradient id="linear-gradient-2" gradientUnits="userSpaceOnUse" x1="415.693" x2="105.52" y1="16.969" y2="150.731">
+    <linearGradient id={`${uid}-lg2`} gradientUnits="userSpaceOnUse" x1="415.693" x2="105.52" y1="16.969" y2="150.731">
         <stop offset="0" stopColor="#b3c5ff"/>
         <stop offset="1" stopColor="#688afc"/>
     </linearGradient>
     
-    <linearGradient id="linear-gradient-3" gradientUnits="userSpaceOnUse" x1="387.27" x2="77.097" y1="-48.94" y2="84.822">
+    <linearGradient id={`${uid}-lg3`} gradientUnits="userSpaceOnUse" x1="387.27" x2="77.097" y1="-48.94" y2="84.822">
         <stop offset="0" stopColor="#7d8fe0"/>
         <stop offset="1" stopColor="#3254d3"/>
     </linearGradient>
     
-    <linearGradient id="linear-gradient-4" x1="455.644" x2="145.472" xlinkHref="#linear-gradient-3" y1="109.61" y2="243.372"/>
+    <linearGradient id={`${uid}-lg4`}  x1="455.644" x2="145.472" xlinkHref={`#${uid}-lg3`} y1="109.61" y2="243.372"/>
     
-    <linearGradient id="linear-gradient-5" gradientUnits="userSpaceOnUse" x1="323.843" x2="323.843" y1="164.77" y2="291.977">
+    <linearGradient id={`${uid}-lg5`} gradientUnits="userSpaceOnUse" x1="323.843" x2="323.843" y1="164.77" y2="291.977">
         <stop offset="0" stopColor="#fff"/>
         <stop offset="1" stopColor="#f0fcff"/>
     </linearGradient>
     
-    <linearGradient id="linear-gradient-6" x1="318.951" x2="318.951" xlinkHref="#linear-gradient" y1="182.952" y2="323.187"/>
+    <linearGradient id={`${uid}-lg6`}  x1="318.951" x2="318.951" xlinkHref={`#${uid}-lg1`} y1="182.952" y2="323.187"/>
     
-    <linearGradient id="linear-gradient-7" gradientUnits="userSpaceOnUse" x1="438.977" x2="416.868" y1="309.32" y2="443.314">
+    <linearGradient id={`${uid}-lg7`}  gradientUnits="userSpaceOnUse" x1="438.977" x2="416.868" y1="309.32" y2="443.314">
         <stop offset="0" stopColor="#ffd3d1"/>
         <stop offset="1" stopColor="#f59f9b"/>
     </linearGradient>
     
-    <linearGradient id="linear-gradient-8" x1="111.499" x2="217.819" xlinkHref="#linear-gradient-7" y1="207.532" y2="370.301"/>
+    <linearGradient id={`${uid}-lg8`} x1="111.499" x2="217.819" xlinkHref={`#${uid}-lg7`} y1="207.532" y2="370.301"/>
     
-    <linearGradient id="linear-gradient-9" gradientUnits="userSpaceOnUse" x1="279.7" x2="287.454" y1="465.61" y2="302.767">
+    <linearGradient id={`${uid}-lg9`} gradientUnits="userSpaceOnUse" x1="279.7" x2="287.454" y1="465.61" y2="302.767">
         <stop offset="0" stopColor="#ffd3a8"/>
         <stop offset="1" stopColor="#ffe0ca"/>
     </linearGradient>
     
-    <linearGradient id="linear-gradient-10" gradientUnits="userSpaceOnUse" x1="394.767" x2="320.993" y1="253.745" y2="446.137">
+    <linearGradient id={`${uid}-lg10`} gradientUnits="userSpaceOnUse" x1="394.767" x2="320.993" y1="253.745" y2="446.137">
         <stop offset="0" stopColor="#f99a82"/>
         <stop offset="1" stopColor="#e78774"/>
     </linearGradient>
     
-    <linearGradient id="linear-gradient-11" x1="423.812" x2="351.933" xlinkHref="#linear-gradient-10" y1="266.14" y2="453.59"/>
+    <linearGradient id={`${uid}-lg11`} x1="423.812" x2="351.933" xlinkHref={`#${uid}-lg10`} y1="266.14" y2="453.59"/>
     
-    <linearGradient id="linear-gradient-12" x1="276.083" x2="276.083" xlinkHref="#linear-gradient-7" y1="176.982" y2="236.385"/>
+    <linearGradient id={`${uid}-lg12`} x1="276.083" x2="276.083" xlinkHref={`#${uid}-lg7`} y1="176.982" y2="236.385"/>
     
-    <linearGradient id="linear-gradient-13" x1="366.91" x2="297.773" xlinkHref="#linear-gradient-10" y1="247.583" y2="427.881"/>
+    <linearGradient id={`${uid}-lg13`} x1="366.91" x2="297.773" xlinkHref={`#${uid}-lg10`} y1="247.583" y2="427.881"/>
     
-    <linearGradient id="linear-gradient-14" x1="109.426" x2="109.966" xlinkHref="#linear-gradient-7" y1="148.535" y2="101.877"/>
+    <linearGradient id={`${uid}-lg14`} x1="109.426" x2="109.966" xlinkHref={`#${uid}-lg7`} y1="148.535" y2="101.877"/>
     
-    <linearGradient id="linear-gradient-15" x1="113.856" x2="144.273" xlinkHref="#linear-gradient-7" y1="165.89" y2="140.543"/>
+    <linearGradient id={`${uid}-lg15`} x1="113.856" x2="144.273" xlinkHref={`#${uid}-lg7`} y1="165.89" y2="140.543"/>
     
-    <linearGradient id="linear-gradient-16" x1="273.12" x2="269.187" xlinkHref="#linear-gradient-5" y1="227.375" y2="346.263"/>
+    <linearGradient id={`${uid}-lg16`} x1="273.12" x2="269.187" xlinkHref={`#${uid}-lg5`} y1="227.375" y2="346.263"/>
     
-    <linearGradient id="linear-gradient-17" x1="304.59" x2="232.711" xlinkHref="#linear-gradient-10" y1="220.424" y2="407.873"/>
+    <linearGradient id={`${uid}-lg17`} x1="304.59" x2="232.711" xlinkHref={`#${uid}-lg10`} y1="220.424" y2="407.873"/>
     
-    <linearGradient id="linear-gradient-18" x1="391.534" x2="313.052" xlinkHref="#linear-gradient-10" y1="253.514" y2="458.183"/>
+    <linearGradient id={`${uid}-lg18`} x1="391.534" x2="313.052" xlinkHref={`#${uid}-lg10`} y1="253.514" y2="458.183"/>
     
-    <linearGradient id="linear-gradient-19" x1="383.093" x2="390.845" xlinkHref="#linear-gradient-9" y1="470.455" y2="307.67"/>
+    <linearGradient id={`${uid}-lg19`} x1="383.093" x2="390.845" xlinkHref={`#${uid}-lg9`} y1="470.455" y2="307.67"/>
     
-    <linearGradient id="linear-gradient-20" x1="389.502" x2="317.623" xlinkHref="#linear-gradient-10" y1="252.984" y2="440.434"/>
+    <linearGradient id={`${uid}-lg20`} x1="389.502" x2="317.623" xlinkHref={`#${uid}-lg10`} y1="252.984" y2="440.434"/>
     
-    <linearGradient id="linear-gradient-21" x1="373.754" x2="301.874" xlinkHref="#linear-gradient-10" y1="246.945" y2="434.395"/>
+    <linearGradient id={`${uid}-lg21`} x1="373.754" x2="301.874" xlinkHref={`#${uid}-lg10`} y1="246.945" y2="434.395"/>
     
-    <linearGradient id="linear-gradient-22" gradientUnits="userSpaceOnUse" x1="361.173" x2="387.968" y1="235.257" y2="269.4">
+    <linearGradient id={`${uid}-lg22`}  gradientUnits="userSpaceOnUse" x1="361.173" x2="387.968" y1="235.257" y2="269.4">
         <stop offset="0" stopColor="#ffe0a6"/>
         <stop offset="1" stopColor="#ffae85"/>
     </linearGradient>
     
-    <linearGradient id="linear-gradient-23" gradientTransform="matrix(.887 -.016 .119 .775 10.603 62.36)" gradientUnits="userSpaceOnUse" x1="362.072" x2="385.791" y1="245.377" y2="245.377">
+    <linearGradient id={`${uid}-lg23`} gradientTransform="matrix(.887 -.016 .119 .775 10.603 62.36)" gradientUnits="userSpaceOnUse" x1="362.072" x2="385.791" y1="245.377" y2="245.377">
         <stop offset="0" stopColor="#ef7554"/>
         <stop offset="1" stopColor="#dd6049"/>
     </linearGradient>
     
-    <linearGradient id="linear-gradient-24" x1="271.215" x2="271.215" xlinkHref="#linear-gradient" y1="252.571" y2="382.22"/>
+    <linearGradient id={`${uid}-lg24`} x1="271.215" x2="271.215" xlinkHref={`#${uid}-lg1`} y1="252.571" y2="382.22"/>
     
-    <linearGradient id="linear-gradient-25" x1="332.459" x2="268.225" xlinkHref="#linear-gradient-10" y1="274.089" y2="441.6"/>
+    <linearGradient id={`${uid}-lg25`} x1="332.459" x2="268.225" xlinkHref={`#${uid}-lg10`} y1="274.089" y2="441.6"/>
     
     <path d="m218.1 341.689h-12.586l-60.2-7.789s-38.614 16.015-31.693 47.1c4.584 20.588 22.864 21.964 34.691 20.545 0 .006-1.711 45.4 63.216 39.277z" fill="url(#linear-gradient)"/>
     
@@ -173,4 +177,5 @@ export const ThunderGod: React.FC<AvatarProps> = ({
         <path d="m278.964 383.7c5.38-.091 5.379-8.094 0-8.185-5.379.085-5.378 8.091 0 8.185z"/>
     </g>
     </svg>
-)
+    )
+}

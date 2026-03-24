@@ -1,3 +1,5 @@
+"use server"
+
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types'
 import { 
@@ -58,8 +60,8 @@ export interface UpdateTaskInput {
     skill_ids?: string[]
     gold_reward?: number
     use_custom_xp?: boolean
-    custom_character_xp?: number
-    custom_skill_xp?: number
+    character_xp?: number
+    skill_xp?: number
 }
 
 // =======================================
@@ -176,8 +178,8 @@ export async function createTask(input: CreateTaskInput): Promise<TaskRow> {
     due_date: input.due_date || null,
     gold_reward: input.gold_reward ?? getDefaultGoldReward(input.difficulty),
     use_custom_xp: input.use_custom_xp ?? false,
-    custom_character_xp: input.use_custom_xp ? input.custom_character_xp : null,
-    custom_skill_xp: input.use_custom_xp ? input.custom_skill_xp : null,
+    character_xp: input.character_xp,
+    skill_xp: input.skill_xp,
   }
 
   // Insert task
@@ -238,8 +240,8 @@ export async function updateTask(id: string, updates: UpdateTaskInput): Promise<
   if (updates.due_date !== undefined) taskUpdate.due_date = updates.due_date || null
   if (updates.gold_reward !== undefined) taskUpdate.gold_reward = updates.gold_reward
   if (updates.use_custom_xp !== undefined) taskUpdate.use_custom_xp = updates.use_custom_xp
-  if (updates.custom_character_xp !== undefined) taskUpdate.custom_character_xp = updates.custom_character_xp
-  if (updates.custom_skill_xp !== undefined) taskUpdate.custom_skill_xp = updates.custom_skill_xp
+  if (updates.character_xp !== undefined) taskUpdate.character_xp = updates.character_xp
+  if (updates.skill_xp !== undefined) taskUpdate.skill_xp = updates.skill_xp
 
   // Update task
   const { data, error } = await supabase

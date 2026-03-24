@@ -3,6 +3,9 @@ import { BeautyGoddess } from "./mythology/beauty-goddess"
 import { BlacksmithGod } from "./mythology/blacksmith-god"
 import { Centaur } from "./mythology/centaur"
 import { Cyclops } from "./mythology/cyclops"
+import { FireTitan } from "./mythology/fire-titan"
+import { HarvestGoddess } from "./mythology/harvest-goddess"
+import { Hero } from "./mythology/hero"
 import { ThunderGod } from "./mythology/thunder-god"
 import { WisdomGoddess } from "./mythology/wisdom-goddess"
 import { Knight } from "./rpg/knight"
@@ -51,6 +54,24 @@ export const AVATAR_REGISTRY: AvatarArchetype[] = [
     label: 'Cyclops',
     component: Cyclops,
     tags: ['cyclops'],
+  },
+  {
+    id: 'fire-titan',
+    label: 'Fire Titan',
+    component: FireTitan,
+    tags: ['fire', 'titan'],
+  },
+  {
+    id: 'harvest-goddess',
+    label: 'Harvest Goddess',
+    component: HarvestGoddess,
+    tags: ['harvest'],
+  },
+  {
+    id: 'hero',
+    label: 'Hercules',
+    component: HarvestGoddess,
+    tags: ['heroic', 'hero'],
   },
   {
     id: 'thunder-god',
