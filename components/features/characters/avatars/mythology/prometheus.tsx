@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import type { AvatarProps } from "../avatar-registry"; 
 
-export const FireTitan: React.FC<AvatarProps> = ({
+export const Prometheus: React.FC<AvatarProps> = ({
     skinTone, 
     clothingColor,
     className

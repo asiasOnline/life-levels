@@ -1,13 +1,13 @@
-import { BalanceGoddess } from "./mythology/balance-goddess"
-import { BeautyGoddess } from "./mythology/beauty-goddess"
-import { BlacksmithGod } from "./mythology/blacksmith-god"
-import { Centaur } from "./mythology/centaur"
+import { Aphrodite } from "./mythology/aphrodite"
+import { Athena } from "./mythology/athena"
+import { Chiron } from "./mythology/chiron"
 import { Cyclops } from "./mythology/cyclops"
-import { FireTitan } from "./mythology/fire-titan"
-import { HarvestGoddess } from "./mythology/harvest-goddess"
-import { Hero } from "./mythology/hero"
-import { ThunderGod } from "./mythology/thunder-god"
-import { WisdomGoddess } from "./mythology/wisdom-goddess"
+import { Demeter } from "./mythology/demeter"
+import { Hephaestus } from "./mythology/hephaestus"
+import { Hercules } from "./mythology/hercules"
+import { Prometheus } from "./mythology/prometheus"
+import { Themis } from "./mythology/themis"
+import { Zeus } from "./mythology/zeus"
 import { Knight } from "./rpg/knight"
 
 export type AvatarProps = {
@@ -25,65 +25,65 @@ export type AvatarArchetype = {
 }
 
 export const AVATAR_REGISTRY: AvatarArchetype[] = [
-  {
-    id: 'balance-goddess',
-    label: 'Balance Goddess',
-    component: BalanceGoddess,
-    tags: ['justice', 'order', 'balance', 'themis'],
+    {
+    id: 'aphrodite',
+    label: 'Aphrodite',
+    component: Aphrodite,
+    tags: ['intellect', 'courage', 'leadership', 'strategy'],
+  },
+    {
+    id: 'athena',
+    label: 'Athena',
+    component: Athena,
+    tags: ['knowledge', 'creative'],
   },
   {
-    id: 'beauty-goddess',
-    label: 'Beauty Goddess',
-    component: BeautyGoddess,
-    tags: ['love', 'beauty', 'desire', 'fertility', 'aphrodite'],
-  },
-  {
-    id: 'blacksmith-god',
-    label: 'Blacksmith God',
-    component: BlacksmithGod,
-    tags: ['fire', 'blacksmith', 'machinery', 'crafting', 'hephaestus'],
-  },
-  {
-    id: 'centaur',
-    label: 'Centaur',
-    component: Centaur,
-    tags: ['centaur'],
+    id: 'chiron',
+    label: 'Chiron',
+    component: Chiron,
+    tags: ['wisdom', 'medicine', 'mentorship', 'harmony'],
   },
   {
     id: 'cyclops',
     label: 'Cyclops',
     component: Cyclops,
-    tags: ['cyclops'],
+    tags: ['primal', 'power', 'raw', 'chaos'],
   },
   {
-    id: 'fire-titan',
-    label: 'Fire Titan',
-    component: FireTitan,
-    tags: ['fire', 'titan'],
+    id: 'demeter',
+    label: 'Demeter',
+    component: Demeter,
+    tags: ['agriculture', 'gardening', 'fertility', 'harvest'],
   },
   {
-    id: 'harvest-goddess',
-    label: 'Harvest Goddess',
-    component: HarvestGoddess,
-    tags: ['harvest'],
+    id: 'hephaestus',
+    label: 'Hephaestus',
+    component: Hephaestus,
+    tags: ['skillful', 'creative', 'manufacturing', 'craftsmanship'],
   },
   {
-    id: 'hero',
+    id: 'hercules',
     label: 'Hercules',
-    component: HarvestGoddess,
-    tags: ['heroic', 'hero'],
+    component: Hercules,
+    tags: ['strength', 'perserverance', 'heroism', 'potential'],
   },
   {
-    id: 'thunder-god',
-    label: 'Thunder God',
-    component: ThunderGod,
-    tags: ['strength', 'physical'],
+    id: 'prometheus',
+    label: 'Prometheus',
+    component: Prometheus,
+    tags: ['rebellious', 'defiance', 'progress', 'enlightenment'],
   },
   {
-    id: 'wisdom-goddess',
-    label: 'Wisdom Goddess',
-    component: WisdomGoddess,
-    tags: ['knowledge', 'creative'],
+    id: 'themis',
+    label: 'Themis',
+    component: Themis,
+    tags: ['justice', 'respect', 'order', 'balance'],
+  },
+  {
+    id: 'zeus',
+    label: 'Zeus',
+    component: Zeus,
+    tags: ['power', 'authority', 'enforcement', 'decisiveness'],
   },
   {
     id: 'knight',

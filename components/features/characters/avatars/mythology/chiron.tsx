@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import type { AvatarProps } from "../avatar-registry"; 
 
-export const Centaur: React.FC<AvatarProps> = ({
+export const Chiron: React.FC<AvatarProps> = ({
     skinTone, 
     clothingColor,
     className

@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import type { AvatarProps } from "../avatar-registry"; 
 
-export const BlacksmithGod: React.FC<AvatarProps> = ({
+export const Hephaestus: React.FC<AvatarProps> = ({
     skinTone, 
     clothingColor,
     className
