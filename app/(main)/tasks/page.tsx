@@ -53,10 +53,11 @@ export default function TaskPage() {
         start_date: row.start_date || null,
         due_date: row.due_date || null,
         completed_at: row.completed_at || null,
+        use_custom_gold: row.use_custom_gold,
         gold_reward: row.gold_reward,
         use_custom_xp: row.use_custom_xp, 
-        custom_character_xp: row.custom_character_xp || null,
-        custom_skill_xp: row.custom_skill_xp || null, 
+        character_xp: row.character_xp,
+        skill_xp: row.skill_xp, 
         created_at: row.created_at,
         updated_at: row.updated_at,
       }))

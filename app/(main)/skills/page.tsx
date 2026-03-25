@@ -45,8 +45,8 @@ export default function SkillsPage() {
         current_xp: row.current_xp,
         xp_to_next_level: row.xp_to_next_level,
         tags: row.tags,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        created_at: row.created_at,
+        updated_at: row.updated_at,
       }))
       
       setSkills(skillsData)

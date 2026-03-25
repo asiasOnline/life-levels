@@ -1,4 +1,5 @@
 import { getUser } from '@/lib/auth/get-user'
+import { GoldContainer } from '@/components/features/stats/gold-container';
 import StatContainer from "@/components/features/stats/stat-container";
 import CharacterContainer from "@/components/features/characters/character-container";
 import NewEventButton from "@/components/features/schedule/new-event-button";
@@ -36,6 +37,7 @@ export default async function Dashboard() {
         <h1 className="text font-semibold">Dashboard</h1>
         <h1 className="text-3xl font-bold">Good Morning, {user.email}!</h1>
       </div>
+      <GoldContainer />
       <div className="flex">
         <div className="w-100">
           <StatContainer 

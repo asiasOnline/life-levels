@@ -49,8 +49,8 @@ export default function CharactersPage() {
         xp_to_next_level: row.xp_to_next_level,
         total_xp: row.total_xp,
         is_archived: row.is_archived,
-        created_at: new Date(row.created_at),
-        updated_at: new Date(row.updated_at),
+        created_at: row.created_at,
+        updated_at: row.updated_at,
       }))
       
       setCharacters(characterData)
