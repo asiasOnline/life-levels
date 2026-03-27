@@ -1,7 +1,3 @@
-/* #region View Mode */
-export type ViewMode = 'grid' | 'table'
-/* #endregion View Mode */
-
 /* #region Stat Types */
 export type StatType = 
   | 'health'

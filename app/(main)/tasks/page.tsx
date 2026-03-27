@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
-import { ViewMode } from "@/lib/types";
+import { ViewMode } from "@/components/layout/app/item-container-header";
 import { fetchTasks } from "@/lib/actions/tasks";
 import { TaskWithSkills } from "@/lib/actions/tasks";
 import TaskCard from "@/components/features/tasks/task-card";

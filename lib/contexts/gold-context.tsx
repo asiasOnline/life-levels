@@ -14,7 +14,6 @@ import {
     spendGold
 } from '@/lib/actions/stats'
 import type { GoldSource } from '@/lib/types/stats'
-import { getUser } from '@/lib/auth/get-user'
 
 // -----------------------------------------
 // Types

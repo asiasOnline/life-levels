@@ -1,12 +1,4 @@
 import { IconData } from "@/lib/types/icon";
-import { Skill } from "./skills";
-import { Character } from "./character";
-import { Goal } from "./goals";
-
-// =================================
-// SHARED / SUMMARY
-// =================================
-
 
 // ==================================
 // ENUMS & CONSTANTS
@@ -40,28 +32,65 @@ export const HABIT_COMPLETION_TIME = {
 
 export type HabitCompletionTime = typeof HABIT_COMPLETION_TIME [keyof typeof HABIT_COMPLETION_TIME];
 
+// ===============================================
+// CUSTOM RECURRENCE CONFIG
+// Structured JSONB stored in habits.custom_recurrence_config.
+// Only populated when recurrence = 'custom'.
+// ===============================================
+
+export type HabitCustomRecurrenceUnit = "day" | "week" | "month";
+export type HabitCustomRecurrenceEndType = "never" | "on_date" | "after_occurrences";
+ 
+export interface HabitCustomRecurrenceConfig {
+  interval: number;                        // Every N units; must be > 0
+  unit: HabitCustomRecurrenceUnit;
+  end_type: HabitCustomRecurrenceEndType;
+  end_date?: string;                       // ISO date string; only when end_type = 'on_date'
+  occurrences?: number;                    // Only when end_type = 'after_occurrences'
+}
+
+// =================================
+// SHARED / SUMMARY
+// =================================
+// Reusable slim shape for when Characters appear in other contexts
+// (e.g. on a Task or Habit form)
+export type HabitSummary = Pick<
+  Habit, 
+  "id" | "title" | "icon" | "recurrence" | "completion_time" | "status"
+>;
+
 // =====================================================
 // MAIN TYPE
 // =====================================================
 export interface Habit {
+  // Base Content
     id: string;
     icon: IconData;
     title: string;
     description?: string;
     status: HabitStatus;
+
+    // Recurrence
     recurrence: HabitRecurrence;
-    x_per_week_count: number | null;
-    x_per_week_days: number[] | null;
-    weekly_day: number | null;
-    monthly_day: number | null;
-    time_consumption: number
-    completion_time: HabitCompletionTime | null
-    gold_reward: number
-    use_custom_xp: boolean
-    custom_character_xp: number | null
-    custom_skill_xp: number | null
-    paused_at: string | null
-    archived_at: string | null
-    created_at: string
-    updated_at: string
+    x_per_week_count?: number;
+    x_per_week_days?: number[];
+    weekly_day?: number;
+    monthly_day?: number;
+    custom_recurrence_config?: HabitCustomRecurrenceConfig;
+
+    // Scheduling
+    time_consumption: number;
+    completion_time?: HabitCompletionTime;
+
+    // Rewards
+    gold_reward: number;
+    use_custom_xp: boolean;
+    character_xp: number;
+    skill_xp: number;
+
+    // Timestamps
+    paused_at?: string;
+    archived_at?: string;
+    created_at: string;
+    updated_at: string;
 }

@@ -134,8 +134,8 @@ export function TaskTableRow({
   const { characterXP, skillXP } = useMemo(() => {
     if (task.use_custom_xp) {
       return {
-        characterXP: task.custom_character_xp ?? 0,
-        skillXP: task.custom_skill_xp ?? 0,
+        characterXP: task.character_xp ?? 0,
+        skillXP: task.skill_xp ?? 0,
       }
     }
     return calculateTaskXP(

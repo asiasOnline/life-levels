@@ -44,6 +44,6 @@ export function addXPToSkill(skill: Skill, xpGained: number): Skill {
     level: newLevel,
     current_xp: newCurrentXP - xpForCurrentLevel,
     xp_to_next_level: xpForNextLevel - xpForCurrentLevel,
-    updated_at: new Date(),
+    updated_at: String(new Date()),
   }
 }

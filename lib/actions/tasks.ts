@@ -1,5 +1,3 @@
-"use server"
-
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types'
 import { 
@@ -68,7 +66,12 @@ export interface UpdateTaskInput {
 // EXTENDED TYPE
 // =======================================
 
-export interface TaskWithSkills extends TaskRow {
+export interface TaskWithSkills extends Omit<TaskRow, 'icon'> {
+  icon: {
+    type: string
+    value: string
+    color?: string
+  }
   task_skills: {
     skills: {
       id: string

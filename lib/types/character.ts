@@ -1,5 +1,20 @@
 import { IconData } from "@/lib/types/icon";
 
+// =================================
+// SHARED / SUMMARY
+// =================================
+
+// Reusable slim shape for when Characters appear in other contexts
+// (e.g. on a Task or Habit form)
+export type CharacterSummary = Pick<
+  Character, 
+  "id" | "title" | "icon" | "level"
+>;
+
+// =======================================
+// INPUT TYPES
+// =======================================
+
 export interface CharacterAvatarData {
   archetype_id: string
   skin_tone: string

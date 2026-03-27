@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { FilterDropdown, FilterGroup } from './filter-dropdown'
 import { SortDropdown, SortOption } from './sort-dropdown'
-import { ViewMode } from '@/lib/types'
+
+export type ViewMode = 'grid' | 'table'
 
 interface ItemContainerHeaderProps {
   title: string

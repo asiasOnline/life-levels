@@ -46,8 +46,8 @@ const TaskCard = ({ task, linkedSkills, linkedCharacterCount = 1, onClick, class
   const { characterXP, skillXP } = useMemo(() => {
     if (task.use_custom_xp) {
       return {
-        characterXP: task.custom_character_xp ?? 0,
-        skillXP: task.custom_skill_xp ?? 0,
+        characterXP: task.character_xp ?? 0,
+        skillXP: task.skill_xp ?? 0,
       }
     }
     return calculateTaskXP(
@@ -85,7 +85,7 @@ const TaskCard = ({ task, linkedSkills, linkedCharacterCount = 1, onClick, class
         {/* Icon */}
         <div className="flex">
           <div className="text-2xl">
-              {renderIcon(task.icon, task.icon.type, task.icon.color, 'w-6 h-6')}
+              {renderIcon(task.icon.value, task.icon.type, task.icon.color, 'w-6 h-6')}
             </div>
         </div>
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
-import { ViewMode } from "@/lib/types";
+import { ViewMode } from "@/components/layout/app/item-container-header";
 import { Skill } from "@/lib/types/skills";
 import { SkillCard } from "@/components/features/skills/skill-card";
 import { SkillTableRow } from "@/components/features/skills/skill-table-row";

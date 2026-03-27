@@ -54,6 +54,7 @@ import {
   calculateTaskXP, 
   validateSkillCount 
 } from '@/lib/utils/tasks'
+import { createTask } from '@/lib/actions/tasks'
 import { FaRegCalendarDays, FaClock, FaCoins, FaStar, FaCircleArrowUp, FaUserGroup } from "react-icons/fa6";
 
 // ─── Task Schema ─────────────────────
@@ -75,8 +76,8 @@ const createTaskSchema = z.object({
     .max(3, 'Maximum 3 skills allowed'),
   goldReward: z.number().min(0).optional(),
   useCustomXP: z.boolean(),
-  customCharacterXP: z.number().min(0).optional(),
-  customSkillXP: z.number().min(0).optional(),
+  characterXP: z.number().min(0).optional(),
+  skillXP: z.number().min(0).optional(),
 }).refine(
   (data) => {
     if (data.startDate && data.dueDate) {
@@ -86,7 +87,7 @@ const createTaskSchema = z.object({
   },
   {
     message: 'Due date must be after start date',
-    path: ['due_date'],
+    path: ['dueDate'],
   }
 )
 
@@ -130,16 +131,16 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
       skillIds: [],
       goldReward: undefined,
       useCustomXP: false,
-      customCharacterXP: undefined,
-      customSkillXP: undefined,
+      characterXP: undefined,
+      skillXP: undefined,
     },
   })
 
   const watchedDifficulty = form.watch('difficulty')
   const watchedSkillIds = form.watch('skillIds')
   const watchedUseCustomXP = form.watch('useCustomXP')
-  const watchedCustomCharacterXP = form.watch('customCharacterXP')
-  const watchedCustomSkillXP = form.watch('customSkillXP')
+  const watchedCustomCharacterXP = form.watch('characterXP')
+  const watchedCustomSkillXP = form.watch('skillXP')
 
   // Load skills on mount
   useEffect(() => {
@@ -197,7 +198,6 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
     setIsSubmitting(true)
 
     try {
-      const { createTask } = await import('@/lib/actions/tasks')
       await createTask({
         title: values.title,
         description: values.description,
@@ -210,10 +210,10 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
         start_date: values.startDate,
         due_date: values.dueDate,
         skill_ids: values.skillIds,
-        gold_reward: values.goldReward,
+        gold_reward: values.goldReward ?? getDefaultGoldReward(values.difficulty),
         use_custom_xp: values.useCustomXP,
-        custom_character_xp: values.customCharacterXP,
-        custom_skill_xp: values.customSkillXP,
+        character_xp: values.characterXP ?? previewXP.characterXP,
+        skill_xp: values.skillXP ?? previewXP.skillXP,
       })
 
       toast.success(`${values.title} has been created.`)
@@ -446,11 +446,11 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
                   <Input
                     type="number"
                     min="0"
-                    {...form.register('customCharacterXP', { valueAsNumber: true })}
+                    {...form.register('characterXP', { valueAsNumber: true })}
                     placeholder="Enter custom XP"
                   />
                   <FieldError>
-                    {form.formState.errors.customCharacterXP?.message}
+                    {form.formState.errors.characterXP?.message}
                   </FieldError>
                 </FieldGroup>
 
@@ -459,11 +459,11 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
                   <Input
                     type="number"
                     min="0"
-                    {...form.register('customSkillXP', { valueAsNumber: true })}
+                    {...form.register('skillXP', { valueAsNumber: true })}
                     placeholder="Enter custom XP"
                   />
                   <FieldError>
-                    {form.formState.errors.customSkillXP?.message}
+                    {form.formState.errors.skillXP?.message}
                   </FieldError>
                 </FieldGroup>
               </div>
