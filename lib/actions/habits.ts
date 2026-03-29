@@ -1,6 +1,10 @@
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types'
-import { IconData } from '@/lib/types/icon'
+import { 
+  DEFAULT_ICON, 
+  DEFAULT_ICON_TYPE, 
+  DEFAULT_ICON_COLOR  
+ } from '@/lib/types/icon'
 import {
   Habit,
   HabitWithRelations,
@@ -18,9 +22,9 @@ import {
 import type { SkillSummary } from '@/lib/types/skills'
 import type { CharacterSummary } from '@/lib/types/character'
 
-// =============================================================================
-// INTERNAL DB TYPES
-// =============================================================================
+// =============================================
+// INTERNAL DATABASE TYPES
+// =============================================
 
 type HabitRow    = Database['public']['Tables']['habits']['Row']
 type HabitInsert = Database['public']['Tables']['habits']['Insert']
@@ -30,7 +34,12 @@ type HabitUpdate = Database['public']['Tables']['habits']['Update']
 // Not exported — components always receive the clean HabitWithRelations shape.
 type HabitRowWithRelations = HabitRow & {
   habit_skills: {
-    skills: { id: string; title: string; icon: unknown; level: number } | null
+    skills: { 
+      id: string; 
+      title: string; 
+      icon: unknown; 
+      level: number 
+    } | null
   }[]
   habit_characters: {
     characters: {
@@ -40,21 +49,23 @@ type HabitRowWithRelations = HabitRow & {
       color_theme: string
     } | null
   }[]
-  habit_goals: { goal_id: string }[]
+  habit_goals: { 
+    goal_id: string 
+  }[]
 }
 
-// =============================================================================
+// ===========================================
 // RESULT TYPE
-// =============================================================================
+// ===========================================
 
 type ActionResult<T> =
   | { success: true; data: T }
   | { success: false; error: string }
 
-// =============================================================================
+// ===========================================
 // SELECT STRINGS
 // Centralised so every fetch function stays in sync if the schema changes.
-// =============================================================================
+// ===========================================
 
 const HABIT_WITH_RELATIONS_SELECT = `
   *,
@@ -67,11 +78,11 @@ const HABIT_WITH_RELATIONS_SELECT = `
   habit_goals(goal_id)
 ` as const
 
-// =============================================================================
+// ==============================================
 // MAPPER
 // Converts a raw Supabase join row → clean HabitWithRelations.
 // Strips nulls from junction rows caused by deleted related records.
-// =============================================================================
+// ==============================================
 
 function mapRowToHabitWithRelations(row: HabitRowWithRelations): HabitWithRelations {
   const base = toHabit(row)
@@ -94,11 +105,11 @@ function mapRowToHabitWithRelations(row: HabitRowWithRelations): HabitWithRelati
   }
 }
 
-// =============================================================================
+// ====================================================
 // JUNCTION TABLE HELPERS
 // All junction writes use the delete-then-insert pattern — no diffing,
 // safe because junction rows carry no data beyond the foreign keys.
-// =============================================================================
+// =====================================================
 
 async function syncHabitSkills(
   supabase: ReturnType<typeof createClient>,
@@ -159,14 +170,22 @@ async function syncHabitGoals(
 // DATABASE FUNCTIONS
 // =======================================
 /**
+ * FETCH ALL HABITS
  * Fetches all habits for the authenticated user with linked Skills and Characters hydrated. Active habits are returned first, then paused, then archived.
  */
 export async function fetchHabits(): Promise<ActionResult<HabitWithRelations[]>> {
   try {
     const supabase = createClient()
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return { success: false, error: 'Not authenticated' }
+    const { 
+      data: { user }, 
+      error: authError 
+    } = await supabase.auth.getUser()
+    
+      if (authError || !user) return { 
+        success: false, 
+        error: 'Not authenticated' 
+      }
 
     const { data, error } = await supabase
       .from('habits')
@@ -175,10 +194,15 @@ export async function fetchHabits(): Promise<ActionResult<HabitWithRelations[]>>
       .order('status', { ascending: true })
       .order('created_at', { ascending: false })
 
-    if (error) return { success: false, error: error.message }
+    if (error) return { 
+      success: false, 
+      error: error.message 
+    }
 
     const habits = (data as HabitRowWithRelations[]).map(mapRowToHabitWithRelations)
-    return { success: true, data: habits }
+    return { 
+      success: true, 
+      data: habits }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unexpected error fetching habits'
     return { success: false, error: message }
@@ -186,6 +210,7 @@ export async function fetchHabits(): Promise<ActionResult<HabitWithRelations[]>>
 }
 
 /**
+ * FETCH A SINGLE HABIT
  * Returns a single habit by ID with all relations hydrated.
  */
 export async function fetchHabitById(
@@ -194,8 +219,16 @@ export async function fetchHabitById(
   try {
     const supabase = createClient()
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return { success: false, error: 'Not authenticated' }
+    const { 
+      data: { user }, 
+      error: authError 
+    } = await supabase.auth.getUser()
+    
+    if (authError || !user) 
+        return { 
+        success: false, 
+        error: 'Not authenticated' 
+      }
 
     const { data, error } = await supabase
       .from('habits')
@@ -205,20 +238,20 @@ export async function fetchHabitById(
       .single()
 
     if (error) return { success: false, error: error.message }
-    if (!data)  return { success: false, error: 'Habit not found' }
+    if (!data) return { success: false, error: 'Habit not found' }
 
-    return { success: true, data: mapRowToHabitWithRelations(data as HabitRowWithRelations) }
+    return { 
+      success: true, 
+      data: mapRowToHabitWithRelations(data as HabitRowWithRelations) 
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unexpected error fetching habit'
     return { success: false, error: message }
   }
 }
 
-// =============================================================================
-// CREATE
-// =============================================================================
-
 /**
+ * CREATE A NEW HABIT
  * Creates a new habit and links it to the provided skills, characters,
  * and optionally goals. Rewards default to algorithm output when
  * use_custom_xp is false or omitted.
@@ -233,18 +266,28 @@ export async function createHabit(
   try {
     const supabase = createClient()
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { 
+      data: { user }, 
+      error: authError 
+    } = await supabase.auth.getUser()
+    
     if (authError || !user) return { success: false, error: 'Not authenticated' }
 
     // ── Application-layer guards ──────────────────────────────────────────
     if (!input.skill_ids || input.skill_ids.length === 0) {
-      return { success: false, error: 'At least one skill must be assigned.' }
+      return { 
+        success: false, 
+        error: 'At least one skill must be assigned.' }
     }
     if (input.skill_ids.length > 3) {
-      return { success: false, error: 'A habit cannot be assigned to more than 3 skills.' }
+      return { 
+        success: false, 
+        error: 'A habit cannot be assigned to more than 3 skills.' }
     }
     if (!input.character_ids || input.character_ids.length === 0) {
-      return { success: false, error: 'At least one character must be assigned.' }
+      return { 
+        success: false, 
+        error: 'At least one character must be assigned.' }
     }
 
     // ── Reward defaults ───────────────────────────────────────────────────
@@ -269,12 +312,16 @@ export async function createHabit(
       goldReward = rewards.gold
     }
 
-    // ── Build the insert row ──────────────────────────────────────────────
+    // ── Build the insert row ───────────────────
     const habitInsert: HabitInsert = {
       user_id:                  user.id,
       title:                    input.title,
       description:              input.description ?? null,
-      icon:                     input.icon as unknown as HabitInsert['icon'],
+      icon: {
+            type:               input.icon_type || DEFAULT_ICON_TYPE,
+            value:              input.icon || DEFAULT_ICON,
+            color:              input.icon_color || DEFAULT_ICON_COLOR,
+          },
       status:                   'active',
       recurrence:               input.recurrence,
       x_per_week_count:         input.x_per_week_count ?? null,
@@ -284,31 +331,33 @@ export async function createHabit(
       custom_recurrence_config: (input.custom_recurrence_config ?? null) as unknown as HabitInsert['custom_recurrence_config'],
       time_consumption:         input.time_consumption,
       completion_time:          input.completion_time ?? null,
-      gold_reward:              goldReward,
       use_custom_xp:            useCustom,
       use_custom_gold:          useCustom,
-      character_xp:      characterXp,
-      skill_xp:          skillXp,
+      gold_reward:              goldReward,
+      character_xp:             characterXp,
+      skill_xp:                 skillXp,
     }
 
-    const { data: newRow, error: insertError } = await supabase
+    const { data: habit, error: insertError } = await supabase
       .from('habits')
       .insert(habitInsert)
       .select()
       .single()
 
-    if (insertError || !newRow) {
-      return { success: false, error: insertError?.message ?? 'Failed to create habit' }
+    if (insertError || !habit) {
+      return { 
+        success: false, 
+        error: insertError?.message ?? 'Failed to create new habit' }
     }
 
     // ── Junction table writes ─────────────────────────────────────────────
-    await syncHabitSkills(supabase, newRow.id, input.skill_ids)
-    await syncHabitCharacters(supabase, newRow.id, input.character_ids)
+    await syncHabitSkills(supabase, habit.id, input.skill_ids)
+    await syncHabitCharacters(supabase, habit.id, input.character_ids)
     if (input.goal_ids && input.goal_ids.length > 0) {
-      await syncHabitGoals(supabase, newRow.id, input.goal_ids)
+      await syncHabitGoals(supabase, habit.id, input.goal_ids)
     }
 
-    const result = await fetchHabitById(newRow.id)
+    const result = await fetchHabitById(habit.id)
     if (!result.success) return result
 
     return { success: true, data: result.data }
@@ -318,18 +367,10 @@ export async function createHabit(
   }
 }
 
-// =============================================================================
-// UPDATE
-// =============================================================================
-
 /**
+ * UPDATE HABIT
  * Updates habit fields and/or replaces junction table links.
- *
- * Only fields present on UpdateHabitInput are written — omitted fields are
- * left unchanged. Junction tables use full-replacement delete-then-insert
- * when the corresponding _ids array is provided; omitting an _ids array
- * leaves those links untouched.
- *
+ * Only fields present on UpdateHabitInput are written — omitted fields are left unchanged. Junction tables use full-replacement delete-then-insert when the corresponding _ids array is provided; omitting an _ids array leaves those links untouched.
  * If recurrence or time_consumption changes and use_custom_xp is false,
  * reward values are recalculated automatically.
  */
@@ -339,8 +380,15 @@ export async function updateHabit(
   try {
     const supabase = createClient()
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return { success: false, error: 'Not authenticated' }
+    const { 
+      data: { user }, 
+      error: authError 
+    } = await supabase.auth.getUser()
+    
+    if (authError || !user) return { 
+      success: false, 
+      error: 'Not authenticated' 
+    }
 
     // ── Fetch the current row to fill in any missing algorithm inputs ─────
     const { data: existing, error: fetchError } = await supabase
@@ -356,12 +404,17 @@ export async function updateHabit(
 
     // ── Skill count for reward recalc ─────────────────────────────────────
     let currentSkillCount = 1
+
     if (input.skill_ids) {
       if (input.skill_ids.length === 0) {
-        return { success: false, error: 'At least one skill must be assigned.' }
+        return { 
+          success: false, 
+          error: 'At least one skill must be assigned.' }
       }
       if (input.skill_ids.length > 3) {
-        return { success: false, error: 'A habit cannot be assigned to more than 3 skills.' }
+        return { 
+          success: false, 
+          error: 'A habit cannot be assigned to more than 3 skills.' }
       }
       currentSkillCount = input.skill_ids.length
     } else {
@@ -373,7 +426,9 @@ export async function updateHabit(
     }
 
     if (input.character_ids !== undefined && input.character_ids.length === 0) {
-      return { success: false, error: 'At least one character must be assigned.' }
+      return { 
+        success: false, 
+        error: 'At least one character must be assigned.' }
     }
 
     // ── Build the update payload ──────────────────────────────────────────

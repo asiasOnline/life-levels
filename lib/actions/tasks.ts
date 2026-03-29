@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types'
 import { 
-  IconType, 
   DEFAULT_ICON, 
   DEFAULT_ICON_TYPE, 
   DEFAULT_ICON_COLOR  
@@ -10,78 +9,97 @@ import {
     TaskStatus,
     TaskPriority,
     TaskDifficulty,
+    TaskWithRelations,
+    toTask,
+    CreateTaskInput,
+    UpdateTaskInput,
   } from '@/lib/types/tasks'
+import type { SkillSummary } from '@/lib/types/skills'
+import type { CharacterSummary } from '@/lib/types/character'
 import { getDefaultGoldReward, calculateTaskXP } from '@/lib/utils/tasks'
 import { calculateXPForLevel } from '@/lib/utils/skills'
 
 // =======================================
-// DATABASE TYPES
+// INTERNAL DATABASE TYPES
 // =======================================
 
 type TaskRow = Database['public']['Tables']['tasks']['Row']
 type TaskInsert = Database['public']['Tables']['tasks']['Insert']
 type TaskUpdate = Database['public']['Tables']['tasks']['Update']
 
-// =======================================
-// INPUT TYPES
-// =======================================
+// Raw shape returned by Supabase when junction joins are included.
+// Not exported — components always receive the clean TaskWithRelations shape.
 
-export interface CreateTaskInput {
-    title: string
-    description?: string
-    icon?: string
-    icon_type?: IconType
-    icon_color?: string
-    status?: TaskStatus
-    priority: TaskPriority
-    difficulty: TaskDifficulty
-    start_date?: string
-    due_date?: string
-    skill_ids: string[] // 1-3 skill IDs required
-    gold_reward: number
-    use_custom_xp?: boolean
-    character_xp: number
-    skill_xp: number
-}
-
-export interface UpdateTaskInput {
-    title?: string
-    description?: string
-    icon?: string
-    icon_type?: IconType
-    icon_color?: string
-    status?: TaskStatus
-    priority?: TaskPriority
-    difficulty?: TaskDifficulty
-    start_date?: string
-    due_date?: string
-    skill_ids?: string[]
-    gold_reward?: number
-    use_custom_xp?: boolean
-    character_xp?: number
-    skill_xp?: number
-}
-
-// =======================================
-// EXTENDED TYPE
-// =======================================
-
-export interface TaskWithSkills extends Omit<TaskRow, 'icon'> {
-  icon: {
-    type: string
-    value: string
-    color?: string
-  }
+type TaskRowWithRelations = TaskRow & {
   task_skills: {
-    skills: {
-      id: string
-      title: string
-      icon: string
-      icon_type: IconType
-      icon_color: string
-      level: number
-    }
+    skills: { 
+      id: string; 
+      title: string; 
+      icon: unknown; 
+      level: number 
+    } | null
   }[]
+  task_characters: {
+    characters: {
+      id: string;
+      title: string;
+      icon: unknown;
+      color_theme: string
+    } | null
+  }[]
+  task_goals: {
+      goal_id: string;
+    }[]
+}
+
+// ===========================================
+// RESULT TYPE
+// ===========================================
+
+type ActionResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string }
+
+// ===========================================
+// SELECT STRINGS
+// Centralised so every fetch function stays in sync if the schema changes.
+// ===========================================
+const TASK_WITH_RELATIONS_SELECT = `
+  *,
+  task_skills(
+    skills(id, title, icon, level)
+  ),
+  task_characters(
+    characters(id, title, icon, color_theme)
+  ),
+  task_goals(goal_id)
+` as const
+
+// ==============================================
+// MAPPER
+// Converts a raw Supabase join row → clean TaskWithRelations.
+// Strips nulls from junction rows caused by deleted related records.
+// ==============================================
+
+function mapRowToTaskWithRelations(row: TaskRowWithRelations): TaskWithRelations {
+  const base = toTask(row)
+
+  const skills = (row.task_skills ?? [])
+    .filter((hs) => hs.skills !== null)
+    .map((hs) => hs.skills as SkillSummary)
+
+  const characters = (row.task_characters ?? [])
+    .filter((hc) => hc.characters !== null)
+    .map((hc) => hc.characters as unknown as CharacterSummary)
+
+  const goal_ids = (row.task_goals ?? []).map((hg) => hg.goal_id)
+
+  return {
+    ...base,
+    skills,
+    characters,
+    goal_ids: goal_ids.length > 0 ? goal_ids : undefined,
+  }
 }
 
 // =======================================
@@ -89,113 +107,187 @@ export interface TaskWithSkills extends Omit<TaskRow, 'icon'> {
 // =======================================
 
 /** -------------------------------------
- * Fetch all skills for the current user
+ * FETCH ALL TASKS
+ * Fetches all tasks for the authenticated user with linked Skills and Characters hydrated. Active habits are returned first, then paused, then archived.
  * --------------------------------------
  */
-export async function fetchTasks(): Promise<TaskWithSkills[]> {
-  const supabase = createClient()
+export async function fetchTasks(): 
+Promise<ActionResult<TaskWithRelations[]>> {
+  try {
+    const supabase = createClient()
   
-  const { data, error } = await supabase
-    .from('tasks')
-    .select(`
-      *,
-      task_skills (
-        skills (
-          id,
-          title,
-          icon,
-          level
-        )
-      )
-    `)
-    .order('created_at', { ascending: false })
+    const { 
+      data: { user }, 
+      error: authError 
+    } = await supabase.auth.getUser()
+    
+    if (authError || !user) return {
+      success: false,
+      error: 'Not authenticated'
+    }
 
-  if (error) {
-    console.error('Error fetching tasks:', error)
-    throw error
-  }
+    const { data, error } = await supabase
+      .from('tasks')
+      .select(TASK_WITH_RELATIONS_SELECT)
+      .eq('user_id', user.id)
+      .order('status', { ascending: true })
+      .order('created_at', { ascending: false })
 
-  return data || []
+    if (error) return { 
+      success: false, 
+      error: error.message 
+    }
+
+    const tasks = (data as TaskRowWithRelations[]).map(mapRowToTaskWithRelations) 
+    return {
+      success: true,
+      data: tasks
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unexpected error fetching tasks'
+    return { success: false, error: message }
+}
 }
 
 /**-------------------------------------
- * Fetch a single task by ID
+ * FETCH A SINGLE TASK
+ * Returns a single task by ID with all relations hydrated.
  * -------------------------------------
  */
-export async function fetchTaskById(id: string): Promise<TaskWithSkills | null> {
-  const supabase = createClient()
-  
-  const { data, error } = await supabase
-    .from('tasks')
-    .select(`
-      *,
-      task_skills (
-        skills (
-          id,
-          title,
-          icon,
-          level
-        )
-      )
-    `)
-    .eq('id', id)
-    .single()
+export async function fetchTaskById(
+  id: string
+): Promise<ActionResult<TaskWithRelations>> {
+  try {
+    const supabase = createClient()
 
-  if (error) {
-    console.error('Error fetching task:', error)
-    throw error
+    const { 
+      data: { user }, 
+      error: authError 
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) 
+      return { 
+        success: false, 
+        error: 'Not authenticated' 
+      }
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .select(TASK_WITH_RELATIONS_SELECT)
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (error) return { success: false, error: error.message }
+    if (!data) return { success: false, error: 'Task not found' }
+
+    return { 
+      success: true, 
+      data: mapRowToTaskWithRelations(data as TaskRowWithRelations) 
+    }
+  } catch (err) {    
+    const message = err instanceof Error ? err.message : 'Unexpected error fetching task'
+    return { success: false, error: message }
   }
-
-  return data
 }
 
 /**-------------------------------------
- * Create a new task
+ * CREATE A NEW TASK
+ * Creates a new task and links it to the provided skills, characters,
+ * and optionally goals. Rewards default to algorithm output when
+ * use_custom_xp is false or omitted.
+ *
+ * Validation enforced here (in addition to DB constraints):
+ * - At least 1 and at most 3 skill IDs
+ * - At least 1 character ID
  * -------------------------------------
  */
-export async function createTask(input: CreateTaskInput): Promise<TaskRow> {
+export async function createTask(
+  input: CreateTaskInput
+): Promise<ActionResult<TaskWithRelations>> {
+  try {
   const supabase = createClient()
   
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('User not authenticated')
-
-  // Validate skill count (1-3)
-  if (input.skill_ids.length < 1 || input.skill_ids.length > 3) {
-    throw new Error('Tasks must be linked to 1-3 skills')
+  const { 
+    data: { user }, 
+    error: authError
+  } = await supabase.auth.getUser()
+  
+  if (authError || !user) return { 
+    success: false, 
+    error: 'Not authenticated' 
   }
 
-  // Prepare task data
-  const taskData: TaskInsert = {
-    user_id: user.id,
-    title: input.title,
-    description: input.description || null,
+  // ── Application-layer guards ──────────────────────────────────────────
+  if (!input.skill_ids || input.skill_ids.length === 0) {
+      return { 
+        success: false, 
+        error: 'At least one skill must be assigned.' }
+    }
+    if (input.skill_ids.length > 3) {
+      return { 
+        success: false, 
+        error: 'A habit cannot be assigned to more than 3 skills.' }
+    }
+    if (!input.character_ids || input.character_ids.length === 0) {
+      return { 
+        success: false, 
+        error: 'At least one character must be assigned.' }
+    }
+
+    // ── Reward defaults ───────────────────────────────────────────────────
+    // When use_custom_xp is false, calculate via the algorithm so the DB row
+    // always has concrete reward values rather than nulls.
+    const useCustom = input.use_custom_xp ?? false
+    let characterXp = input.character_xp ?? 0
+    let skillXp     = input.skill_xp ?? 0
+    let goldReward  = input.gold_reward ?? 0,
+
+    if (!useCustom) {
+      const rewards = calculateTaskXP(
+        input.difficulty, 
+        input.skill_ids.length, 
+        input.character_ids.length
+      )
+      characterXp = rewards.characterXP
+      skillXp = rewards.skillXP
+      goldReward = getDefaultGoldReward(input.difficulty)
+    }
+
+  // ── Build the insert row ───────────────────
+  const taskInsert: TaskInsert = {
+    user_id:            user.id,
+    title:              input.title,
+    description:        input.description || null,
     icon: {
-      type: input.icon_type || DEFAULT_ICON_TYPE,
-      value: input.icon || DEFAULT_ICON,
-      color: input.icon_color || DEFAULT_ICON_COLOR,
+      type:             input.icon_type || DEFAULT_ICON_TYPE,
+      value:            input.icon || DEFAULT_ICON,
+      color:            input.icon_color || DEFAULT_ICON_COLOR,
     },
-    status: input.status || 'backlog',
-    priority: input.priority,
-    difficulty: input.difficulty,
-    start_date: input.start_date || null,
-    due_date: input.due_date || null,
-    gold_reward: input.gold_reward ?? getDefaultGoldReward(input.difficulty),
-    use_custom_xp: input.use_custom_xp ?? false,
-    character_xp: input.character_xp,
-    skill_xp: input.skill_xp,
+    status:             input.status || 'backlog',
+    priority:           input.priority,
+    difficulty:         input.difficulty,
+    start_date:         input.start_date || null,
+    due_date:           input.due_date || null,
+    use_custom_xp:      useCustom,
+    use_custom_gold:    useCustom,
+    gold_reward:        goldReward,
+    character_xp:       characterXp,
+    skill_xp:           skillXp,
   }
 
   // Insert task
-  const { data: task, error: taskError } = await supabase
+  const { data: task, error: insertError } = await supabase
     .from('tasks')
-    .insert(taskData)
+    .insert(taskInsert)
     .select()
     .single()
 
-  if (taskError) {
-    console.error('Error creating task:', taskError)
-    throw taskError
-  }
+  if (insertError || !task) {
+    return { 
+        success: false, 
+        error: insertError?.message ?? 'Failed to create new task' }
+    }
 
   // Insert task-skill relationships
   const taskSkills = input.skill_ids.map((skill_id) => ({
@@ -218,33 +310,92 @@ export async function createTask(input: CreateTaskInput): Promise<TaskRow> {
 }
 
 /**-------------------------------------
- * Update an existing task
+ * UPDATE TASK
+ * Updates task fields and/or replaces junction table links.
+ * Only fields present on UpdateTaskInput are written — omitted fields are left unchanged. Junction tables use full-replacement delete-then-insert when the corresponding _ids array is provided; omitting an _ids array leaves those links untouched.
  * -------------------------------------
  */
-export async function updateTask(id: string, updates: UpdateTaskInput): Promise<TaskRow> {
+export async function updateTask(
+  input: UpdateTaskInput
+): Promise<TaskRow> {
+  try {
   const supabase = createClient()
 
+  const { 
+      data: { user }, 
+      error: authError 
+    } = await supabase.auth.getUser()
+    
+    if (authError || !user) return { 
+      success: false, 
+      error: 'Not authenticated' 
+    }
+
+  // ── Fetch the current row to fill in any missing algorithm inputs ─────
+    const { data: existing, error: fetchError } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('id', input.id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (fetchError || !existing) {
+      return { 
+        success: false, 
+        error: fetchError?.message ?? 'Task not found' }
+    }
+
+  // ── Skill count for reward recalc ─────────────────────────────────────
+    let currentSkillCount = 1
+
+    if (input.skill_ids) {
+      if (input.skill_ids.length === 0) {
+        return { 
+          success: false, error: 'At least one skill must be assigned.' }
+      }
+      if (input.skill_ids.length > 3) {
+        return { 
+          success: false, 
+          error: 'A habit cannot be assigned to more than 3 skills.' }
+      }
+      currentSkillCount = input.skill_ids.length
+    } else {
+      const { count } = await supabase
+        .from('task_skills')
+        .select('*', { count: 'exact', head: true })
+        .eq('task_id', input.id)
+      currentSkillCount = count ?? 1
+    }
+
+    if (input.character_ids !== undefined && input.character_ids.length === 0) {
+      return { 
+        success: false, 
+        error: 'At least one character must be assigned.' }
+    }
+
   // Prepare task update data
-  const taskUpdate: Partial<TaskUpdate> = {}
+  const taskUpdate: TaskUpdate = {}
   
-  if (updates.title !== undefined) taskUpdate.title = updates.title
-  if (updates.description !== undefined) taskUpdate.description = updates.description
-  if (updates.icon !== undefined || updates.icon_type !== undefined) {
+  if (input.title         !== undefined) taskUpdate.title = input.title
+  if (input.description   !== undefined) taskUpdate.description = input.description
+  if (input.icon          !== undefined || input.icon_type !== undefined) {
     taskUpdate.icon = {
-      type: updates.icon_type || 'emoji',
-      value: updates.icon || DEFAULT_ICON,
-      color: updates.icon_color,
+      type: input.icon_type || 'emoji',
+      value: input.icon || DEFAULT_ICON,
+      color: input.icon_color,
     }
   }
-  if (updates.status !== undefined) taskUpdate.status = updates.status
-  if (updates.priority !== undefined) taskUpdate.priority = updates.priority
-  if (updates.difficulty !== undefined) taskUpdate.difficulty = updates.difficulty
-  if (updates.start_date !== undefined) taskUpdate.start_date = updates.start_date || null
-  if (updates.due_date !== undefined) taskUpdate.due_date = updates.due_date || null
-  if (updates.gold_reward !== undefined) taskUpdate.gold_reward = updates.gold_reward
-  if (updates.use_custom_xp !== undefined) taskUpdate.use_custom_xp = updates.use_custom_xp
-  if (updates.character_xp !== undefined) taskUpdate.character_xp = updates.character_xp
-  if (updates.skill_xp !== undefined) taskUpdate.skill_xp = updates.skill_xp
+  if (input.status        !== undefined) taskUpdate.status = input.status
+  if (input.priority      !== undefined) taskUpdate.priority = input.priority
+  if (input.difficulty !== undefined) taskUpdate.difficulty = input.difficulty
+  if (input.start_date !== undefined) taskUpdate.start_date = input.start_date || null
+  if (input.due_date !== undefined) taskUpdate.due_date = input.due_date || null
+  if (input.use_custom_xp !== undefined) taskUpdate.use_custom_xp = input.use_custom_xp
+
+  // Honour explicit custom reward overrides regardless of recalc
+    if (input.gold_reward         !== undefined) taskUpdate.gold_reward         = input.gold_reward
+    if (input.character_xp !== undefined) taskUpdate.character_xp = input.character_xp ?? undefined
+    if (input.skill_xp     !== undefined) taskUpdate.skill_xp     = input.skill_xp ?? undefined
 
   // Update task
   const { data, error } = await supabase

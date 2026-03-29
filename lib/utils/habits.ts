@@ -5,12 +5,12 @@ import type {
   HabitCustomRecurrenceConfig,
 } from "@/lib/types/habits";
 
-// =============================================================================
+// ===============================================
 // TIME BUCKET
 // Converts a raw time_consumption (minutes) into the four reward tiers
 // defined in the PRD. The same bucket is used across XP, Gold, Energy, and
 // Resilience tables so only this one place needs updating if tiers change.
-// =============================================================================
+// ===============================================
 
 export function getTimeBucket(minutes: number): HabitTimeBucket {
   if (minutes <= 15) return "quick";
@@ -19,12 +19,12 @@ export function getTimeBucket(minutes: number): HabitTimeBucket {
   return "long";
 }
 
-// =============================================================================
+// ================================================
 // REWARD TABLES
 // Indexed as [recurrence][timeBucket].
 // 'custom' rows are zeroed out — custom recurrence is resolved to an
 // effective tier before lookup via getEffectiveRecurrenceForCustom().
-// =============================================================================
+// ================================================
 
 export const XP_TABLE: Record<HabitRecurrence, Record<HabitTimeBucket, number>> = {
   daily:      { quick: 10, medium: 20, extended: 30,  long: 45  },
@@ -64,11 +64,11 @@ export const RESILIENCE_TABLE: Record<HabitTimeBucket, number> = {
   long:     10,
 };
 
-// =============================================================================
+// ==================================================
 // CUSTOM RECURRENCE → EFFECTIVE TIER
 // The PRD rule: < 1 completion/week → monthly tier; ≥ 5/week → daily tier.
 // Values in between map to the closest standard tier.
-// =============================================================================
+// ==================================================
 
 /**
  * Returns the average completions per week implied by a custom recurrence
@@ -100,9 +100,9 @@ export function getEffectiveRecurrenceForCustom(
   return "monthly";
 }
 
-// =============================================================================
+// ===============================================
 // REWARD CALCULATION
-// =============================================================================
+// ===============================================
 
 /**
  * Calculates XP, Gold, and Energy for a habit completion.
@@ -145,11 +145,11 @@ export function calculateHabitRewards(
   };
 }
 
-// =============================================================================
+// =============================================
 // ENERGY COST & RESILIENCE
 // Kept separate so the action can call them individually — the action needs
 // to check current Energy before deciding whether to deduct or award Resilience.
-// =============================================================================
+// =============================================
 
 /**
  * Returns the Energy cost for completing this habit.
@@ -228,12 +228,12 @@ export function getExpectedCompletions(
   }
 }
 
-// =============================================================================
+// =======================================================
 // CONSISTENCY SCORE
 // Rolling 30-day window (or since creation if the habit is < 30 days old).
 // Formula: completions in window ÷ expected completions in window × 100.
 // Capped at 100 — the PRD doesn't reward over-completion here.
-// =============================================================================
+// ========================================================
 
 /**
  * Calculates the rolling consistency score (0–100) for a habit.
@@ -295,10 +295,10 @@ export function isConsistencyWindowBuilding(createdAt: string): boolean {
   return daysSince < 7;
 }
 
-// =============================================================================
+// =========================================================
 // RECURRENCE LABEL
 // Human-readable display strings for cards, detail pages, and form summaries.
-// =============================================================================
+// ==========================================================
 
 const DAYS_OF_WEEK = [
   "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
@@ -316,8 +316,7 @@ function getOrdinalSuffix(n: number): string {
 
 /**
  * Returns a concise, user-facing recurrence label.
- *
- * @example
+ * Examples:
  * getRecurrenceLabel("daily")                               // "Daily"
  * getRecurrenceLabel("x_per_week", { x_per_week_count: 3}) // "3× per week"
  * getRecurrenceLabel("weekly", { weekly_day: 1 })           // "Weekly on Monday"
@@ -376,9 +375,9 @@ export function getRecurrenceLabel(
   }
 }
 
-// =============================================================================
+// =====================================================
 // COMPLETION TIME LABEL
-// =============================================================================
+// ======================================================
 
 /**
  * Returns a display label for the optional completion_time field.
@@ -390,10 +389,10 @@ export function getCompletionTimeLabel(
   return time.charAt(0).toUpperCase() + time.slice(1);
 }
 
-// =============================================================================
+// ===================================================
 // VALIDATION HELPERS
 // Used by Zod refinements and action-layer guard checks.
-// =============================================================================
+// ===================================================
 
 /** Returns true if time_consumption is a valid positive integer. */
 export function isValidTimeConsumption(value: number): boolean {

@@ -1,11 +1,11 @@
-import { IconData } from "@/lib/types/icon";
+import { IconData, IconType } from "@/lib/types/icon";
 import { Database } from "../database.types";
 import type { SkillSummary } from "@/lib/types/skills";
 import type { CharacterSummary } from "@/lib/types/character";
 
-// =============================================================================
+// ==========================================
 // ENUMS & CONSTANTS
-// =============================================================================
+// ===========================================
 
 export const HABIT_STATUS = {
   ACTIVE:   'active',
@@ -36,11 +36,11 @@ export const HABIT_COMPLETION_TIME = {
 
 export type HabitCompletionTime = typeof HABIT_COMPLETION_TIME[keyof typeof HABIT_COMPLETION_TIME];
 
-// =============================================================================
+// =================================================
 // CUSTOM RECURRENCE CONFIG
 // Structured JSONB stored in habits.custom_recurrence_config.
 // Only populated when recurrence = 'custom'.
-// =============================================================================
+// =================================================
 
 export type HabitCustomRecurrenceUnit    = 'day' | 'week' | 'month';
 export type HabitCustomRecurrenceEndType = 'never' | 'on_date' | 'after_occurrences';
@@ -53,23 +53,22 @@ export interface HabitCustomRecurrenceConfig {
   occurrences?: number;                        // Only when end_type = 'after_occurrences'
 }
 
-// =============================================================================
+// ===========================================
 // SUMMARY TYPE
 // Lean shape for when a Habit appears in another feature's context
 // (e.g. listed on a Goal detail page or a Character dashboard).
-// =============================================================================
+// ===========================================
 
 export type HabitSummary = Pick<
   Habit,
   'id' | 'title' | 'icon' | 'recurrence' | 'completion_time' | 'status'
 >;
 
-// =============================================================================
+// =============================================
 // MAIN HABIT TYPE
 // No user_id — RLS enforces ownership; components never need it.
-// Reward fields use frontend names (character_xp, skill_xp) — the toHabit
-// mapper translates from DB column names (custom_character_xp, custom_skill_xp).
-// =============================================================================
+// Reward fields use frontend names (character_xp, skill_xp) — the toHabit mapper translates from DB column names (custom_character_xp, custom_skill_xp).
+// =============================================
 
 export interface Habit {
   // Base content
@@ -97,7 +96,7 @@ export interface Habit {
   character_xp:  number;   // Per-character award (full amount, not split)
   skill_xp:      number;   // Per-skill award (already divided by skill count)
 
-  // Status timestamps
+  // Timestamps
   paused_at?:   string;
   archived_at?: string;
 
@@ -105,11 +104,10 @@ export interface Habit {
   updated_at: string;
 }
 
-// =============================================================================
+// ===================================================
 // HABIT WITH RELATIONS
-// Used on the Habit detail page and anywhere the full relational picture is
-// needed. The base Habit type is kept lean for list views and cards.
-// =============================================================================
+// Used on the Habit detail page and anywhere the full relational picture is needed. The base Habit type is kept lean for list views and cards.
+// ====================================================
 
 export interface HabitWithRelations extends Habit {
   skills:     SkillSummary[];      // 1–3; hydrated from habit_skills join
@@ -117,15 +115,16 @@ export interface HabitWithRelations extends Habit {
   goal_ids?:  string[];            // IDs only; goals resolved separately when needed
 }
 
-// =============================================================================
+// ========================================
 // INPUT TYPES
-// _ids arrays are flat ID lists — the action translates them into junction
-// table rows using the delete-then-insert pattern.
-// =============================================================================
+// _ids arrays are flat ID lists — the action translates them into junction table rows using the delete-then-insert pattern.
+// ========================================
 
 export interface CreateHabitInput {
   title:        string;
-  icon:         IconData;
+  icon?:        string
+  icon_type?:   IconType
+  icon_color?:  string
   description?: string;
 
   recurrence:                HabitRecurrence;
@@ -153,7 +152,9 @@ export interface UpdateHabitInput {
   id: string;
 
   title?:        string;
-  icon?:         IconData;
+  icon?:        string
+  icon_type?:   IconType
+  icon_color?:  string
   description?:  string | null;
 
   recurrence?:               HabitRecurrence;
@@ -177,19 +178,17 @@ export interface UpdateHabitInput {
   goal_ids?:      string[];
 }
 
-// Separate from UpdateHabitInput because status transitions have side-effects
-// (timestamp writes, consistency window freeze) that a generic update should
-// not trigger accidentally. Reactivation uses UpdateHabitInput with status: 'active'.
+// Separate from UpdateHabitInput because status transitions have side-effects (timestamp writes, consistency window freeze) that a generic update should not trigger accidentally. Reactivation uses UpdateHabitInput with status: 'active'.
 export interface ArchiveHabitInput {
   id:     string;
   status: 'paused' | 'archived';
 }
 
-// =============================================================================
+// ============================================
 // REWARD CALCULATION TYPES
 // Used by lib/utils/habit.ts — defined here so the return type is importable
 // by both utils and actions without a circular dependency.
-// =============================================================================
+// ============================================
 
 // Time bucket derived from time_consumption; indexes all reward/energy tables.
 export type HabitTimeBucket = 'quick' | 'medium' | 'extended' | 'long';
@@ -201,7 +200,7 @@ export interface HabitRewardResult {
   energy_cost:  number;
 }
 
-// =============================================================================
+// =================================================
 // MAPPER — DB row → frontend Habit type
 // Called in lib/actions/habits.ts immediately after a Supabase fetch.
 // Responsibilities:
@@ -210,7 +209,7 @@ export interface HabitRewardResult {
 //   - Translates DB column names (custom_character_xp / custom_skill_xp)
 //     to the frontend names (character_xp / skill_xp)
 //   - Unwraps nullable DB fields to undefined so components get a clean shape
-// =============================================================================
+// ==================================================
 
 type HabitRow = Database['public']['Tables']['habits']['Row'];
 
@@ -245,7 +244,7 @@ export function toHabit(row: HabitRow): Habit {
     character_xp:  row.character_xp ?? 0,
     skill_xp:      row.skill_xp     ?? 0,
 
-    // Status timestamps
+    // Timestamps
     paused_at:   row.paused_at   ?? undefined,
     archived_at: row.archived_at ?? undefined,
 
