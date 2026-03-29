@@ -1,6 +1,5 @@
 import { IconData } from "@/lib/types/icon";
-import { Character } from "./character";
-
+import { CharacterSkillLink } from "./character";
 // =================================
 // SHARED / SUMMARY
 // =================================
@@ -10,12 +9,6 @@ import { Character } from "./character";
 export type SkillSummary = Pick<
 Skill, "id" | "title" | "icon" | "level"
 >;
-
-// Slim Character shape used in Skill context — contextual link only
-export type SkillCharacterLink = Pick<
-Character, 
-'id' | 'title' | 'color_theme' | 'icon'
->
 
 // =======================================
 // INPUT TYPES
@@ -50,7 +43,7 @@ export interface Skill {
     description?: string;
     tags?: string[];
     level: number;
-    characters?: SkillCharacterLink[]
+    characters?: CharacterSkillLink[]
     current_xp: number;
     xp_to_next_level: number;
     created_at: string;

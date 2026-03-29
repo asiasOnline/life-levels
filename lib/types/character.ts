@@ -11,6 +11,11 @@ export type CharacterSummary = Pick<
   "id" | "title" | "icon" | "level" | "color_theme"
 >;
 
+export type CharacterSkillLink = Pick<
+Character,
+  "id" | "title" | "icon" | "color_theme"
+>;
+
 // =======================================
 // INPUT TYPES
 // =======================================
