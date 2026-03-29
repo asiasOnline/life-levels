@@ -25,7 +25,7 @@ import { Badge } from '@/components/ui/badge'
 import { IconPicker } from '@/components/layout/app/icon-picker'
 import { IconType } from '@/lib/types/icon'
 import { Skill } from '@/lib/types/skills'
-import { updateSkill } from '@/lib/actions/skill'
+import { updateSkill } from '@/lib/actions/skills'
 import { toast } from 'sonner'
 
 

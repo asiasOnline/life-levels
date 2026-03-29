@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { fetchSkills } from "@/lib/actions/skill";
+import { fetchSkills } from "@/lib/actions/skills";
 import { FaPlus, FaXmark } from "react-icons/fa6";
 
 export default function SkillsPage() {

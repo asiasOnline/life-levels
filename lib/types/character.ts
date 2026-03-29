@@ -8,7 +8,7 @@ import { IconData } from "@/lib/types/icon";
 // (e.g. on a Task or Habit form)
 export type CharacterSummary = Pick<
   Character, 
-  "id" | "title" | "icon" | "level"
+  "id" | "title" | "icon" | "level" | "color_theme"
 >;
 
 // =======================================

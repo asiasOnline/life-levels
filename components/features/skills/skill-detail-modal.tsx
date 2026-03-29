@@ -33,7 +33,7 @@ import {
 import { EditSkillModal } from './edit-skill-modal'
 import { Pencil, Trash2, Link2, Users, Target, ListTodo, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
-import { deleteSkill } from '@/lib/actions/skill'
+import { deleteSkill } from '@/lib/actions/skills'
 
 
 

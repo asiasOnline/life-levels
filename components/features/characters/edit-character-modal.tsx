@@ -21,7 +21,7 @@ import { IconData, IconType } from '@/lib/types/icon'
 import { Character, CharacterAvatarData } from '@/lib/types/character'
 import { AVATAR_REGISTRY } from './avatars/avatar-registry'
 import { AvatarRenderer } from './avatars/avatar-renderer'
-import { updateCharacter } from '@/lib/actions/character'
+import { updateCharacter } from '@/lib/actions/characters'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 

@@ -40,7 +40,7 @@ import {
   archiveCharacter, 
   reactivateCharacter, 
   deleteCharacter 
-} from '@/lib/actions/character'
+} from '@/lib/actions/characters'
 
 // =======================================
 // PROPS

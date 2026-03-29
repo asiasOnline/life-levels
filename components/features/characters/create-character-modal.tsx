@@ -35,7 +35,7 @@ import {
 import { AVATAR_REGISTRY } from './avatars/avatar-registry'
 import { AvatarRenderer } from './avatars/avatar-renderer'
 import { CharacterAvatarData } from '@/lib/types/character'
-import { createCharacter } from '@/lib/actions/character'
+import { createCharacter } from '@/lib/actions/characters'
 import { cn } from '@/lib/utils'
 
 // =======================================
@@ -219,7 +219,7 @@ export function CreateCharacterModal({
 
               {/* Icon */}
               <Field>
-              <FieldLabel htmlFor="skill-icon">Icon</FieldLabel>
+              <FieldLabel htmlFor="chararcter-icon">Icon</FieldLabel>
               <IconPicker
                 currentIcon={form.watch('icon')}
                 currentIconType={form.watch('iconType')}

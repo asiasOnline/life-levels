@@ -3,7 +3,7 @@ import type {
   HabitTimeBucket,
   HabitRewardResult,
   HabitCustomRecurrenceConfig,
-} from "@/lib/types/habit";
+} from "@/lib/types/habits";
 
 // =============================================================================
 // TIME BUCKET
@@ -26,7 +26,7 @@ export function getTimeBucket(minutes: number): HabitTimeBucket {
 // effective tier before lookup via getEffectiveRecurrenceForCustom().
 // =============================================================================
 
-const XP_TABLE: Record<HabitRecurrence, Record<HabitTimeBucket, number>> = {
+export const XP_TABLE: Record<HabitRecurrence, Record<HabitTimeBucket, number>> = {
   daily:      { quick: 10, medium: 20, extended: 30,  long: 45  },
   weekdays:   { quick: 12, medium: 22, extended: 35,  long: 50  },
   x_per_week: { quick: 15, medium: 28, extended: 42,  long: 60  },
@@ -36,7 +36,7 @@ const XP_TABLE: Record<HabitRecurrence, Record<HabitTimeBucket, number>> = {
   custom:     { quick: 0,  medium: 0,  extended: 0,   long: 0   },
 };
 
-const GOLD_TABLE: Record<HabitRecurrence, Record<HabitTimeBucket, number>> = {
+export const GOLD_TABLE: Record<HabitRecurrence, Record<HabitTimeBucket, number>> = {
   daily:      { quick: 5,  medium: 10, extended: 15, long: 22 },
   weekdays:   { quick: 6,  medium: 11, extended: 17, long: 25 },
   x_per_week: { quick: 7,  medium: 14, extended: 21, long: 30 },
@@ -46,7 +46,7 @@ const GOLD_TABLE: Record<HabitRecurrence, Record<HabitTimeBucket, number>> = {
   custom:     { quick: 0,  medium: 0,  extended: 0,  long: 0  },
 };
 
-const ENERGY_TABLE: Record<HabitRecurrence, Record<HabitTimeBucket, number>> = {
+export const ENERGY_TABLE: Record<HabitRecurrence, Record<HabitTimeBucket, number>> = {
   daily:      { quick: 5, medium: 8,  extended: 12, long: 16 },
   weekdays:   { quick: 5, medium: 8,  extended: 12, long: 16 },
   x_per_week: { quick: 6, medium: 10, extended: 14, long: 18 },
@@ -57,7 +57,7 @@ const ENERGY_TABLE: Record<HabitRecurrence, Record<HabitTimeBucket, number>> = {
 };
 
 // Resilience scales with time bucket only — Habits have no Priority field.
-const RESILIENCE_TABLE: Record<HabitTimeBucket, number> = {
+export const RESILIENCE_TABLE: Record<HabitTimeBucket, number> = {
   quick:    4,
   medium:   5,
   extended: 7,

@@ -19,7 +19,7 @@ import {
   TableBody
  } from "@/components/ui/table";
 import { toast } from "sonner";
-import { fetchCharacters } from "@/lib/actions/character";
+import { fetchCharacters } from "@/lib/actions/characters";
 import { Button } from "@/components/ui/button";
 import { FaPlus, FaXmark } from "react-icons/fa6";
 

@@ -25,7 +25,7 @@ import { IconPicker } from "@/components/layout/app/icon-picker"
 import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR } from "@/lib/types/icon"
 import { toast } from "sonner"
 import { FaPlus, FaXmark, FaCheck } from "react-icons/fa6";
-import { fetchActiveCharacters } from "@/lib/actions/character"
+import { fetchActiveCharacters } from "@/lib/actions/characters"
 import type { Database } from "@/lib/database.types"
 
 type CharacterRow = Database['public']['Tables']['characters']['Row']
@@ -138,7 +138,7 @@ export function CreateSkillModal({
         setIsSubmitting(true)
 
         try {
-            const { createSkill } = await import('@/lib/actions/skill')
+            const { createSkill } = await import('@/lib/actions/skills')
             await createSkill({
                 title: values.title,
                 description: values.description,
