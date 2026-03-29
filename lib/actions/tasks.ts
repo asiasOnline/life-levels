@@ -102,17 +102,98 @@ function mapRowToTaskWithRelations(row: TaskRowWithRelations): TaskWithRelations
   }
 }
 
+// ====================================================
+// JUNCTION TABLE HELPERS
+// All junction writes use the delete-then-insert pattern — no diffing,
+// safe because junction rows carry no data beyond the foreign keys.
+// =====================================================
+async function syncTaskSkills(
+  supabase: ReturnType<typeof createClient>,
+  task_id: string, 
+  skill_ids: string[], 
+): Promise<void> {
+  const { error: deleteError } = await supabase
+    .from('task_skills')
+    .delete()
+    .eq('task_id', task_id)
+
+  if (deleteError) {
+    console.error(`Failed to clear task skillsfor task ${task_id}:`, deleteError)
+    throw deleteError
+  }
+
+  if (skill_ids.length === 0) return
+
+  const rows = skill_ids.map(
+    (skill_id) => ({ task_id, skill_id })
+  )
+
+  const { error: insertError } = await supabase
+    .from('task_skills')
+    .insert(rows)
+  if (insertError) {
+    console.error(`Failed to link skills for task ${task_id}:`, insertError)
+    throw insertError
+  }
+}
+
+async function syncTaskCharacters(
+  supabase: ReturnType<typeof createClient>,
+  task_id: string,
+  character_ids: string[]
+): Promise<void> {
+  const { error: deleteError } = await supabase
+    .from('task_characters')
+    .delete()
+    .eq('task_id', task_id)
+
+  if (deleteError) {
+    console.error(`Failed to clear task characters for task ${task_id}:`, deleteError)
+    throw deleteError
+  }
+
+  if (character_ids.length === 0) return
+
+  const rows = character_ids.map((character_id) => ({ task_id, character_id }))
+  const { error: insertError } = await supabase.from('task_characters').insert(rows)
+  if (insertError) {
+    console.error(`Failed to link characters for task ${task_id}:`, insertError)
+    throw insertError
+  }
+}
+
+async function syncTaskGoals(
+  supabase: ReturnType<typeof createClient>,
+  task_id: string,
+  goal_ids: string[]
+): Promise<void> {
+  const { error: deleteError } = await supabase
+    .from('task_goals')
+    .delete()
+    .eq('task_id', task_id)
+
+  if (deleteError) throw new Error(`Failed to clear task goals: ${deleteError.message}`)
+  if (goal_ids.length === 0) return
+
+  const rows = goal_ids.map((goal_id) => ({ task_id, goal_id }))
+  const { error: insertError } = await supabase
+    .from('task_goals')
+    .insert(rows)
+  if (insertError) throw new Error(`Failed to link goals: ${insertError.message}`)
+}
+
 // =======================================
 // DATABASE FUNCTIONS
 // =======================================
 
+// =================================================
+// FETCH ALL TASKS
+// =================================================
 /** -------------------------------------
- * FETCH ALL TASKS
  * Fetches all tasks for the authenticated user with linked Skills and Characters hydrated. Active habits are returned first, then paused, then archived.
  * --------------------------------------
  */
-export async function fetchTasks(): 
-Promise<ActionResult<TaskWithRelations[]>> {
+export async function fetchTasks(): Promise<ActionResult<TaskWithRelations[]>> {
   try {
     const supabase = createClient()
   
@@ -149,8 +230,10 @@ Promise<ActionResult<TaskWithRelations[]>> {
 }
 }
 
+// =================================================
+// FETCH A SINGLE TASK.
+// =================================================
 /**-------------------------------------
- * FETCH A SINGLE TASK
  * Returns a single task by ID with all relations hydrated.
  * -------------------------------------
  */
@@ -191,8 +274,10 @@ export async function fetchTaskById(
   }
 }
 
+// =================================================
+// CREATE A NEW TASK
+// =================================================
 /**-------------------------------------
- * CREATE A NEW TASK
  * Creates a new task and links it to the provided skills, characters,
  * and optionally goals. Rewards default to algorithm output when
  * use_custom_xp is false or omitted.
@@ -241,7 +326,7 @@ export async function createTask(
     const useCustom = input.use_custom_xp ?? false
     let characterXp = input.character_xp ?? 0
     let skillXp     = input.skill_xp ?? 0
-    let goldReward  = input.gold_reward ?? 0,
+    let goldReward  = input.gold_reward ?? 0
 
     if (!useCustom) {
       const rewards = calculateTaskXP(
@@ -301,23 +386,34 @@ export async function createTask(
 
   if (skillsError) {
     // Rollback: delete the task if skill linking fails
-    await supabase.from('tasks').delete().eq('id', task.id)
+    await supabase
+    .from('tasks')
+    .delete().eq('id', task.id)
     console.error('Error linking skills to task:', skillsError)
     throw skillsError
   }
 
-  return task
+  const result = await fetchTaskById(task.id)
+  if (!result.success) return result
+
+  return { success: true, data: result.data }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unexpected error creating task'
+    return { success: false, error: message }
+  }
 }
 
+// =================================================
+// UPDATE A TASK
+// =================================================
 /**-------------------------------------
- * UPDATE TASK
- * Updates task fields and/or replaces junction table links.
- * Only fields present on UpdateTaskInput are written — omitted fields are left unchanged. Junction tables use full-replacement delete-then-insert when the corresponding _ids array is provided; omitting an _ids array leaves those links untouched.
+ Updates task fields and/or replaces junction table links.
+ Only fields present on UpdateTaskInput are written — omitted fields are left unchanged. Junction tables use full-replacement delete-then-insert when the corresponding _ids array is provided; omitting an _ids array leaves those links untouched.
  * -------------------------------------
  */
 export async function updateTask(
   input: UpdateTaskInput
-): Promise<TaskRow> {
+): Promise<ActionResult<TaskWithRelations>> {
   try {
   const supabase = createClient()
 
@@ -351,12 +447,13 @@ export async function updateTask(
     if (input.skill_ids) {
       if (input.skill_ids.length === 0) {
         return { 
-          success: false, error: 'At least one skill must be assigned.' }
+          success: false, 
+          error: 'At least one skill must be assigned.' }
       }
       if (input.skill_ids.length > 3) {
         return { 
           success: false, 
-          error: 'A habit cannot be assigned to more than 3 skills.' }
+          error: 'A task cannot be assigned to more than 3 skills.' }
       }
       currentSkillCount = input.skill_ids.length
     } else {
@@ -373,18 +470,12 @@ export async function updateTask(
         error: 'At least one character must be assigned.' }
     }
 
-  // Prepare task update data
+  // ── Build the update payload ─────────────────────
   const taskUpdate: TaskUpdate = {}
   
   if (input.title         !== undefined) taskUpdate.title = input.title
   if (input.description   !== undefined) taskUpdate.description = input.description
-  if (input.icon          !== undefined || input.icon_type !== undefined) {
-    taskUpdate.icon = {
-      type: input.icon_type || 'emoji',
-      value: input.icon || DEFAULT_ICON,
-      color: input.icon_color,
-    }
-  }
+  if (input.icon          !== undefined || input.icon_type !== undefined) taskUpdate.icon = input.icon as unknown as TaskUpdate['icon']
   if (input.status        !== undefined) taskUpdate.status = input.status
   if (input.priority      !== undefined) taskUpdate.priority = input.priority
   if (input.difficulty !== undefined) taskUpdate.difficulty = input.difficulty
@@ -397,66 +488,83 @@ export async function updateTask(
     if (input.character_xp !== undefined) taskUpdate.character_xp = input.character_xp ?? undefined
     if (input.skill_xp     !== undefined) taskUpdate.skill_xp     = input.skill_xp ?? undefined
 
-  // Update task
-  const { data, error } = await supabase
-    .from('tasks')
-    .update(taskUpdate)
-    .eq('id', id)
-    .select()
-    .single()
+  // ── Write the task row if there is anything to update ──────
+  if (Object.keys(taskUpdate).length > 0) {
+    const { error: updateError } = await supabase
+      .from('tasks')
+      .update(taskUpdate)
+      .eq('id', input.id)
+      .eq('user_id', user.id)
 
-  if (error) {
-    console.error('Error updating task:', error)
-    throw error
+    if (updateError) return { 
+        success: false, 
+        error: updateError.message }
   }
 
-  // Update skill relationships if provided
-  if (updates.skill_ids !== undefined) {
-    if (updates.skill_ids.length < 1 || updates.skill_ids.length > 3) {
-      throw new Error('Tasks must be linked to 1-3 skills')
-    }
+  // ── Sync junction tables (only when caller passed new IDs) ────────────
+    if (input.skill_ids     !== undefined) await syncTaskSkills(supabase, input.id, input.skill_ids)
+    if (input.character_ids !== undefined) await syncTaskCharacters(supabase, input.id, input.character_ids)
+    if (input.goal_ids      !== undefined) await syncTaskGoals(supabase, input.id, input.goal_ids)
 
-    // Delete existing relationships
-    await supabase.from('task_skills').delete().eq('task_id', id)
+    const result = await fetchTaskById(input.id)
+      if (!result.success) return result
 
-    // Insert new relationships
-    const taskSkills = updates.skill_ids.map((skill_id) => ({
-      task_id: id,
-      skill_id,
-    }))
-
-    const { error: skillsError } = await supabase
-      .from('task_skills')
-      .insert(taskSkills)
-
-    if (skillsError) {
-      console.error('Error updating task skills:', skillsError)
-      throw skillsError
-    }
+  return { success: true, data: result.data }
+} catch (err) {
+    const message = err instanceof Error ? err.message : 'Unexpected error updating task'
+    return { success: false, error: message }
   }
-
-  return data
 }
 
+// =================================================
+// DELETE
+// =================================================
 /**-------------------------------------
- * Delete a task
+ * Permanently deletes a task. Junction rows are removed automatically by
+ * ON DELETE CASCADE. Gold and XP already awarded are retained by the user.
  * -------------------------------------
  */
 
-export async function deleteTask(id: string): Promise<void> {
-  const supabase = createClient()
+export async function deleteTask(
+  id: string
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const supabase = createClient()
+
+    const { 
+      data: { user }, 
+      error: authError 
+    } = await supabase.auth.getUser()
+    
+    if (authError || !user) return { 
+      success: false, 
+      error: 'Not authenticated' 
+    }
 
   const { error } = await supabase
     .from('tasks')
     .delete()
     .eq('id', id)
+    .eq('user_id', user.id)
 
-  if (error) {
-    console.error('Error deleting task:', error)
-    throw error
+  if (error) return { 
+      success: false, 
+      error: error.message 
+    }
+  
+    return { 
+      success: true, 
+      data: { id } 
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unexpected error deleting task'
+    return { success: false, error: message }
   }
 }
 
+// =================================================
+// COMPLETE
+// =================================================
 /**-------------------------------------
  * Complete a task
  * Awards XP to linked skills and gold to user
@@ -553,27 +661,35 @@ export async function completeTask(id: string): Promise<TaskRow> {
  * Convenience method for status changes
  * -------------------------------------
  */
-export async function updateTaskStatus(id: string, status: TaskStatus): Promise<TaskRow> {
-  const supabase = createClient()
+export async function updateTaskStatus(
+  id: string, 
+  status: TaskStatus
+): Promise<ActionResult<TaskRow>> {
+  try {
+    const supabase = createClient()
 
-  const updateData: Partial<TaskUpdate> = { status }
+    const updateData: Partial<TaskUpdate> = { status }
 
-  // Clear completed_at if moving away from completed
-  if (status !== 'completed') {
-    updateData.completed_at = null
+    // Clear completed_at if moving away from completed
+    if (status !== 'completed') {
+      updateData.completed_at = null
+    }
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating task status:', error)
+      throw error
+    }
+
+    return { success: true, data }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unexpected error updating task status'
+    return { success: false, error: message }
   }
-
-  const { data, error } = await supabase
-    .from('tasks')
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) {
-    console.error('Error updating task status:', error)
-    throw error
-  }
-
-  return data
 }

@@ -16,7 +16,7 @@ import {
 } from '../types/skills'
 
 // =======================================
-// DATABASE TYPES
+//  INTERNAL DATABASE TYPES
 // =======================================
 type SkillRow = Database['public']['Tables']['skills']['Row']
 type SkillInsert = Database['public']['Tables']['skills']['Insert']
@@ -37,7 +37,7 @@ type SkillRowWithCharacters = SkillRow & {
   }[]
 }
 
-type SkillRowWithLinks = SkillRowWithCharacters & {
+type SkillWithRelations = SkillRowWithCharacters & {
   habit_skills: {
     habits: {
       id: string
@@ -64,12 +64,22 @@ type SkillRowWithLinks = SkillRowWithCharacters & {
   }[]
 }
 
+// ===========================================
+// RESULT TYPE
+// ===========================================
+
+type ActionResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string }
+
 // =======================================
 // DATABASE FUNCTIONS
 // =======================================
+// =================================================
+// FETCH ALL SKILLS
+// =================================================
 /** -------------------------------------
- * Fetch all skills for the current user,
- * including any linked characters
+ * Fetch all skills for the current user including any linked characters
  * --------------------------------------
  */
 export async function fetchSkills(): Promise<Skill[]> {

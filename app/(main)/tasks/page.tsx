@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
 import { ViewMode } from "@/components/layout/app/item-container-header";
 import { fetchTasks } from "@/lib/actions/tasks";
-import { TaskWithSkills } from "@/lib/actions/tasks";
+import { Task, TaskWithRelations } from "@/lib/types/tasks";
 import TaskCard from "@/components/features/tasks/task-card";
 import { TaskTableRow } from "@/components/features/tasks/task-table-row";
 import { CreateTaskModal } from "@/components/features/tasks/create-task-modal";
@@ -21,12 +21,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { FaPlus, FaXmark } from "react-icons/fa6";
+import { fetchCharacters } from "@/lib/actions/characters";
+import { fetchSkills } from "@/lib/actions/skills";
 
 export default function TaskPage() {
     const [viewMode, setViewMode] = useState<ViewMode>('grid')
-    const [tasks, setTasks] = useState<TaskWithSkills[]>([])
+    const [tasks, setTasks] = useState<TaskWithRelations[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const [selectedTask, setSelectedTask] = useState<TaskWithSkills | null>(null)
+    const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
@@ -34,48 +36,46 @@ export default function TaskPage() {
     loadTasks()
   }, [])
 
- const loadTasks = async () => {
+  // ── Data fetching ───────────────────────────────────────────
+ const loadTasks = useCallback(async () => {
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      const data = await fetchTasks()
+      const [taskResult, skillsResult, charactersResult] = await Promise.all([
+        fetchTasks(),
+        fetchSkills(),
+        fetchCharacters(),
+      ])
+
+      if (!taskResult.success) {
+        toast.error('Failed to load tasks.')
+        return
+      }
+      /*
+      if (!skillsResult.success) {
+        toast.error('Failed to load skills.')
+        return
+      }
+      if (!charactersResult.success) {
+        toast.error('Failed to load characters.')
+        return
+      }
+      */
 
       // Map database rows to Task objects
-      const tasksData: TaskWithSkills[] = data.map((row) => ({
-        id: row.id,
-        user_id: row.id,
-        title: row.title,
-        description: row.description || null,
-        icon: row.icon,
-        task_skills: row.task_skills,
-        status: row.status,
-        difficulty: row.difficulty,
-        priority: row.priority,
-        start_date: row.start_date || null,
-        due_date: row.due_date || null,
-        completed_at: row.completed_at || null,
-        use_custom_gold: row.use_custom_gold,
-        gold_reward: row.gold_reward,
-        use_custom_xp: row.use_custom_xp, 
-        character_xp: row.character_xp,
-        skill_xp: row.skill_xp, 
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-      }))
-
-      setTasks(tasksData)
+      setTasks(taskResult.data)
     } catch (error) {
       console.error('Error loading tasks:', error)
       toast.error('Failed to load tasks. Please try again.')
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     loadTasks()
   }, [])
 
-  function handleTaskClick(task: TaskWithSkills) {
+  function handleTaskClick(task: TaskWithRelations) {
     setSelectedTask(task)
     setIsDetailModalOpen(true)
   }
@@ -146,9 +146,9 @@ export default function TaskPage() {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    linkedSkills={task.task_skills.map((ts) => ({
-                      id: ts.skills.id,
-                      title: ts.skills.title,
+                    linkedSkills={task.skills.map((ts) => ({
+                      id: ts.id,
+                      title: ts.title,
                     }))}
                     onClick={handleTaskClick}
                   />
@@ -163,9 +163,9 @@ export default function TaskPage() {
                         <TaskTableRow
                           key={task.id}
                           task={task}
-                          linkedSkills={task.task_skills.map((ts) => ({
-                            id: ts.skills.id,
-                            title: ts.skills.title,
+                          linkedSkills={task.skills.map((ts) => ({
+                            id: ts.id,
+                            title: ts.title,
                           }))}
                           onClick={handleTaskClick}
                         />

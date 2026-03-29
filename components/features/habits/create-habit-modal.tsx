@@ -15,7 +15,6 @@ import { Input }    from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button }   from '@/components/ui/button'
 import { Label }    from '@/components/ui/label'
-import { Badge }    from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import {
   Select,
@@ -29,8 +28,6 @@ import { IconData }       from '@/lib/types/icon'
 import { SkillSummary }   from '@/lib/types/skills'
 import { CharacterSummary } from '@/lib/types/character'
 import {
-  HABIT_RECURRENCE,
-  HABIT_COMPLETION_TIME,
   HabitRecurrence,
   HabitCompletionTime,
   HabitCustomRecurrenceConfig,
@@ -96,6 +93,7 @@ const schema = z.object({
   // Step 1
   title:       z.string().min(1, 'Title is required').max(100, 'Title is too long'),
   description: z.string().max(500).optional(),
+  icon:        z.object({ type: z.string(), value: z.string() }).optional(),
 
   // Step 2
   recurrence:                z.enum(['daily', 'weekdays', 'x_per_week', 'weekly', 'bi_weekly', 'monthly', 'custom']),
@@ -297,7 +295,7 @@ export function CreateHabitModal({
     try {
       const input: CreateHabitInput = {
         title:            values.title,
-        icon,
+        icon:             JSON.stringify(icon),
         description:      values.description || undefined,
         recurrence:       values.recurrence as HabitRecurrence,
         time_consumption: values.time_consumption,

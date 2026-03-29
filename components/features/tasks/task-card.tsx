@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils'
 import { formatDueDate } from '@/lib/utils'
 import { FaRegCalendarDays, FaClock, FaCoins, FaStar, FaCircleArrowUp, FaUserGroup } from "react-icons/fa6";
 import { TbAlertCircleFilled } from "react-icons/tb";
-import { TaskWithSkills } from '@/lib/actions/tasks'
+import { TaskWithRelations } from '@/lib/types/tasks'
 
 // TYPES -------------------------
 
@@ -33,10 +33,10 @@ interface LinkedSkill {
 }
 
 interface TaskCardProps {
-  task: TaskWithSkills
+  task: TaskWithRelations
   linkedSkills: LinkedSkill[]
   linkedCharacterCount?: number
-  onClick?: (task: TaskWithSkills) => void
+  onClick?: (task: TaskWithRelations) => void
   className?: string
 }
 

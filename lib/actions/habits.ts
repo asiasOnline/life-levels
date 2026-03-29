@@ -113,58 +113,70 @@ function mapRowToHabitWithRelations(row: HabitRowWithRelations): HabitWithRelati
 
 async function syncHabitSkills(
   supabase: ReturnType<typeof createClient>,
-  habitId: string,
-  skillIds: string[]
+  habit_id: string,
+  skill_ids: string[]
 ): Promise<void> {
   const { error: deleteError } = await supabase
     .from('habit_skills')
     .delete()
-    .eq('habit_id', habitId)
+    .eq('habit_id', habit_id)
 
-  if (deleteError) throw new Error(`Failed to clear habit skills: ${deleteError.message}`)
-  if (skillIds.length === 0) return
+  if (deleteError) {
+    console.error(`Failed to clear habit skills for habit ${habit_id}:`, deleteError)
+    throw deleteError
+  }
 
-  const rows = skillIds.map((skill_id) => ({ habit_id: habitId, skill_id }))
-  const { error: insertError } = await supabase.from('habit_skills').insert(rows)
-  if (insertError) throw new Error(`Failed to link skills: ${insertError.message}`)
+  if (skill_ids.length === 0) return
+
+  const rows = skill_ids.map(
+    (skill_id) => ({ habit_id, skill_id })
+  )
+  const { error: insertError } = await supabase
+    .from('habit_skills')
+    .insert(rows)
+  if (insertError) {
+    console.error(`Failed to link skills for habit ${habit_id}:`, insertError)
+    throw insertError
+  }
 }
 
 async function syncHabitCharacters(
   supabase: ReturnType<typeof createClient>,
-  habitId: string,
-  characterIds: string[]
+  habit_id: string,
+  character_ids: string[]
 ): Promise<void> {
   const { error: deleteError } = await supabase
     .from('habit_characters')
     .delete()
-    .eq('habit_id', habitId)
+    .eq('habit_id', habit_id)
 
   if (deleteError) throw new Error(`Failed to clear habit characters: ${deleteError.message}`)
-  if (characterIds.length === 0) return
+  if (character_ids.length === 0) return
 
-  const rows = characterIds.map((character_id) => ({ habit_id: habitId, character_id }))
-  const { error: insertError } = await supabase.from('habit_characters').insert(rows)
+  const rows = character_ids.map((character_id) => ({ habit_id, character_id }))
+  const { error: insertError } = await supabase
+    .from('habit_characters')
+    .insert(rows)
   if (insertError) throw new Error(`Failed to link characters: ${insertError.message}`)
 }
 
 async function syncHabitGoals(
   supabase: ReturnType<typeof createClient>,
-  habitId: string,
-  goalIds: string[]
+  habit_id: string,
+  goal_ids: string[]
 ): Promise<void> {
   const { error: deleteError } = await supabase
     .from('habit_goals')
     .delete()
-    .eq('habit_id', habitId)
+    .eq('habit_id', habit_id)
 
   if (deleteError) throw new Error(`Failed to clear habit goals: ${deleteError.message}`)
-  if (goalIds.length === 0) return
+  if (goal_ids.length === 0) return
 
-  const rows = goalIds.map((goal_id) => ({ habit_id: habitId, goal_id }))
+  const rows = goal_ids.map((goal_id) => ({ habit_id, goal_id }))
   const { error: insertError } = await supabase.from('habit_goals').insert(rows)
   if (insertError) throw new Error(`Failed to link goals: ${insertError.message}`)
 }
-
 
 // =======================================
 // DATABASE FUNCTIONS
@@ -271,7 +283,10 @@ export async function createHabit(
       error: authError 
     } = await supabase.auth.getUser()
     
-    if (authError || !user) return { success: false, error: 'Not authenticated' }
+    if (authError || !user) return { 
+      success: false, 
+      error: 'Not authenticated' 
+    }
 
     // ── Application-layer guards ──────────────────────────────────────────
     if (!input.skill_ids || input.skill_ids.length === 0) {
@@ -368,7 +383,7 @@ export async function createHabit(
 }
 
 /**
- * UPDATE HABIT
+ * UPDATE A HABIT.
  * Updates habit fields and/or replaces junction table links.
  * Only fields present on UpdateHabitInput are written — omitted fields are left unchanged. Junction tables use full-replacement delete-then-insert when the corresponding _ids array is provided; omitting an _ids array leaves those links untouched.
  * If recurrence or time_consumption changes and use_custom_xp is false,
@@ -399,7 +414,9 @@ export async function updateHabit(
       .single()
 
     if (fetchError || !existing) {
-      return { success: false, error: fetchError?.message ?? 'Habit not found' }
+      return { 
+        success: false, 
+        error: fetchError?.message ?? 'Habit not found' }
     }
 
     // ── Skill count for reward recalc ─────────────────────────────────────
@@ -431,7 +448,7 @@ export async function updateHabit(
         error: 'At least one character must be assigned.' }
     }
 
-    // ── Build the update payload ──────────────────────────────────────────
+    // ── Build the update payload ───────────────
     const habitUpdate: HabitUpdate = {}
 
     if (input.title                    !== undefined) habitUpdate.title                    = input.title
@@ -479,7 +496,9 @@ export async function updateHabit(
         .eq('id', input.id)
         .eq('user_id', user.id)
 
-      if (updateError) return { success: false, error: updateError.message }
+      if (updateError) return { 
+        success: false, 
+        error: updateError.message }
     }
 
     // ── Sync junction tables (only when caller passed new IDs) ────────────
@@ -540,9 +559,9 @@ export async function setHabitStatus(
   }
 }
 
-// =============================================================================
+// =================================================
 // DELETE
-// =============================================================================
+// =================================================
 
 /**
  * Permanently deletes a habit. Junction rows are removed automatically by
@@ -557,8 +576,15 @@ export async function deleteHabit(
   try {
     const supabase = createClient()
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return { success: false, error: 'Not authenticated' }
+    const { 
+      data: { user }, 
+      error: authError 
+    } = await supabase.auth.getUser()
+    
+    if (authError || !user) return { 
+      success: false, 
+      error: 'Not authenticated' 
+    }
 
     const { error } = await supabase
       .from('habits')
@@ -566,19 +592,24 @@ export async function deleteHabit(
       .eq('id', id)
       .eq('user_id', user.id)
 
-    if (error) return { success: false, error: error.message }
+    if (error) return { 
+      success: false, 
+      error: error.message 
+    }
 
-    return { success: true, data: { id } }
+    return { 
+      success: true, 
+      data: { id } 
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unexpected error deleting habit'
     return { success: false, error: message }
   }
 }
 
-// =============================================================================
+// =================================================
 // COMPLETE
-// =============================================================================
-
+// =================================================
 /**
  * Records a single habit completion and applies all stat effects:
  * Energy deduction (or Resilience if already at 0), Gold award,

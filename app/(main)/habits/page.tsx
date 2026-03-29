@@ -36,18 +36,18 @@ type HabitCompletionRecord = { habit_id: string; completed_at: string }
 // =============================================================================
 
 export default function HabitPage() {
-  const [viewMode,           setViewMode]           = useState<ViewMode>('grid')
-  const [habits,             setHabits]             = useState<HabitWithScore[]>([])
-  const [availableSkills,    setAvailableSkills]    = useState<SkillSummary[]>([])
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [habits, setHabits] = useState<HabitWithScore[]>([])
+  const [availableSkills, setAvailableSkills] = useState<SkillSummary[]>([])
   const [availableCharacters, setAvailableCharacters] = useState<CharacterSummary[]>([])
-  const [isLoading,          setIsLoading]          = useState(true)
-  const [selectedHabit,      setSelectedHabit]      = useState<HabitWithRelations | null>(null)
-  const [isCreateModalOpen,  setIsCreateModalOpen]  = useState(false)
-  const [isDetailModalOpen,  setIsDetailModalOpen]  = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [selectedHabit, setSelectedHabit] = useState<HabitWithRelations | null>(null)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
   // ── Data fetching ──────────────────────────────────────────────────────────
 
-  const fetchData = useCallback(async () => {
+  const loadHabits = useCallback(async () => {
     setIsLoading(true)
     try {
       const [habitsResult, skillsResult, charactersResult] = await Promise.all([
@@ -60,6 +60,7 @@ export default function HabitPage() {
         toast.error('Failed to load habits.')
         return
       }
+      /*
       if (!skillsResult.success) {
         toast.error('Failed to load skills.')
         return
@@ -68,6 +69,7 @@ export default function HabitPage() {
         toast.error('Failed to load characters.')
         return
       }
+      */
 
       // Compute consistency scores client-side.
       // Once habit_completions is built, replace the empty array with real data.
@@ -95,6 +97,7 @@ export default function HabitPage() {
       setHabits(habitsWithScores)
 
       // Slim down to summary shapes for the create modal pickers
+      /*
       setAvailableSkills(
         (skillsResult.data ?? []).map((s) => ({
           id:    s.id,
@@ -113,6 +116,7 @@ export default function HabitPage() {
             color_theme: c.color_theme,
           }))
       )
+        */
     } catch {
       toast.error('Something went wrong loading habits.')
     } finally {
@@ -121,8 +125,8 @@ export default function HabitPage() {
   }, [])
 
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
+    loadHabits()
+  }, [loadHabits])
 
   // ── Derived lists ──────────────────────────────────────────────────────────
 
@@ -139,7 +143,7 @@ export default function HabitPage() {
   }
 
   const handleHabitCreated = () => {
-    fetchData()
+    loadHabits()
     setIsCreateModalOpen(false)
   }
 
