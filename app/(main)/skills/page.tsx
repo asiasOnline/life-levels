@@ -44,6 +44,7 @@ export default function SkillsPage() {
     } catch (error) {
       console.error('Error loading skills:', error)
       toast.error('Failed to load skills. Please refresh the page.')
+      
     } finally {
       setIsLoading(false)
     }

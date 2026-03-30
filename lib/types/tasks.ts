@@ -93,8 +93,8 @@ export interface Task {
   // Rewards
   gold_reward: number;
   use_custom_xp: boolean;
-  custom_character_xp?: number;
-  custom_skill_xp?: number;
+  character_xp?: number;
+  skill_xp?: number;
 
   // Timestamps
   completed_at?: Date;
@@ -191,8 +191,8 @@ export function toTask(row: TaskRow): Task {
     due_date: row.due_date ? new Date(row.due_date) : undefined,
     gold_reward: row.gold_reward,
     use_custom_xp: row.use_custom_xp,
-    custom_character_xp: row.character_xp ?? undefined,
-    custom_skill_xp: row.skill_xp ?? undefined,
+    character_xp: row.character_xp ?? undefined,
+    skill_xp: row.skill_xp ?? undefined,
     completed_at: row.completed_at ? new Date(row.completed_at) : undefined,
     created_at: new Date(row.created_at),
     updated_at: new Date(row.updated_at),
