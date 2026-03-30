@@ -10,6 +10,28 @@ export type SkillSummary = Pick<
 Skill, "id" | "title" | "icon" | "level"
 >;
 
+// Summary shapes for activity history on the Skill detail page
+export type SkillLinkedHabit = { 
+  id: string; 
+  title: string; 
+  icon: IconData; 
+  status: string 
+}
+
+export type SkillLinkedTask  = { 
+  id: string; 
+  title: string; 
+  icon: IconData; 
+  status: string 
+}
+
+export type SkillLinkedGoal  = { 
+  id: string; 
+  title: string; 
+  icon: IconData; 
+  status: string 
+}
+
 // =======================================
 // INPUT TYPES
 // =======================================
@@ -17,6 +39,7 @@ Skill, "id" | "title" | "icon" | "level"
 export interface CreateSkillInput {
   title: string
   description?: string
+  starting_level?: number; // defaults to 1, maxes at 5
   icon: IconData
   tags?: string[]
   character_ids?: string[];
@@ -27,7 +50,6 @@ export interface UpdateSkillInput {
   title?: string;
   icon?: IconData;
   description?: string;
-  starting_level?: number;
   tags?: string[];
   character_ids?: string[]; // full replacement — action does delete-then-insert
 }
@@ -50,3 +72,11 @@ export interface Skill {
     updated_at: string;
   }
   
+// =================================
+// EXTENDED TYPE
+// =================================
+  export interface SkillWithRelations extends Skill {
+  habits: SkillLinkedHabit[]
+  tasks:  SkillLinkedTask[]
+  goals:  SkillLinkedGoal[]
+}

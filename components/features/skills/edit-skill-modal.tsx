@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { IconPicker } from '@/components/layout/app/icon-picker'
+import { IconData, IconType } from '@/lib/types/icon'
+import { Skill } from '@/lib/types/skills'
+import { updateSkill } from '@/lib/actions/skills'
 import { Plus, X } from 'lucide-react'
 import {
   Dialog,
@@ -22,20 +26,29 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { IconPicker } from '@/components/layout/app/icon-picker'
-import { IconType } from '@/lib/types/icon'
-import { Skill } from '@/lib/types/skills'
-import { updateSkill } from '@/lib/actions/skills'
 import { toast } from 'sonner'
 
 
 const editSkillSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
-  description: z.string().max(500, 'Description is too long').optional(),
-  icon: z.string().optional(),
-  iconType: z.enum(['emoji', 'fontawesome', 'image']),
-  iconColor: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .max(100, 'Title is too long'),
+  description: z
+    .string()
+    .max(500, 'Description is too long')
+    .optional(),
+  icon: z
+    .string()
+    .optional(),
+  iconType: z
+    .enum(['emoji', 'fontawesome', 'image']),
+  iconColor: z
+    .string()
+    .optional(),
+  tags: z
+    .array(z.string())
+    .optional(),
 })
 
 type EditSkillFormValues = z.infer<typeof editSkillSchema>
@@ -68,11 +81,11 @@ export function EditSkillModal({
     resolver: zodResolver(editSkillSchema),
     defaultValues: {
       title: skill.title,
-      description: skill.description || '',
+      description: skill.description ?? '',
       icon: skill.icon.value,
       iconType: skill.icon.type,
       iconColor: skill.icon.color,
-      tags: skill.tags || [],
+      tags: skill.tags ?? [],
     },
   })
 
@@ -109,7 +122,10 @@ export function EditSkillModal({
     }
   }
 
-  const handleIconChange = (icon: string, icon_type: IconType, icon_color?: string) => {
+  const handleIconChange = (
+    icon: string, 
+    icon_type: IconType, 
+    icon_color?: string) => {
     form.setValue('icon', icon)
     form.setValue('iconType', icon_type)
     if (icon_color) {
@@ -121,12 +137,15 @@ export function EditSkillModal({
     setIsSubmitting(true)
 
     try {
-      await updateSkill(skill.id, {
+      const result = await updateSkill({
+        id: skill.id,
         title: values.title,
         description: values.description,
-        icon: values.icon,
-        icon_type: values.iconType,
-        icon_color: values.iconColor,
+        icon: {
+          value: values.icon,
+          type: values.iconType,
+          color: values.iconColor,
+        } as IconData,
         tags: values.tags,
       })
 

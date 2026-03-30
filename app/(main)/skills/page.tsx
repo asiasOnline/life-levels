@@ -5,7 +5,7 @@ import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
 import { ViewMode } from "@/components/layout/app/item-container-header";
-import { Skill } from "@/lib/types/skills";
+import { Skill, SkillWithRelations } from "@/lib/types/skills";
 import { SkillCard } from "@/components/features/skills/skill-card";
 import { SkillTableRow } from "@/components/features/skills/skill-table-row";
 import { CreateSkillModal } from "@/components/features/skills/create-skill-modal";
@@ -19,41 +19,31 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { fetchSkills } from "@/lib/actions/skills";
-import { FaPlus, FaXmark } from "react-icons/fa6";
+import { fetchSkills, fetchSkillById } from "@/lib/actions/skills";
+import { FaPlus } from "react-icons/fa6";
 
 export default function SkillsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [skills, setSkills] = useState<Skill[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null)
+  const [selectedSkill, setSelectedSkill] = useState<SkillWithRelations | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
  const loadSkills = async () => {
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      const data = await fetchSkills()
+      const result = await fetchSkills()
+
+      if (!result.success) {
+        toast.error('Failed to load skills. Please refresh the page.')
+        return
+      }
       
-      // Map database rows to Skill objects
-      const skillsData: Skill[] = data.map((row) => ({
-        id: row.id,
-        title: row.title,
-        description: row.description || undefined,
-        icon: row.icon,
-        level: row.level,
-        current_xp: row.current_xp,
-        xp_to_next_level: row.xp_to_next_level,
-        tags: row.tags,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-      }))
-      
-      setSkills(skillsData)
+      setSkills(result.data)
     } catch (error) {
       console.error('Error loading skills:', error)
       toast.error('Failed to load skills. Please refresh the page.')
-
     } finally {
       setIsLoading(false)
     }
@@ -63,8 +53,14 @@ export default function SkillsPage() {
     loadSkills()
   }, [])
 
-  const handleSkillClick = (skill: Skill) => {
-    setSelectedSkill(skill)
+  const handleSkillClick = async (skill: Skill) => {
+    const result = await fetchSkillById(skill.id)
+
+    if (!result.success) {
+      toast.error('Failed to load skill details.')
+      return
+    }
+    setSelectedSkill(result.data)
     setIsDetailModalOpen(true)
   }
 
@@ -73,10 +69,14 @@ export default function SkillsPage() {
   }
 
   const handleSkillUpdated = () => {
+    setIsDetailModalOpen(false)
+    setSelectedSkill(null)
     loadSkills()
   }
 
   const handleSkillDeleted = () => {
+    setIsDetailModalOpen(false)
+    setSelectedSkill(null)
     loadSkills()
   }
 
@@ -84,13 +84,12 @@ export default function SkillsPage() {
     return (
       <ItemContainer>
         <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Loading skills...</p>
+          <p className="text-muted-foreground">Fetching your skills...</p>
         </div>
       </ItemContainer>
     )
   }
-
-
+  
     return (
      <>
       <PageHeader 

@@ -10,6 +10,7 @@ import {
 } from '@/lib/types/icon'
 import { 
   Skill,
+  SkillWithRelations,
   CreateSkillInput,
   UpdateSkillInput
 } from '../types/skills'
@@ -41,7 +42,7 @@ type SkillRowWithCharacters = SkillRow & {
 
 // Raw shape returned by Supabase for the detail view (all relations).
 // Extends the character shape — fetchSkillById uses this.
-type SkillWithRelations = SkillRowWithCharacters & {
+type SkillRowWithRelations = SkillRowWithCharacters & {
   habit_skills: {
     habits: {
       id: string
@@ -107,13 +108,14 @@ const SKILL_WITH_RELATIONS_SELECT = `
  
 // ==============================================
 // MAPPER
-// Converts a raw Supabase join row → clean Skill shape.
-// Strips nulls from junction rows caused by deleted related records.
-// Works for both SkillRowWithCharacters and SkillRowWithRelations since
-// the character mapping is identical — the extra relation arrays on
-// SkillRowWithRelations are available on the returned Skill via future
-// extension of the Skill type if a SkillWithRelations type is added.
 // ==============================================
+// ==============================================
+// SKILL & CHARACTER MAPPER
+// ==============================================
+/**
+ * Maps a raw Supabase row (characters join only) to a clean Skill.
+ * Used by fetchSkills for the grid/list view.
+ */
 function mapRowToSkill(row: SkillRowWithCharacters): Skill {
   const characters: CharacterSkillLink[] = (row.skill_characters ?? [])
     .filter((sc) => sc.characters !== null)
@@ -136,6 +138,51 @@ function mapRowToSkill(row: SkillRowWithCharacters): Skill {
     characters: characters.length > 0 ? characters : undefined,
     created_at: row.created_at ?? '',
     updated_at: row.updated_at ?? '',
+  }
+}
+
+// ==============================================
+// SKILL RELATION MAPPER
+// ==============================================
+/**
+ * Maps a raw Supabase row (all relations) → SkillWithRelations.
+ * Used by fetchSkillById and as the return shape for all write operations, so the Skill detail modal always receives fully hydrated data.
+ */
+function mapRowToSkillWithRelations(row: SkillRowWithRelations): SkillWithRelations {
+  const base = mapRowToSkill(row)
+ 
+  const habits = (row.habit_skills ?? [])
+    .filter((hs) => hs.habits !== null)
+    .map((hs) => ({
+      id: hs.habits!.id,
+      title: hs.habits!.title,
+      icon: hs.habits!.icon as unknown as IconData,
+      status: hs.habits!.status,
+    }))
+ 
+  const tasks = (row.task_skills ?? [])
+    .filter((ts) => ts.tasks !== null)
+    .map((ts) => ({
+      id: ts.tasks!.id,
+      title: ts.tasks!.title,
+      icon: ts.tasks!.icon as unknown as IconData,
+      status: ts.tasks!.status,
+    }))
+ 
+  const goals = (row.goal_skills ?? [])
+    .filter((gs) => gs.goals !== null)
+    .map((gs) => ({
+      id: gs.goals!.id,
+      title: gs.goals!.title,
+      icon: gs.goals!.icon as unknown as IconData,
+      status: gs.goals!.status,
+    }))
+ 
+  return {
+    ...base,
+    habits,
+    tasks,
+    goals,
   }
 }
 
@@ -178,7 +225,7 @@ async function syncSkillCharacters(
 // FETCH ALL SKILLS
 // =======================================
 /** -------------------------------------
- * Fetch all skills for the current user to their main Skill page this includes any linked characters
+ * Fetch all skills for the authenticated user with linked Characters hydrated. 
  * --------------------------------------
  */
 export async function fetchSkills(): Promise<ActionResult<Skill[]>> {
@@ -201,21 +248,23 @@ export async function fetchSkills(): Promise<ActionResult<Skill[]>> {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('Error fetching skills:', error)
-    throw error
+  if (error) return {
+    success: false,
+    error: error.message
   }
-
+  
   const skills = (data as SkillRowWithCharacters[]).map(mapRowToSkill)
   return {
     success: true,
     data: skills
   }
 } catch (err) {
-  const message = err instanceof Error ? err.message : 'Unexpected error fetching skills'
-  return {
-    success: false,
-    error: message
+    const message = err instanceof Error ? 
+                    err.message : 'Unexpected error fetching skills'
+    return {
+      success: false,
+      error: message
+    }
   }
 }
 
@@ -223,12 +272,11 @@ export async function fetchSkills(): Promise<ActionResult<Skill[]>> {
 // FETCH A SINGLE SKILL
 // =======================================
 /**
- * Returns a single skill by ID with all relations hydrated (characters, habits, tasks, goals).
- * Used by the Skill detail page and as the return path after all write operations.
+ * Returns a single skill by ID with all relations hydrated (characters, habits, tasks, goals). Used by the Skill detail page and as the return path after all write operations.
  */
 export async function fetchSkillById(
   id: string
-): Promise<ActionResult<Skill>> {
+): Promise<ActionResult<SkillWithRelations>> {
   try {
     const supabase = createClient()
  
@@ -252,10 +300,17 @@ export async function fetchSkillById(
     if (error) return { success: false, error: error.message }
     if (!data) return { success: false, error: 'Skill not found' }
  
-    return { success: true, data: mapRowToSkill(data as SkillWithRelations) }
+    return { 
+      success: true, 
+      data: mapRowToSkillWithRelations(data as SkillRowWithRelations) 
+    }
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unexpected error fetching skill'
-    return { success: false, error: message }
+    const message = err instanceof Error ? 
+                    err.message : 'Unexpected error fetching skill'
+    return { 
+      success: false, 
+      error: message 
+    }
   }
 }
 
@@ -263,28 +318,42 @@ export async function fetchSkillById(
 // CREATE A NEW SKILL
 // =======================================
 /**-------------------------------------
- * Create a new skill
+ * Inserts the skill row then syncs character links if provided.
+ * Starting level is capped at 5; XP always begins at 0.
+ * Returns the newly created skill with all relations hydrated.
  * -------------------------------------
  */
-export async function createSkill(input: CreateSkillInput): Promise<SkillRow> {
+export async function createSkill(
+  input: CreateSkillInput
+): Promise<ActionResult<SkillWithRelations>> {
+  try {
   const supabase = createClient()
   
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('User not authenticated')
+  const { 
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) return {
+    success: false,
+    error: 'Not authenticated'
+  }
+
+  const initialSkillLevel = Math.min(input.starting_level ?? 1, 5)
 
   const skillData: SkillInsert = {
     user_id: user.id,
     title: input.title,
-    description: input.description || null,
+    description: input.description ?? null,
     icon: {
       type: input.icon.type || DEFAULT_ICON_TYPE,
       value: input.icon.value || DEFAULT_ICON,
       color: input.icon.color || DEFAULT_ICON_COLOR,
     },
-    tags: input.tags || [],
-    level: 1,
+    tags: input.tags ?? [],
+    level: initialSkillLevel,
     current_xp: 0,
-    xp_to_next_level: calculateXPForLevel(1),
+    xp_to_next_level: calculateXPForLevel(initialSkillLevel),
   }
 
   const { data, error } = await supabase
@@ -294,123 +363,197 @@ export async function createSkill(input: CreateSkillInput): Promise<SkillRow> {
     .single()
 
   if (error) {
-    console.error('Error creating skill:', error)
-    throw error
-  }
+      if (error.code === '23505' && error.message.includes('skills_user_id_title_key')) {
+        return { 
+          success: false, 
+          error: 'A skill with that title already exists.' 
+        }
+      }
+      return { 
+        success: false, 
+        error: error.message 
+      }
+    }
 
   if (input.character_ids && input.character_ids.length > 0) {
-    const links = input.character_ids.map((character_id) => ({
-      skill_id: data.id,
-      character_id,
-    }))
-    const { error: linkError } = await supabase.from('skill_characters').insert(links)
-    if (linkError) {
-      console.error('Error linking characters to skill:', linkError)
-      throw linkError
+      await syncSkillCharacters(supabase, data.id, input.character_ids)
+    }
+
+  const result = await fetchSkillById(data.id)
+    if (!result.success) return result
+
+    return { 
+      success: true, 
+      data: result.data 
+    } 
+  } catch (err) {
+    const message = err instanceof Error ? 
+                    err.message : 'Unexpected error creating skill'
+    return {
+      success: false,
+      error: message
     }
   }
-
-  return data
 }
 
+// =======================================
+// UPDATE AN EXISTING SKILL
+// =======================================
 /**-------------------------------------
- * Update an existing skill
+ * Applies partial field updates and replaces character links if character_ids is provided. Passing an empty character_ids array clears all links; omitting it leaves them unchanged. Returns the updated skill with all relations hydrated.
  * -------------------------------------
  */
-export async function updateSkill(id: string, updates: Partial<CreateSkillInput>): Promise<SkillRow> {
-  const supabase = createClient()
-
-  const skillUpdate: SkillUpdate = {
-    title: updates.title,
-    description: updates.description,
-    tags: updates.tags,
-  }
-
-  if (updates.icon !== undefined) {
-    skillUpdate.icon = {
-      type: updates.icon.type || DEFAULT_ICON_TYPE,
-      value: updates.icon.value || DEFAULT_ICON,
-      color: updates.icon.color || DEFAULT_ICON_COLOR,
+export async function updateSkill(
+  input: UpdateSkillInput
+): Promise<ActionResult<SkillWithRelations>> {
+  try {
+    const supabase = createClient()
+ 
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+ 
+    if (authError || !user) return { success: false, error: 'Not authenticated' }
+ 
+    // Build the update payload — only include fields that were explicitly passed
+    const skillUpdate: SkillUpdate = {}
+ 
+    if (input.title       !== undefined) skillUpdate.title       = input.title
+    if (input.description !== undefined) skillUpdate.description = input.description
+    if (input.tags        !== undefined) skillUpdate.tags        = input.tags
+    if (input.icon        !== undefined) skillUpdate.icon        = input.icon as unknown as SkillUpdate['icon']
+ 
+    if (Object.keys(skillUpdate).length > 0) {
+      const { error } = await supabase
+        .from('skills')
+        .update(skillUpdate)
+        .eq('id', input.id)
+        .eq('user_id', user.id)
+ 
+      if (error) {
+        if (error.code === '23505' && error.message.includes('skills_user_id_title_key')) {
+          return { success: false, error: 'You already have a skill with that title.' }
+        }
+        return { success: false, error: error.message }
+      }
     }
-  }
-
-  const { data, error } = await supabase
-    .from('skills')
-    .update(skillUpdate)
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) {
-    console.error('Error updating skill:', error)
-    throw error
-  }
-
-  return data
-}
-
-/**-------------------------------------
- * Delete a skill
- * -------------------------------------
- */
-export async function deleteSkill(id: string): Promise<void> {
-  const supabase = createClient()
-
-  const { error } = await supabase
-    .from('skills')
-    .delete()
-    .eq('id', id)
-
-  if (error) {
-    console.error('Error deleting skill:', error)
-    throw error
+ 
+    // Replace character links only if caller explicitly passed character_ids
+    if (input.character_ids !== undefined) {
+      await syncSkillCharacters(supabase, input.id, input.character_ids)
+    }
+ 
+    const result = await fetchSkillById(input.id)
+    if (!result.success) return result
+ 
+    return { success: true, data: result.data }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unexpected error updating skill'
+    return { success: false, error: message }
   }
 }
 
+// =======================================
+// DELETE SKILL
+// =======================================
 /**-------------------------------------
- * Add XP to a skill
+ * Permanently removes the skill. Junction rows are removed automatically by
+ * ON DELETE CASCADE. The caller is responsible for ensuring the skill has no
+ * active connections before calling (enforced in the UI per the PRD).
+ * Gold already awarded from this skill levelling up is retained by the user.
  * -------------------------------------
  */
-export async function addXPToSkill(id: string, xpGained: number): Promise<SkillRow> {
-  const supabase = createClient()
-
-  // Fetch current skill
-  const { data: skill, error: fetchError } = await supabase
-    .from('skills')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (fetchError || !skill) throw fetchError || new Error('Skill not found')
-
-  // Calculate new XP and level
-  let newCurrentXP = skill.current_xp + xpGained
-  let newLevel = skill.level
-
-  // Level up if enough XP
-  while (newCurrentXP >= skill.xp_to_next_level) {
-    newCurrentXP -= skill.xp_to_next_level
-    newLevel++
+export async function deleteSkill(
+  id: string
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const supabase = createClient()
+ 
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+ 
+    if (authError || !user) return { success: false, error: 'Not authenticated' }
+ 
+    const { error } = await supabase
+      .from('skills')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id)
+ 
+    if (error) return { success: false, error: error.message }
+ 
+    return { success: true, data: { id } }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unexpected error deleting skill'
+    return { success: false, error: message }
   }
+}
 
-  const newXPToNextLevel = calculateXPForLevel(newLevel)
-
-  // Update skill
-  const { data, error } = await supabase
-    .from('skills')
-    .update({
-      level: newLevel,
-      current_xp: newCurrentXP,
-      xp_to_next_level: newXPToNextLevel,
-    })
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) {
-    console.error('Error adding XP to skill:', error)
-    throw error
+// =======================================
+// ADD XP TO SKILL
+// =======================================
+/**-------------------------------------
+ * Handles level-ups correctly including multi-level jumps in a single XP grant.
+ * Each iteration recalculates the threshold for the new level — this prevents
+ * the stale-threshold bug where all iterations used the originally fetched value.
+ * -------------------------------------
+ */
+export async function addXPToSkill(
+  id: string,
+  xpGained: number
+): Promise<ActionResult<SkillWithRelations>> {
+  try {
+    const supabase = createClient()
+ 
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+ 
+    if (authError || !user) return { success: false, error: 'Not authenticated' }
+ 
+    const { data: skill, error: fetchError } = await supabase
+      .from('skills')
+      .select('level, current_xp')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single()
+ 
+    if (fetchError || !skill) {
+      return { success: false, error: fetchError?.message ?? 'Skill not found' }
+    }
+ 
+    let newXP    = skill.current_xp + xpGained
+    let newLevel = skill.level
+ 
+    // Recalculate the threshold on every iteration so multi-level-ups use
+    // the correct XP requirement for each successive level.
+    while (newXP >= calculateXPForLevel(newLevel)) {
+      newXP -= calculateXPForLevel(newLevel)
+      newLevel++
+    }
+ 
+    const { error: updateError } = await supabase
+      .from('skills')
+      .update({
+        level:            newLevel,
+        current_xp:       newXP,
+        xp_to_next_level: calculateXPForLevel(newLevel),
+      })
+      .eq('id', id)
+      .eq('user_id', user.id)
+ 
+    if (updateError) return { success: false, error: updateError.message }
+ 
+    const result = await fetchSkillById(id)
+    if (!result.success) return result
+ 
+    return { success: true, data: result.data }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unexpected error adding XP to skill'
+    return { success: false, error: message }
   }
-
-  return data
 }

@@ -181,8 +181,10 @@ async function syncHabitGoals(
 // =======================================
 // DATABASE FUNCTIONS
 // =======================================
+// =======================================
+// FETCH ALL HABITS
+// =======================================
 /**
- * FETCH ALL HABITS
  * Fetches all habits for the authenticated user with linked Skills and Characters hydrated. Active habits are returned first, then paused, then archived.
  */
 export async function fetchHabits(): Promise<ActionResult<HabitWithRelations[]>> {
