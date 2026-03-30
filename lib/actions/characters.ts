@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types'
+import { Json } from '@/lib/database.types'
 import { 
-  IconType, 
+  IconData, 
   DEFAULT_ICON, 
   DEFAULT_ICON_TYPE, 
   DEFAULT_ICON_COLOR 
@@ -10,27 +11,96 @@ import { calculateXPForLevel } from '@/lib/utils/character'
 import { CharacterAvatarData } from '@/lib/types/character'
 
 // =======================================
-// DATABASE & INPUT TYPE
+//  INTERNAL DATABASE TYPES
 // =======================================
 
 type CharacterRow = Database['public']['Tables']['characters']['Row']
 type CharacterInsert = Database['public']['Tables']['characters']['Insert']
 type CharacterUpdate = Database['public']['Tables']['characters']['Update']
 
-export interface CreateCharacterInput {
-  title: string
-  description?: string
-  icon?: string
-  icon_type?: IconType
-  icon_color?: string
-  color_theme: string
-  avatar?: CharacterAvatarData | null 
+type HabitStatus = Database["public"]["Enums"]["habit_status"]
+type TypeStatus = Database["public"]["Enums"]["task_status"]
+type GoalStatus = Database["public"]["Enums"]["goal_status"]
+
+// Raw shape returned by Supabase for the grid/list view (includes links with skills only).
+// Not exported — components always receive the clean Character shape.
+type CharacterRowWithSkills = CharacterRow & {
+  skill_characters: {
+    skills: {
+      id: string
+      title: string 
+      icon: unknown
+    } | null
+  }[]
 }
+
+// Raw shape returned by Supabase for the detail view (all relations).
+// Extends the character shape — fetchSkillById uses this.
+type CharacterRowWithRelations = CharacterRowWithSkills & {
+  habit_skills: {
+    habits: {
+      id: string
+      title: string 
+      icon: Json 
+      status: HabitStatus
+    } | null
+  }[]
+  task_skills: {
+    tasks: {
+      id: string
+      title: string 
+      icon: Json
+      status: TypeStatus
+    } | null
+  }[]
+  goal_skills: {
+    goals: {
+      id: string 
+      title: string 
+      icon: Json 
+      status: GoalStatus
+    } | null
+  }[]
+}
+
+// ===========================================
+// RESULT TYPE
+// ===========================================
+type ActionResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string }
+
+// ===========================================
+// SELECT STRINGS
+// Centralised so every fetch function stays in sync if the schema changes.
+// ===========================================
+
+const CHARACTER_WITH_SKILLS_SELECT = `
+  *,
+  skill_characters(
+    skills(id, title, icon)
+  )
+` as const
+
+const CHARACTER_WITH_RELATIONS_SELECT = `
+  *,
+  skill_characters(
+    skills(id, title, icon)
+  ),
+  habit_skills(
+    habits(id, title, icon, status)
+  ),
+  task_skills(
+    tasks(id, title, icon, status)
+  ),
+  goal_skills(
+    goals(id, title, icon, status)
+  )
+` as const
 
 // =======================================
 // DATABASE FUNCTIONS
 // =======================================
-
 /** -------------------------------------
  * Fetch all characters for the current user
  * --------------------------------------

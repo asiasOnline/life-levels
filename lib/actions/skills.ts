@@ -14,7 +14,7 @@ import {
   CreateSkillInput,
   UpdateSkillInput
 } from '../types/skills'
-import { CharacterSkillLink } from '../types/character'
+import { CharacterSummaryWithLevel } from '../types/character'
 
 // =======================================
 //  INTERNAL DATABASE TYPES
@@ -27,7 +27,7 @@ type HabitStatus = Database["public"]["Enums"]["habit_status"]
 type TypeStatus = Database["public"]["Enums"]["task_status"]
 type GoalStatus = Database["public"]["Enums"]["goal_status"]
 
-// Raw shape returned by Supabase for the list view (characters only).
+// Raw shape returned by Supabase for the grid/list view (includes links with characters only).
 // Not exported — components always receive the clean Skill shape.
 type SkillRowWithCharacters = SkillRow & {
   skill_characters: {
@@ -117,7 +117,7 @@ const SKILL_WITH_RELATIONS_SELECT = `
  * Used by fetchSkills for the grid/list view.
  */
 function mapRowToSkill(row: SkillRowWithCharacters): Skill {
-  const characters: CharacterSkillLink[] = (row.skill_characters ?? [])
+  const characters: CharacterSummaryWithLevel[] = (row.skill_characters ?? [])
     .filter((sc) => sc.characters !== null)
     .map((sc) => ({
       id: sc.characters!.id,
