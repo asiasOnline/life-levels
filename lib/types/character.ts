@@ -52,6 +52,7 @@ export interface CreateCharacterInput {
   title: string
   description?: string
   icon: IconData
+  color_theme: string;
   avatar?: CharacterAvatarData | null 
   skill_ids?: string[]; // for linking existing Skills during Character creation
 }
@@ -61,7 +62,9 @@ export interface UpdateCharacterInput {
   title?: string;
   description?: string;
   icon?: IconData;
+  color_theme?: string;
   avatar?: CharacterAvatarData | null 
+  is_archived?: boolean;
   skill_ids?: string[]; // full replacement — action does delete-then-insert
 }
 
@@ -76,6 +79,7 @@ export interface Character {
     color_theme: string;
     avatar: CharacterAvatarData | null;
     level: number;
+    skills?: SkillSummary[];
     current_xp: number;
     xp_to_next_level: number;
     total_xp: number;
@@ -88,8 +92,7 @@ export interface Character {
 // EXTENDED TYPE
 // =================================
 export interface CharacterWithRelations extends Character {
-    skills?: SkillSummary[];
-    linked_habits?: CharacterLinkedHabit[];
-    linked_tasks?: CharacterLinkedTask[];
-    linked_goals?: CharacterLinkedGoal[];
+    habits?: CharacterLinkedHabit[];
+    tasks?: CharacterLinkedTask[];
+    goals?: CharacterLinkedGoal[];
   }

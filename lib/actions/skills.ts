@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types' 
 import { Json } from '@/lib/database.types'
-import { calculateXPForLevel } from '@/lib/utils/skills'
 import { 
   IconData,
   DEFAULT_ICON, 
@@ -14,6 +13,7 @@ import {
   CreateSkillInput,
   UpdateSkillInput
 } from '../types/skills'
+import { calculateXPForLevel } from '@/lib/utils/skills'
 import { CharacterSummaryWithLevel } from '../types/character'
 
 // =======================================
@@ -269,7 +269,7 @@ export async function fetchSkills(): Promise<ActionResult<Skill[]>> {
 }
 
 // =======================================
-// FETCH A SINGLE SKILL
+// FETCH A SINGLE SKILL BY ID (DETAIL VIEW)
 // =======================================
 /**
  * Returns a single skill by ID with all relations hydrated (characters, habits, tasks, goals). Used by the Skill detail page and as the return path after all write operations.
