@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Character } from "@/lib/types/character";
 import { IconType } from "@/lib/types/icon";
-import { ViewMode } from "@/lib/types";
+import { ViewMode } from "@/components/layout/app/item-container-header";
 import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
@@ -19,7 +19,10 @@ import {
   TableBody
  } from "@/components/ui/table";
 import { toast } from "sonner";
-import { fetchCharacters } from "@/lib/actions/characters";
+import { 
+  fetchCharacters, 
+  fetchCharacterById 
+} from "@/lib/actions/characters";
 import { Button } from "@/components/ui/button";
 import { FaPlus, FaXmark } from "react-icons/fa6";
 
@@ -32,43 +35,38 @@ export default function CharactersPage() {
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
     const loadCharacters = async () => {
-    try {
       setIsLoading(true)
-      const data = await fetchCharacters()
-      
-      // Map database rows to Skill objects
-      const characterData: Character[] = data.map((row) => ({
-        id: row.id,
-        title: row.title,
-        description: row.description || undefined,
-        icon: row.icon,
-        color_theme: row.color_theme,
-        avatar: row.avatar,
-        level: row.level,
-        current_xp: row.current_xp,
-        xp_to_next_level: row.xp_to_next_level,
-        total_xp: row.total_xp,
-        is_archived: row.is_archived,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-      }))
-      
-      setCharacters(characterData)
-    } catch (error) {
-      console.error('Error loading skills:', error)
-      toast.error('Failed to load skills. Please refresh the page.')
+      try {
+        const result = await fetchCharacters()
+        
+        if (!result.success) {
+          toast.error('Failed to load characters. Please refresh the page.')
+          return
+        }
+        
+        setCharacters(result.data)
+      } catch (error) {
+        console.error('Error loading skills:', error)
+        toast.error('Failed to load skills. Please refresh the page.')
 
-    } finally {
-      setIsLoading(false)
+      } finally {
+        setIsLoading(false)
+      }
     }
-  }
 
   useEffect(() => {
     loadCharacters()
   }, [])
 
-  const handleCharacterClick = (character: Character) => {
-    setSelectedCharacter(character)
+  const handleCharacterClick = async (character: Character) => {
+    const result = await fetchCharacterById(character.id)
+
+    if (!result.success) {
+      toast.error('Failed to load character details.')
+      return
+    }
+
+    setSelectedCharacter(result.data)
     setIsDetailModalOpen(true)
   }
 
@@ -77,10 +75,14 @@ export default function CharactersPage() {
   }
 
   const handleCharacterUpdated = () => {
+    setIsDetailModalOpen(false)
+    setSelectedCharacter(null)
     loadCharacters()
   }
 
   const handleCharacterDeleted = () => {
+    setIsDetailModalOpen(false)
+    setSelectedCharacter(null)
     loadCharacters()
   }
 
@@ -88,7 +90,7 @@ export default function CharactersPage() {
     return (
       <ItemContainer>
         <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Loading characters...</p>
+          <p className="text-muted-foreground">Calling your characters...</p>
         </div>
       </ItemContainer>
     )
