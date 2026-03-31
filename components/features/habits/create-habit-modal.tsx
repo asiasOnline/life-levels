@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { IconPicker }     from '@/components/layout/app/icon-picker'
-import { IconData }       from '@/lib/types/icon'
+import { IconData, IconType }       from '@/lib/types/icon'
 import { SkillSummary }   from '@/lib/types/skills'
 import { CharacterSummary } from '@/lib/types/character'
 import {
@@ -55,6 +55,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { 
+    FieldSet,
     Field, 
     FieldError, 
     FieldGroup, 
@@ -65,8 +66,24 @@ import {
 // CONSTANTS
 // =============================================================================
 
-const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const DAYS_FULL    = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const DAYS_SHORT = [
+  'Sun', 
+  'Mon', 
+  'Tue', 
+  'Wed', 
+  'Thu', 
+  'Fri', 
+  'Sat'
+]
+const DAYS_FULL = [
+  'Sunday', 
+  'Monday', 
+  'Tuesday', 
+  'Wednesday', 
+  'Thursday', 
+  'Friday', 
+  'Saturday'
+]
 
 const DEFAULT_ICON: IconData = { type: 'emoji', value: '🔄' }
 
@@ -91,9 +108,11 @@ const customRecurrenceSchema = z.object({
 
 const schema = z.object({
   // Step 1
-  title:       z.string().min(1, 'Title is required').max(100, 'Title is too long'),
-  description: z.string().max(500).optional(),
-  icon:        z.object({ type: z.string(), value: z.string() }).optional(),
+  title:        z.string().min(1, 'Title is required').max(100, 'Title is too long'),
+  description:  z.string().max(500).optional(),
+  icon:         z.string().optional(),
+  iconType:     z.enum(['emoji', 'fontawesome', 'image']),
+  iconColor:    z.string().optional(),
 
   // Step 2
   recurrence:                z.enum(['daily', 'weekdays', 'x_per_week', 'weekly', 'bi_weekly', 'monthly', 'custom']),
@@ -368,6 +387,14 @@ export function CreateHabitModal({
     )
   }
 
+  const handleIconChange = (icon: string, iconType: IconType, iconColor?: string) => {
+    form.setValue('icon', icon)
+    form.setValue('iconType', iconType as 'emoji' | 'fontawesome' | 'image')
+    if (iconColor) {
+      form.setValue('iconColor', iconColor)
+    }
+  }
+
   // =============================================================================
   // RENDER
   // =============================================================================
@@ -390,26 +417,24 @@ export function CreateHabitModal({
               STEP 1 — BASICS
           ================================================================ */}
           {step === 1 && (
-            <div className="space-y-5">
+            <FieldSet className="space-y-5">
 
-              {/* Icon + Title */}
               <div className="flex items-start gap-3">
                 {/* Icon */}
-              <FieldGroup>
-                <FieldLabel>Icon</FieldLabel>
-                <IconPicker
-                currentIcon={icon.value}
-                currentIconType={icon.type as any}
-                currentIconColor={undefined}
-                onIconChange={(value) => setIcon({ type: 'emoji', value })}
-                />
-            </FieldGroup>
+                <FieldGroup className='flex-1 min-w-20'>
+                  <IconPicker
+                      currentIcon={JSON.stringify(form.watch('icon') || DEFAULT_ICON)}
+                      currentIconType={form.watch('iconType') as IconType}
+                      currentIconColor={form.watch('iconColor')}
+                      onIconChange={handleIconChange}
+                    />
+                 </FieldGroup>
                 
-                
-                <div className="flex-1 min-w-0">
-                  <Label htmlFor="title" className="text-xs text-muted-foreground mb-1.5 block">
+                {/* Title */}
+                <FieldGroup className="min-w-0">
+                  <FieldLabel htmlFor="title" className="text-xs text-muted-foreground block">
                     Title <span className="text-destructive">*</span>
-                  </Label>
+                  </FieldLabel>
                   <Input
                     id="title"
                     placeholder="e.g. Morning Run, Read 20 Pages…"
@@ -417,9 +442,9 @@ export function CreateHabitModal({
                     className={cn(errors.title && 'border-destructive')}
                   />
                   {errors.title && (
-                    <p className="text-xs text-destructive mt-1">{errors.title.message}</p>
+                    <p className="text-xs text-destructive">{errors.title.message}</p>
                   )}
-                </div>
+                </FieldGroup>
               </div>
 
               {/* Description */}
@@ -435,14 +460,14 @@ export function CreateHabitModal({
                   className="resize-none"
                 />
               </div>
-            </div>
+            </FieldSet>
           )}
 
           {/* ================================================================
               STEP 2 — SCHEDULE
           ================================================================ */}
           {step === 2 && (
-            <div className="space-y-5">
+            <FieldSet className="space-y-5">
 
               {/* Recurrence pattern */}
               <div>
@@ -506,7 +531,7 @@ export function CreateHabitModal({
                       Preferred days <span className="text-muted-foreground/60">(optional)</span>
                     </Label>
                     <div className="flex gap-1.5 flex-wrap">
-                      {DAYS_OF_WEEK.map((day, i) => (
+                      {DAYS_SHORT.map((day, i) => (
                         <button
                           key={day}
                           type="button"
@@ -549,7 +574,7 @@ export function CreateHabitModal({
                                 : 'bg-background text-foreground border-border hover:border-violet-400'
                             )}
                           >
-                            {DAYS_OF_WEEK[i]}
+                            {DAYS_SHORT[i]}
                           </button>
                         ))}
                       </div>
@@ -774,14 +799,14 @@ export function CreateHabitModal({
                   Used for reminder scheduling only — you can always complete it any time.
                 </p>
               </div>
-            </div>
+            </FieldSet>
           )}
 
           {/* ================================================================
               STEP 3 — ASSIGN
           ================================================================ */}
           {step === 3 && (
-            <div className="space-y-6">
+            <FieldSet className="space-y-6">
 
               {/* Skills */}
               <div>
@@ -890,14 +915,14 @@ export function CreateHabitModal({
                   Each character receives the full XP amount on completion.
                 </p>
               </div>
-            </div>
+            </FieldSet>
           )}
 
           {/* ================================================================
               STEP 4 — REWARDS
           ================================================================ */}
           {step === 4 && (
-            <div className="space-y-5">
+            <FieldSet className="space-y-5">
 
               {/* Algorithm preview */}
               <div className="rounded-xl border bg-muted/30 p-4">
@@ -1031,7 +1056,7 @@ export function CreateHabitModal({
                   </p>
                 </div>
               </div>
-            </div>
+            </FieldSet>
           )}
 
           {/* ================================================================

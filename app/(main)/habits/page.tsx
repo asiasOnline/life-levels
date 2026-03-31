@@ -60,7 +60,7 @@ export default function HabitPage() {
         toast.error('Failed to load habits.')
         return
       }
-      /*
+      
       if (!skillsResult.success) {
         toast.error('Failed to load skills.')
         return
@@ -69,7 +69,6 @@ export default function HabitPage() {
         toast.error('Failed to load characters.')
         return
       }
-      */
 
       // Compute consistency scores client-side.
       // Once habit_completions is built, replace the empty array with real data.
@@ -96,8 +95,6 @@ export default function HabitPage() {
 
       setHabits(habitsWithScores)
 
-      // Slim down to summary shapes for the create modal pickers
-      /*
       setAvailableSkills(
         (skillsResult.data ?? []).map((s) => ({
           id:    s.id,
@@ -110,13 +107,14 @@ export default function HabitPage() {
         (charactersResult.data ?? [])
           .filter((c) => !c.is_archived)
           .map((c) => ({
-            id:          c.id,
-            title:       c.title,
-            icon:        c.icon,
-            color_theme: c.color_theme,
+            id:           c.id,
+            title:        c.title,
+            icon:         c.icon,
+            color_theme:  c.color_theme,
+            level:        c.level,
           }))
       )
-        */
+
     } catch {
       toast.error('Something went wrong loading habits.')
     } finally {
