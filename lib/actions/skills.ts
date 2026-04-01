@@ -124,6 +124,7 @@ function mapRowToSkill(row: SkillRowWithCharacters): Skill {
       title: sc.characters!.title,
       icon: sc.characters!.icon as unknown as IconData,
       color_theme: sc.characters!.color_theme,
+      level: sc.characters!.level,
     }))
  
   return {

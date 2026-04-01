@@ -71,11 +71,22 @@ export const BASE_XP_VALUES: Record<TaskDifficulty, number> = {
   [TASK_DIFFICULTY.EXPERT]: 400,
 };
 
-// =====================================================
+// =============================
+// SUMMARY TYPE
+// Lean shape for when a Task appears in another feature's context
+// (e.g. listed on a Goal detail page or a Character dashboard).
+// =============================
+
+export type TaskSummary = Pick<
+  Task,
+  'id' | 'title' | 'icon'
+>;
+
+// =============================
 // MAIN TASK TYPE
 // No user_id — RLS enforces ownership; components never need it.
 // Reward fields use frontend names (character_xp, skill_xp) — the toHabit mapper translates from DB column names (custom_character_xp, custom_skill_xp).
-// =====================================================
+// =============================
 export interface Task {
   // Base content
   id: string;

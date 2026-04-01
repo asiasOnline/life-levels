@@ -1,7 +1,7 @@
 import React from 'react';
-import { StatData, StatDisplayMode } from '@/lib/types';
+import { StatData, StatDisplayMode } from '@/lib/types/general';
 import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/general';
 
 interface StatProps {
   stat: StatData;

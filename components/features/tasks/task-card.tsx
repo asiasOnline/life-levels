@@ -19,8 +19,8 @@ import {
   CardHeader, 
   CardTitle, 
   CardFooter} from '@/components/ui/card'
-import { cn } from '@/lib/utils'
-import { formatDueDate } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
+import { formatDueDate } from '@/lib/utils/general'
 import { FaRegCalendarDays, FaClock, FaCoins, FaStar, FaCircleArrowUp, FaUserGroup } from "react-icons/fa6";
 import { TbAlertCircleFilled } from "react-icons/tb";
 import { TaskWithRelations } from '@/lib/types/tasks'

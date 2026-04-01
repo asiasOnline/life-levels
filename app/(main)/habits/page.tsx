@@ -20,9 +20,9 @@ import {
 import { Plus, Repeat } from 'lucide-react'
 import { toast } from 'sonner'
 
-// =============================================================================
+// ============================================
 // TYPES
-// =============================================================================
+// ============================================
 
 // Extends the fetched habit with a client-computed consistency score
 type HabitWithScore = HabitWithRelations & { consistency_score: number }
@@ -31,9 +31,9 @@ type HabitWithScore = HabitWithRelations & { consistency_score: number }
 // and the score computation below once completion tracking is implemented.
 type HabitCompletionRecord = { habit_id: string; completed_at: string }
 
-// =============================================================================
+// ============================================
 // PAGE
-// =============================================================================
+// ============================================
 
 export default function HabitPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
@@ -45,7 +45,7 @@ export default function HabitPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
-  // ── Data fetching ──────────────────────────────────────────────────────────
+  // ── Data fetching ──────────────────────────
 
   const loadHabits = useCallback(async () => {
     setIsLoading(true)
@@ -93,6 +93,7 @@ export default function HabitPage() {
         return { ...habit, consistency_score }
       })
 
+      // Map database rows to Habit objects
       setHabits(habitsWithScores)
 
       setAvailableSkills(
@@ -126,13 +127,13 @@ export default function HabitPage() {
     loadHabits()
   }, [loadHabits])
 
-  // ── Derived lists ──────────────────────────────────────────────────────────
+  // ── Derived lists ─────────────────────────
 
   const activeHabits   = habits.filter((h) => h.status === HABIT_STATUS.ACTIVE)
   const pausedHabits   = habits.filter((h) => h.status === HABIT_STATUS.PAUSED)
   const archivedHabits = habits.filter((h) => h.status === HABIT_STATUS.ARCHIVED)
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
+  // ── Handlers ───────────────────────────────
 
   const handleCardClick = (id: string) => {
     const habit = habits.find((h) => h.id === id) ?? null
@@ -145,9 +146,9 @@ export default function HabitPage() {
     setIsCreateModalOpen(false)
   }
 
-  // =============================================================================
+  // ==========================================
   // RENDER
-  // =============================================================================
+  // ==========================================
 
   return (
     <>
@@ -159,8 +160,8 @@ export default function HabitPage() {
       <ItemContainer>
         <ItemContainerHeader
           title="Habit Log"
-          searchPlaceholder="Search tasks..."
-          addButtonLabel="New Task"
+          searchPlaceholder="Search habits..."
+          addButtonLabel="New Habit"
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           onAddNew={() => setIsCreateModalOpen(true)}
@@ -169,7 +170,7 @@ export default function HabitPage() {
           onSortChange={() => console.log('Sort')}
         />
 
-        {/* ── Loading state ────────────────────────────────────────────── */}
+        {/* ── Loading state ─────────────── */}
         {isLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
             {[...Array(6)].map((_, i) => (
@@ -181,7 +182,7 @@ export default function HabitPage() {
           </div>
         )}
 
-        {/* ── Empty state ──────────────────────────────────────────────── */}
+        {/* ── Empty state ──────────────────*/}
         {!isLoading && habits.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
@@ -203,7 +204,7 @@ export default function HabitPage() {
           </div>
         )}
 
-        {/* ── Habit lists ──────────────────────────────────────────────── */}
+        {/* ── Habit lists ───────────────── */}
         {!isLoading && habits.length > 0 && (
           <div className="space-y-8 p-4">
 
@@ -277,7 +278,7 @@ export default function HabitPage() {
         )}
       </ItemContainer>
 
-      {/* ── Create modal ───────────────────────────────────────────────── */}
+      {/* ── Create modal ───────────────────*/}
       <CreateHabitModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -286,7 +287,7 @@ export default function HabitPage() {
         availableCharacters={availableCharacters}
       />
 
-      {/* ── Detail modal placeholder ────────────────────────────────────
+      {/* ── Detail modal ────────────────────────────────────
           Wire in HabitDetailModal here once it is built.
           <HabitDetailModal
             habit={selectedHabit}

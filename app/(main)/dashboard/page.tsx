@@ -3,7 +3,7 @@ import { GoldContainer } from '@/components/features/stats/gold-container';
 import StatContainer from "@/components/features/stats/stat-container";
 import CharacterContainer from "@/components/features/characters/character-container";
 import NewEventButton from "@/components/features/schedule/new-event-button";
-import { StatData } from "@/lib/types";
+import { StatData } from "@/lib/types/general";
 import { FaHeart, FaFire, FaCoins } from "react-icons/fa6";
 
 export default async function Dashboard() {

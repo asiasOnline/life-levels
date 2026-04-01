@@ -1,7 +1,14 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { 
+  useState, 
+  useEffect, 
+  useCallback
+} from 'react'
+import { 
+  useForm, 
+  Controller 
+} from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import {
@@ -11,10 +18,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { Input }    from '@/components/ui/input'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Button }   from '@/components/ui/button'
-import { Label }    from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import {
   Select,
@@ -23,9 +30,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { IconPicker }     from '@/components/layout/app/icon-picker'
-import { IconData, IconType }       from '@/lib/types/icon'
-import { SkillSummary }   from '@/lib/types/skills'
+import { IconPicker } from '@/components/layout/app/icon-picker'
+import { 
+  IconType, 
+  IconData,
+} from "@/lib/types/icon"
+import { SkillSummary } from '@/lib/types/skills'
 import { CharacterSummary } from '@/lib/types/character'
 import {
   HabitRecurrence,
@@ -41,7 +51,7 @@ import {
   isCustomRecurrenceConfigComplete,
   isCustomRecurrenceTooFrequent,
 } from '@/lib/utils/habits'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
 import { toast } from 'sonner'
 import {
   Check,
@@ -62,9 +72,9 @@ import {
     FieldLabel 
 } from '@/components/ui/field'
 
-// =============================================================================
+// ==========================================
 // CONSTANTS
-// =============================================================================
+// ==========================================
 
 const DAYS_SHORT = [
   'Sun', 
@@ -94,9 +104,9 @@ const STEPS = [
   { id: 4, label: 'Rewards'  },
 ] as const
 
-// =============================================================================
+// ===============================
 // ZOD SCHEMA
-// =============================================================================
+// ===============================
 
 const customRecurrenceSchema = z.object({
   interval:    z.number().int().min(1, 'Must be at least 1'),
@@ -106,53 +116,101 @@ const customRecurrenceSchema = z.object({
   occurrences: z.number().int().min(1).optional(),
 })
 
-const schema = z.object({
-  // Step 1
-  title:        z.string().min(1, 'Title is required').max(100, 'Title is too long'),
-  description:  z.string().max(500).optional(),
-  icon:         z.string().optional(),
-  iconType:     z.enum(['emoji', 'fontawesome', 'image']),
-  iconColor:    z.string().optional(),
+const createHabitSchema = z.object({
+  // STEP 1
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .max(100, 'Title is too long'),
+  description: z
+    .string()
+    .max(500)
+    .optional(),
+  icon: z
+    .string()
+    .optional(),
+  iconType: z
+    .enum(['emoji', 'fontawesome', 'image']),
+  iconColor: z
+    .string()
+    .optional(),
 
   // Step 2
-  recurrence:                z.enum(['daily', 'weekdays', 'x_per_week', 'weekly', 'bi_weekly', 'monthly', 'custom']),
-  x_per_week_count:          z.number().int().min(1).max(6).optional(),
-  x_per_week_days:           z.array(z.number().int().min(0).max(6)).optional(),
-  weekly_day:                z.number().int().min(0).max(6).optional(),
-  monthly_day:               z.number().int().min(1).max(31).optional(),
-  custom_recurrence_config:  customRecurrenceSchema.optional(),
-  time_consumption:          z.number().int().min(1, 'Must be at least 1 minute'),
-  completion_time:           z.enum(['morning', 'afternoon', 'evening', 'overnight']).optional(),
+  recurrence: z
+    .enum(['daily', 'weekdays', 'x_per_week', 'weekly', 'bi_weekly', 'monthly', 'custom']),
+  x_per_week_count: z
+    .number()
+    .min(1)
+    .max(6)
+    .optional(),
+  x_per_week_days: z
+    .array(z.number().min(0).max(6))
+    .optional(),
+  weekly_day: z
+    .number()
+    .min(0)
+    .max(6)
+    .optional(),
+  monthly_day: z
+    .number()
+    .min(1)
+    .max(31)
+    .optional(),
+  custom_recurrence_config:  customRecurrenceSchema
+    .optional(),
+  time_consumption: z
+    .number()
+    .min(1, 'Must be at least 1 minute'),
+  completion_time: z
+    .enum(['morning', 'afternoon', 'evening', 'overnight'])
+    .optional(),
 
-  // Step 3
-  skill_ids:     z.array(z.string()).min(1, 'At least one skill required').max(3, 'Max 3 skills'),
-  character_ids: z.array(z.string()).min(1, 'At least one character required'),
-  goal_ids:      z.array(z.string()).optional(),
+  // STEP 3
+  skill_ids: z
+    .array(z.string())
+    .min(1, 'At least one skill required')
+    .max(3, 'Max 3 skills'),
+  character_ids: z.
+    array(z.string())
+    .min(1, 'At least one character required'),
+  goal_ids: z
+    .array(z.string())
+    .optional(),
 
-  // Step 4
-  use_custom_xp:       z.boolean(),
-  custom_character_xp: z.number().int().min(0).optional(),
-  custom_skill_xp:     z.number().int().min(0).optional(),
-  gold_reward:         z.number().int().min(0).optional(),
+  // STEP 4
+  use_custom_xp: z
+    .boolean(),
+  custom_character_xp: z
+    .number()
+    .min(0)
+    .optional(),
+  custom_skill_xp: z
+    .number()
+    .int()
+    .min(0)
+    .optional(),
+  gold_reward: z
+    .number()
+    .min(0)
+    .optional(),
 })
 
-type FormValues = z.infer<typeof schema>
+type CreateHabitFormValues = z.infer<typeof createHabitSchema>
 
-// =============================================================================
+// ================================
 // PROPS
-// =============================================================================
-
+// ================================
 interface CreateHabitModalProps {
-  isOpen:           boolean
-  onClose:          () => void
-  onHabitCreated:   () => void
-  availableSkills:  SkillSummary[]
+  isOpen: boolean
+  onClose: () => void
+  onHabitCreated: () => void
+  availableSkills: SkillSummary[]
   availableCharacters: CharacterSummary[]
 }
 
-// =============================================================================
+// ================================
 // HELPERS
-// =============================================================================
+// ================================
 
 function StepIndicator({ current }: { current: number }) {
   return (
@@ -198,9 +256,9 @@ function RewardPill({ icon, label, value }: { icon: React.ReactNode; label: stri
   )
 }
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
+// ===============================
+// MAIN COMPONENT
+// ===============================
 
 export function CreateHabitModal({
   isOpen,
@@ -209,15 +267,17 @@ export function CreateHabitModal({
   availableSkills,
   availableCharacters,
 }: CreateHabitModalProps) {
-  const [step,        setStep]        = useState(1)
-  const [icon,        setIcon]        = useState<IconData>(DEFAULT_ICON)
+  const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  const form = useForm<CreateHabitFormValues>({
+    resolver: zodResolver(createHabitSchema),
     defaultValues: {
       title:              '',
       description:        '',
+      icon: DEFAULT_ICON.value,
+      iconType: DEFAULT_ICON.type as 'emoji' | 'fontawesome' | 'image',
+      iconColor: undefined,
       recurrence:         'daily',
       time_consumption:   15,
       skill_ids:          [],
@@ -247,14 +307,14 @@ export function CreateHabitModal({
   } = form
 
   // ── Watched values for conditional rendering ────────────────────────────
-  const recurrence          = watch('recurrence')
-  const timeConsumption     = watch('time_consumption')
-  const useCustomXp         = watch('use_custom_xp')
-  const skillIds            = watch('skill_ids')
-  const characterIds        = watch('character_ids')
-  const customConfig        = watch('custom_recurrence_config')
-  const xPerWeekCount       = watch('x_per_week_count') ?? 3
-  const xPerWeekDays        = watch('x_per_week_days') ?? []
+  const recurrence = watch('recurrence')
+  const timeConsumption = watch('time_consumption')
+  const useCustomXp = watch('use_custom_xp')
+  const skillIds = watch('skill_ids')
+  const characterIds = watch('character_ids')
+  const customConfig = watch('custom_recurrence_config')
+  const xPerWeekCount = watch('x_per_week_count') ?? 3
+  const xPerWeekDays = watch('x_per_week_days') ?? []
 
   // ── Algorithm preview ──────────────────────────────────────────────────
   const algorithmRewards = calculateHabitRewards(
@@ -267,22 +327,21 @@ export function CreateHabitModal({
     ? Math.floor(algorithmRewards.skill_xp / skillIds.length)
     : algorithmRewards.skill_xp
 
-  // ── Reset on close ─────────────────────────────────────────────────────
+  // ── Reset on close ───────────────────────
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
         reset()
-        setIcon(DEFAULT_ICON)
         setStep(1)
       }, 200)
     }
   }, [isOpen, reset])
 
-  // ── Step validation before advancing ──────────────────────────────────
+  // ── Step validation before advancing ──────
   const validateStep = useCallback(async (s: number): Promise<boolean> => {
     if (s === 1) return trigger(['title'])
     if (s === 2) {
-      const fields: (keyof FormValues)[] = ['recurrence', 'time_consumption']
+      const fields: (keyof CreateHabitFormValues)[] = ['recurrence', 'time_consumption']
       if (recurrence === 'x_per_week') fields.push('x_per_week_count')
       if (recurrence === 'weekly')     fields.push('weekly_day')
       if (recurrence === 'monthly')    fields.push('monthly_day')
@@ -308,21 +367,23 @@ export function CreateHabitModal({
   }
   const retreat = () => setStep((s) => Math.max(s - 1, 1))
 
-  // ── Submit ─────────────────────────────────────────────────────────────
-  const onSubmit = async (values: FormValues) => {
+  // ── Submit ────────────────────────────────
+  const onSubmit = async (values: CreateHabitFormValues) => {
     setIsSubmitting(true)
     try {
       const input: CreateHabitInput = {
-        title:            values.title,
-        icon:             JSON.stringify(icon),
-        description:      values.description || undefined,
-        recurrence:       values.recurrence as HabitRecurrence,
+        title: values.title,
+        icon: values.icon || DEFAULT_ICON.value,
+        icon_type: values.iconType,
+        icon_color: values.iconColor,
+        description: values.description || undefined,
+        recurrence: values.recurrence as HabitRecurrence,
         time_consumption: values.time_consumption,
-        completion_time:  values.completion_time as HabitCompletionTime | undefined,
-        skill_ids:        values.skill_ids,
-        character_ids:    values.character_ids,
-        goal_ids:         values.goal_ids?.length ? values.goal_ids : undefined,
-        use_custom_xp:    values.use_custom_xp,
+        completion_time: values.completion_time as HabitCompletionTime | undefined,
+        skill_ids: values.skill_ids,
+        character_ids: values.character_ids,
+        goal_ids: values.goal_ids?.length ? values.goal_ids : undefined,
+        use_custom_xp: values.use_custom_xp,
       }
 
       // Recurrence-specific fields
@@ -337,8 +398,8 @@ export function CreateHabitModal({
       // Custom reward override
       if (values.use_custom_xp) {
         input.character_xp = values.custom_character_xp
-        input.skill_xp     = values.custom_skill_xp
-        input.gold_reward         = values.gold_reward
+        input.skill_xp = values.custom_skill_xp
+        input.gold_reward = values.gold_reward
       }
 
       const result = await createHabit(input)
@@ -351,14 +412,15 @@ export function CreateHabitModal({
       toast.success(`"${values.title}" habit created!`)
       onHabitCreated()
       onClose()
-    } catch {
+    } catch (error) {
+      console.error('Error creating habit:', error)
       toast.error('Something went wrong. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  // ── Toggle helpers ─────────────────────────────────────────────────────
+  // ── Toggle helpers ────────────────────────
   const toggleSkill = (id: string) => {
     const current = skillIds ?? []
     if (current.includes(id)) {
@@ -395,9 +457,9 @@ export function CreateHabitModal({
     }
   }
 
-  // =============================================================================
+  // ===================================
   // RENDER
-  // =============================================================================
+  // ===================================
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -413,9 +475,9 @@ export function CreateHabitModal({
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
-          {/* ================================================================
+          {/* ============================
               STEP 1 — BASICS
-          ================================================================ */}
+          ================================ */}
           {step === 1 && (
             <FieldSet className="space-y-5">
 
@@ -423,11 +485,11 @@ export function CreateHabitModal({
                 {/* Icon */}
                 <FieldGroup className='flex-1 min-w-20'>
                   <IconPicker
-                      currentIcon={JSON.stringify(form.watch('icon') || DEFAULT_ICON)}
-                      currentIconType={form.watch('iconType') as IconType}
-                      currentIconColor={form.watch('iconColor')}
-                      onIconChange={handleIconChange}
-                    />
+                    currentIcon={form.watch('icon') || DEFAULT_ICON.value}
+                    currentIconType={form.watch('iconType') as IconType}
+                    currentIconColor={form.watch('iconColor')}
+                    onIconChange={handleIconChange}
+                  />
                  </FieldGroup>
                 
                 {/* Title */}
@@ -463,9 +525,9 @@ export function CreateHabitModal({
             </FieldSet>
           )}
 
-          {/* ================================================================
+          {/* =================================
               STEP 2 — SCHEDULE
-          ================================================================ */}
+          ==============================*/}
           {step === 2 && (
             <FieldSet className="space-y-5">
 
@@ -802,9 +864,9 @@ export function CreateHabitModal({
             </FieldSet>
           )}
 
-          {/* ================================================================
+          {/* ================================
               STEP 3 — ASSIGN
-          ================================================================ */}
+          ================================*/}
           {step === 3 && (
             <FieldSet className="space-y-6">
 
@@ -918,9 +980,9 @@ export function CreateHabitModal({
             </FieldSet>
           )}
 
-          {/* ================================================================
+          {/* ================================
               STEP 4 — REWARDS
-          ================================================================ */}
+          ================================= */}
           {step === 4 && (
             <FieldSet className="space-y-5">
 
@@ -1059,9 +1121,9 @@ export function CreateHabitModal({
             </FieldSet>
           )}
 
-          {/* ================================================================
+          {/* =================================
               NAVIGATION
-          ================================================================ */}
+          ================================= */}
           <div className="flex items-center justify-between pt-2 border-t">
             {step > 1 ? (
               <Button type="button" variant="ghost" onClick={retreat} className="gap-1.5">

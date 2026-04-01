@@ -1,7 +1,7 @@
 import React from 'react'
-import { StatData, StatDisplayMode } from '@/lib/types'
+import { StatData, StatDisplayMode } from '@/lib/types/general'
 import Stat from './stat'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
 
 interface StatContainerProps {
   stats: StatData[];

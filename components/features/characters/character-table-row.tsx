@@ -11,7 +11,7 @@ import {
   TableHead,
   TableCell
 } from '@/components/ui/table'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
 
 interface CharacterTableRowProps {
   character: Character

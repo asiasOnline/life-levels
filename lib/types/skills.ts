@@ -1,4 +1,4 @@
-import { IconData } from "@/lib/types/icon";
+import { IconData, IconType } from "@/lib/types/icon";
 import { CharacterSummaryWithLevel } from "./character";
 // =================================
 // SHARED / SUMMARY
@@ -40,7 +40,9 @@ export interface CreateSkillInput {
   title: string
   description?: string
   starting_level?: number; // defaults to 1, maxes at 5
-  icon: IconData
+  icon?: string
+      icon_type?: IconType
+      icon_color?: string
   tags?: string[]
   character_ids?: string[];
 }

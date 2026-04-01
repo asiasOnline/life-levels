@@ -48,6 +48,7 @@ import {
   TASK_PRIORITY_LABELS,
   TASK_DIFFICULTY_LABELS,
   TASK_STATUS_LABELS,
+  CreateTaskInput,
 } from '@/lib/types/tasks'
 import { 
   getDefaultGoldReward, 
@@ -55,29 +56,81 @@ import {
   validateSkillCount 
 } from '@/lib/utils/tasks'
 import { createTask } from '@/lib/actions/tasks'
-import { FaRegCalendarDays, FaClock, FaCoins, FaStar, FaCircleArrowUp, FaUserGroup } from "react-icons/fa6";
+import { SkillSummary } from '@/lib/types/skills'
+import { CharacterSummary } from '@/lib/types/character'
+import { FaCheck, FaRegCalendarDays, FaClock, FaCoins, FaStar, FaCircleArrowUp, FaUserGroup } from "react-icons/fa6";
+import { cn } from '@/lib/utils/general'
 
-// ─── Task Schema ─────────────────────
+// ==========================================
+// CONSTANTS
+// ==========================================
+
+const STEPS = [
+  { id: 1, label: 'Basics'   },
+  { id: 2, label: 'Schedule' },
+  { id: 3, label: 'Assign'   },
+  { id: 4, label: 'Rewards'  },
+] as const
+
+// ==========================================
+// ZOD SCHEMA
+// ==========================================
 
 const createTaskSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title is too long'),
-  description: z.string().max(1000, 'Description is too long').optional(),
-  icon: z.string().optional(),
-  iconType: z.enum(['emoji', 'fontawesome', 'image']),
-  iconColor: z.string().optional(),
-  status: z.enum(['backlog', 'in_progress', 'paused', 'completed']),
-  priority: z.enum(['critical', 'high', 'mid', 'low']),
-  difficulty: z.enum(['easy', 'normal', 'hard', 'expert']),
-  startDate: z.string().optional(),
-  dueDate: z.string().optional(),
+  // STEP 1
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .max(200, 'Title is too long'),
+  description: z
+    .string()
+    .max(500, 'Description is too long')
+    .optional(),
+  icon: z
+    .string()
+    .optional(),
+  iconType: z
+    .enum(['emoji', 'fontawesome', 'image']),
+  iconColor: z
+    .string()
+    .optional(),
+
+  // STEP 2
+  status: z
+    .enum(['backlog', 'in_progress', 'paused', 'completed']),
+  priority: z
+    .enum(['critical', 'high', 'mid', 'low']),
+  difficulty: z
+    .enum(['easy', 'normal', 'hard', 'expert']),
+  startDate: z
+    .string()
+    .optional(),
+  dueDate: z
+    .string()
+    .optional(),
+
+  // STEP 3
   skillIds: z
     .array(z.string())
     .min(1, 'At least 1 skill is required')
     .max(3, 'Maximum 3 skills allowed'),
-  goldReward: z.number().min(0).optional(),
-  useCustomXP: z.boolean(),
-  characterXP: z.number().min(0).optional(),
-  skillXP: z.number().min(0).optional(),
+  character_ids: z
+    .array(z.string())
+    .min(1, 'At least one character required'),
+  goldReward: z
+    .number()
+    .min(0)
+    .optional(),
+  useCustomXP: z
+    .boolean(),
+  characterXP: z
+    .number()
+    .min(0)
+    .optional(),
+  skillXP: z
+    .number()
+    .min(0)
+    .optional(),
 }).refine(
   (data) => {
     if (data.startDate && data.dueDate) {
@@ -93,30 +146,74 @@ const createTaskSchema = z.object({
 
 type CreateTaskFormValues = z.infer<typeof createTaskSchema>
 
-// ─── Object Types ──────────────────────────
-
-interface Skill {
-  id: string
-  title: string
-  icon: { type: string; value: string; color?: string }
-  level: number
-}
+// ================================
+// PROPS
+// ================================
 
 interface CreateTaskModalProps {
-  open: boolean
+  isOpen: boolean
   onOpenChange: (open: boolean) => void
   onTaskCreated: () => void
+  availableSkills: SkillSummary[]
+  availableCharacters: CharacterSummary[]
 }
 
-// ─── Main Component ───────────────────────
+// ================================
+// HELPERS
+// ================================
 
-export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTaskModalProps) {
+function StepIndicator({ current }: { current: number }) {
+  return (
+    <div className="flex items-center gap-2 mb-6">
+      {STEPS.map((step, i) => (
+        <div key={step.id} className="flex items-center gap-2">
+          <div
+            className={cn(
+              'flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold transition-colors',
+              current === step.id
+                ? 'bg-violet-600 text-white'
+                : current > step.id
+                ? 'bg-violet-200 text-violet-700'
+                : 'bg-muted text-muted-foreground'
+            )}
+          >
+            {current > step.id ? <FaCheck className="w-3.5 h-3.5" /> : step.id}
+          </div>
+          <span
+            className={cn(
+              'text-xs font-medium hidden sm:block',
+              current === step.id ? 'text-foreground' : 'text-muted-foreground'
+            )}
+          >
+            {step.label}
+          </span>
+          {i < STEPS.length - 1 && (
+            <div className={cn('w-6 h-px', current > step.id ? 'bg-violet-300' : 'bg-border')} />
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ===============================
+// MAIN COMPONENT
+// ===============================
+
+export function CreateTaskModal({ 
+  isOpen, 
+  onOpenChange, 
+  onTaskCreated 
+}: CreateTaskModalProps) {
+  const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [skills, setSkills] = useState<Skill[]>([])
+  const [skills, setSkills] = useState<SkillSummary[]>([])
   const [isLoadingSkills, setIsLoadingSkills] = useState(true)
 
-  const form = useForm<CreateTaskFormValues>({
-    resolver: zodResolver(createTaskSchema),
+  const form = useForm<CreateTaskFormValues>
+  ({
+    resolver: zodResolver
+    (createTaskSchema),
     defaultValues: {
       title: '',
       description: '',
@@ -194,11 +291,11 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
     }
   }
 
-  async function onSubmit(values: CreateTaskFormValues) {
+  const onSubmit = async (values: CreateTaskFormValues) => {
     setIsSubmitting(true)
 
     try {
-      await createTask({
+      const input: CreateTaskInput = {
         title: values.title,
         description: values.description,
         icon: values.icon || DEFAULT_ICON,
@@ -210,11 +307,19 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
         start_date: values.startDate,
         due_date: values.dueDate,
         skill_ids: values.skillIds,
+        character_ids: values.character_ids,
         gold_reward: values.goldReward ?? getDefaultGoldReward(values.difficulty),
         use_custom_xp: values.useCustomXP,
         character_xp: values.characterXP ?? previewXP.characterXP,
         skill_xp: values.skillXP ?? previewXP.skillXP,
-      })
+      }
+
+      const result = await createTask(input)
+
+      if (!result.success) {
+        toast.error(result.error)
+        return
+      }
 
       toast.success(`${values.title} has been created.`)
 
@@ -238,7 +343,10 @@ export function CreateTaskModal({ open, onOpenChange, onTaskCreated }: CreateTas
     : calculateTaskXP(watchedDifficulty, watchedSkillIds.length, 1)
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={onOpenChange}
+    >
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Task</DialogTitle>

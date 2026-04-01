@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useGold } from '@/lib/contexts/gold-context'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
 import { FaCoins } from "react-icons/fa6";
 
 // ----------------------------------------------------------------

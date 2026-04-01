@@ -104,10 +104,10 @@ export interface Habit {
   updated_at: string;
 }
 
-// ===================================================
+// ======================================
 // HABIT WITH RELATIONS
 // Used on the Habit detail page and anywhere the full relational picture is needed. The base Habit type is kept lean for list views and cards.
-// ====================================================
+// ======================================
 
 export interface HabitWithRelations extends Habit {
   skills:     SkillSummary[];      // 1–3; hydrated from habit_skills join

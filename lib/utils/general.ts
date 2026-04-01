@@ -44,3 +44,4 @@ export function formatDateLong(dateString: string): string {
 export function isOverdue(dateString: string): boolean {
   return new Date(dateString) < new Date()
 }
+

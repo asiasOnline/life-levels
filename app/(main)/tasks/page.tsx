@@ -6,7 +6,7 @@ import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
 import { ViewMode } from "@/components/layout/app/item-container-header";
 import { fetchTasks } from "@/lib/actions/tasks";
-import { Task, TaskWithRelations } from "@/lib/types/tasks";
+import { TaskWithRelations } from "@/lib/types/tasks";
 import TaskCard from "@/components/features/tasks/task-card";
 import { TaskTableRow } from "@/components/features/tasks/task-table-row";
 import { CreateTaskModal } from "@/components/features/tasks/create-task-modal";
@@ -21,12 +21,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { FaPlus, FaXmark } from "react-icons/fa6";
+import { CharacterSummary } from "@/lib/types/character";
 import { fetchCharacters } from "@/lib/actions/characters";
+import { SkillSummary } from "@/lib/types/skills";
 import { fetchSkills } from "@/lib/actions/skills";
 
 export default function TaskPage() {
     const [viewMode, setViewMode] = useState<ViewMode>('grid')
     const [tasks, setTasks] = useState<TaskWithRelations[]>([])
+    const [availableSkills, setAvailableSkills] = useState<SkillSummary[]>([])
+    const [availableCharacters, setAvailableCharacters] = useState<CharacterSummary[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -36,7 +40,7 @@ export default function TaskPage() {
     loadTasks()
   }, [])
 
-  // ── Data fetching ───────────────────────────────────────────
+  // ── Data fetching ─────────────────────────
  const loadTasks = useCallback(async () => {
     setIsLoading(true)
     try {
@@ -50,7 +54,7 @@ export default function TaskPage() {
         toast.error('Failed to load tasks.')
         return
       }
-      /*
+      
       if (!skillsResult.success) {
         toast.error('Failed to load skills.')
         return
@@ -59,10 +63,29 @@ export default function TaskPage() {
         toast.error('Failed to load characters.')
         return
       }
-      */
 
       // Map database rows to Task objects
       setTasks(taskResult.data)
+
+      setAvailableSkills(
+        (skillsResult.data ?? []).map((s) => ({
+          id:    s.id,
+          title: s.title,
+          icon:  s.icon,
+          level: s.level,
+        }))
+      )
+      setAvailableCharacters(
+        (charactersResult.data ?? [])
+          .filter((c) => !c.is_archived)
+          .map((c) => ({
+            id:           c.id,
+            title:        c.title,
+            icon:         c.icon,
+            color_theme:  c.color_theme,
+          }))
+      )
+
     } catch (error) {
       console.error('Error loading tasks:', error)
       toast.error('Failed to load tasks. Please try again.')
@@ -178,9 +201,11 @@ export default function TaskPage() {
 
             {/* Create Task Modal */}
             <CreateTaskModal
-              open={isCreateModalOpen}
+              isOpen={isCreateModalOpen}
               onOpenChange={setIsCreateModalOpen}
               onTaskCreated={handleTaskCreated}
+              availableSkills={availableSkills}
+              availableCharacters={availableCharacters}
             />
 
             {/* Skill Detail Modal */}

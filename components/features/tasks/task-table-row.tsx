@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import { formatDateShort, isOverdue } from '@/lib/utils'
+import { formatDateShort, isOverdue } from '@/lib/utils/general'
 import { renderIcon } from '@/lib/utils/icon'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
 import {
   Task,
   TaskDifficulty,

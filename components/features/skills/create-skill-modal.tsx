@@ -21,16 +21,24 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { CreateSkillInput } from "@/lib/types/skills"
+import { createSkill } from "@/lib/actions/skills"
 import { IconPicker } from "@/components/layout/app/icon-picker"
-import { IconType, DEFAULT_ICON, DEFAULT_ICON_TYPE, DEFAULT_ICON_COLOR } from "@/lib/types/icon"
+import { 
+  IconType, 
+  DEFAULT_ICON, 
+  DEFAULT_ICON_TYPE, 
+  DEFAULT_ICON_COLOR, 
+  DEFAULT_ICON_DATA
+} from "@/lib/types/icon"
 import { toast } from "sonner"
 import { FaPlus, FaXmark, FaCheck } from "react-icons/fa6";
 import { fetchActiveCharacters } from "@/lib/actions/characters"
-import type { Database } from "@/lib/database.types"
+import { CharacterSummary } from "@/lib/types/character"
 
-type CharacterRow = Database['public']['Tables']['characters']['Row']
-
-// ─── Skill Schema ─────────────────────
+// ==========================================
+// ZOD SCHEMA
+// ==========================================
 
 const createSkillSchema = z.object({
     title: z
@@ -57,24 +65,29 @@ const createSkillSchema = z.object({
 
 type CreateSkillFormValues = z.infer<typeof createSkillSchema>
 
-// ─── Object Types ──────────────────────────
+// ================================
+// PROPS
+// ================================
 
 interface CreateSkillModalProps {
     isOpen: boolean
     onClose: (open: boolean) => void
     onSkillCreated: () => void
+    availableCharacters: CharacterSummary[]
 }
 
-// ─── Main Component ───────────────────────
+// ===============================
+// MAIN COMPONENT
+// ===============================
 
 export function CreateSkillModal({
   isOpen,
   onClose,
-  onSkillCreated
+  onSkillCreated,
+  availableCharacters,
 }: CreateSkillModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [tagInput, setTagInput] = useState("")
-    const [availableCharacters, setAvailableCharacters] = useState<CharacterRow[]>([])
 
     const form = useForm<CreateSkillFormValues>({
         resolver: zodResolver(createSkillSchema),
@@ -82,19 +95,12 @@ export function CreateSkillModal({
             title: "",
             description: "",
             icon: DEFAULT_ICON,
-            iconType: DEFAULT_ICON_TYPE,
+            iconType: DEFAULT_ICON_TYPE as 'emoji' | 'fontawesome' | 'image',
             iconColor: DEFAULT_ICON_COLOR,
             tags: [],
             character_ids: [],
         },
     })
-
-    useEffect(() => {
-        if (!isOpen) return
-        fetchActiveCharacters()
-            .then(setAvailableCharacters)
-            .catch((err) => console.error('Failed to load characters:', err))
-    }, [isOpen])
 
     const tags = form.watch("tags") || []
     const selectedCharacterIds = form.watch("character_ids") || []
@@ -134,23 +140,28 @@ export function CreateSkillModal({
         )
     }
 
+    // ── Submit ──────────────────────────────
     const onSubmit = async (values: CreateSkillFormValues) => {
         setIsSubmitting(true)
 
         try {
-            const { createSkill } = await import('@/lib/actions/skills')
-            await createSkill({
+            const input: CreateSkillInput = {
                 title: values.title,
                 description: values.description,
-                icon: {
-                    type: values.iconType,
-                    value: values.icon || DEFAULT_ICON,
-                    color: values.iconColor || DEFAULT_ICON_COLOR,
-                },
+                icon: values.icon || DEFAULT_ICON_DATA.value,
+                icon_type: values.iconType,
+                icon_color: values.iconColor,
                 tags: values.tags,
                 character_ids: values.character_ids,
-            })
+            }
 
+            const result = await createSkill(input)
+
+            if (!result.success) {
+              toast.error(result.error)
+              return
+            }
+            
             toast.success(`${values.title} has been added to your skill log.`)
 
             form.reset()

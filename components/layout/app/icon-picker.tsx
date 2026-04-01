@@ -15,7 +15,7 @@ import {
 import { Upload, Palette, Search, X } from 'lucide-react'
 import { AVAILABLE_ICONS, getIconComponent, renderIcon } from '@/lib/utils/icon'
 import { IconType, DEFAULT_ICON_COLOR } from '@/lib/types/icon'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react'
 
 interface IconPickerProps {
@@ -194,9 +194,9 @@ export function IconPicker({
           <Tabs
             value={selectedTab}
             onValueChange={(v) => setSelectedTab(v as IconType)}
-            className="flex flex-col"
+            className="w-full flex flex-col"
           >
-            <TabsList className="rounded-none border-b h-10 bg-transparent px-4 justify-start gap-1">
+            <TabsList className="w-full rounded-none border-b h-10 bg-transparent px-4 justify-start gap-1">
               <TabsTrigger
                 value="emoji"
                 className="rounded-md h-8 px-3 text-xs data-[state=active]:bg-muted"
@@ -391,9 +391,9 @@ export function IconPicker({
   )
 }
 
-// ---------------------------------------------------------------------------
+// -----------------------------------------
 // Small helper sub-component for icon grid buttons
-// ---------------------------------------------------------------------------
+// -----------------------------------------
 interface IconButtonProps {
   iconName: string
   IconComponent: React.ComponentType<{ className?: string; style?: React.CSSProperties }>

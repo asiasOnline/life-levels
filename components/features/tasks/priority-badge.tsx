@@ -1,5 +1,5 @@
 import React from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
 import { TaskPriority, TASK_PRIORITY, TASK_PRIORITY_LABELS } from '@/lib/types/tasks'
 import { AlertCircle, ChevronUp, Minus, ChevronDown } from 'lucide-react'
 

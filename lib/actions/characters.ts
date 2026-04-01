@@ -15,9 +15,7 @@ import {
 } from '../types/character'
 import { calculateXPForLevel } from '@/lib/utils/character'
 import { CharacterAvatarData } from '@/lib/types/character'
-import { Skill } from '../types/skills'
 import { SkillSummary } from '../types/skills'
-import { Action } from 'sonner'
 
 // =======================================
 //  INTERNAL DATABASE TYPES

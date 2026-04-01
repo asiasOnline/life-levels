@@ -7,7 +7,7 @@ export const AVAILABLE_ICONS = [
   'FaHeart', 'FaBrain', 'FaDumbbell', 'FaBook', 'FaCode',
   'FaPalette', 'FaMusic', 'FaGamepad', 'FaCamera', 'FaPenNib',
   'FaRocket', 'FaLightbulb', 'FaGem', 'FaCrown', 'FaShield',
-  'FaSwords', 'FaWandMagicSparkles', 'FaMountain', 'FaLeaf', 'FaSeedling', 'FaCoins', 'FaChartLine', 'FaGraduationCap', 'FaMedal', 'FaAward', 'FaSquareCheck', 'FaRotate', 'FaFolder', 'FaBullseye', 'FaFlag',
+  'FaSwords', 'FaWandMagicSparkles', 'FaMountain', 'FaLeaf', 'FaSeedling', 'FaCoins', 'FaChartLine', 'FaGraduationCap', 'FaMedal', 'FaAward', 'FaSquareCheck', 'FaRotate', 'FaFolder', 'FaBullseye', 'FaFlag', 'FaSun'
 ] as const
 
 export type AvailableIconName = typeof AVAILABLE_ICONS[number]

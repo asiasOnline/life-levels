@@ -9,7 +9,7 @@ import {
   getTaskDifficultyColor, 
   calculateTaskXP 
 } from '@/lib/utils/tasks'
-import { formatDateLong } from '@/lib/utils'
+import { formatDateLong } from '@/lib/utils/general'
 import { renderIcon } from '@/lib/utils/icon'
 import { 
   Dialog,
@@ -38,7 +38,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Pencil, Trash2, Link2, Users, Target, ListTodo, RefreshCw, CheckCircle2, Calendar, Coins, Sparkles, Swords } from 'lucide-react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
 import { TASK_DIFFICULTY_LABELS, TASK_PRIORITY_LABELS } from '@/lib/types/tasks'
 
 interface TaskDetailModalProps {

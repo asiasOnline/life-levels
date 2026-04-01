@@ -38,7 +38,7 @@ import { Pencil, Trash2, Archive, ArchiveRestore, Target, ListTodo, RefreshCw, T
 import { toast } from 'sonner'
 import { 
   archiveCharacter, 
-  reactivateCharacter, 
+  activateCharacter, 
   deleteCharacter 
 } from '@/lib/actions/characters'
 
@@ -87,7 +87,7 @@ export function CharacterDetailModal({
     setIsArchiving(true)
     try {
       if (character.is_archived) {
-        await reactivateCharacter(character.id)
+        await activateCharacter(character.id)
         toast(`${character.title} is active again.`)
       } else {
         await archiveCharacter(character.id)

@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { HabitWithRelations, HABIT_STATUS } from '@/lib/types/habits'
 import { IconData } from '@/lib/types/icon'
 import { getRecurrenceLabel, getCompletionTimeLabel } from '@/lib/utils/habits'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
 import { Clock, Coins, Repeat, Zap } from 'lucide-react'
 import { renderIcon } from '@/lib/utils/icon'
 

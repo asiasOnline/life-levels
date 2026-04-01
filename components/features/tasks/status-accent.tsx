@@ -1,6 +1,6 @@
 import React from 'react'
 import { TASK_STATUS, TaskStatus } from '@/lib/types/tasks'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
 
 const StatusAccent = ({ status }: { status: TaskStatus }) => {
   const colorMap: Record<TaskStatus, string> = {

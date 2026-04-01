@@ -20,6 +20,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { fetchSkills, fetchSkillById } from "@/lib/actions/skills";
+import { CharacterSummary } from '@/lib/types/character'
+import { fetchCharacters } from "@/lib/actions/characters";
 import { FaPlus } from "react-icons/fa6";
 
 export default function SkillsPage() {
@@ -28,19 +30,34 @@ export default function SkillsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [selectedSkill, setSelectedSkill] = useState<SkillWithRelations | null>(null)
+  const [availableCharacters, setAvailableCharacters] = useState<CharacterSummary[]>([])
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
  const loadSkills = async () => {
     setIsLoading(true)
     try {
-      const result = await fetchSkills()
+      const [skillsResult, charactersResult] = await Promise.all([
+        fetchSkills(),
+        fetchCharacters()
+      ])
 
-      if (!result.success) {
+      if (!skillsResult.success) {
         toast.error('Failed to load skills. Please refresh the page.')
         return
       }
-      
-      setSkills(result.data)
+
+      setSkills(skillsResult.data)
+
+      setAvailableCharacters(
+        (charactersResult.data ?? [])
+          .filter((c) => !c.is_archived)
+          .map((c) => ({
+            id:           c.id,
+            title:        c.title,
+            icon:         c.icon,
+            color_theme:  c.color_theme,
+          }))
+      )
     } catch (error) {
       console.error('Error loading skills:', error)
       toast.error('Failed to load skills. Please refresh the page.')
@@ -167,6 +184,7 @@ export default function SkillsPage() {
         isOpen={isCreateModalOpen}
         onClose={setIsCreateModalOpen}
         onSkillCreated={handleSkillCreated}
+        availableCharacters={availableCharacters}
       />
 
       {/* Skill Detail Modal */}

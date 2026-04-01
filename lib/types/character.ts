@@ -8,12 +8,12 @@ import { SkillSummary } from "./skills";
 // (e.g. on a Task or Habit form)
 export type CharacterSummary = Pick<
   Character, 
-  "id" | "title" | "icon" | "level" | "color_theme"
+  "id" | "title" | "icon" | "color_theme"
 >;
 
 export type CharacterSummaryWithLevel = Pick<
 Character,
-  "id" | "title" | "icon" | "color_theme"
+  "id" | "title" | "icon" | "color_theme" | "level" 
 >;
 
 // Summary shapes for activity history on the Character detail page

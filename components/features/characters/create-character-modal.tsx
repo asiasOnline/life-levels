@@ -36,7 +36,7 @@ import { AVATAR_REGISTRY } from './avatars/avatar-registry'
 import { AvatarRenderer } from './avatars/avatar-renderer'
 import { CharacterAvatarData } from '@/lib/types/character'
 import { createCharacter } from '@/lib/actions/characters'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
 
 // =======================================
 // CONSTANTS

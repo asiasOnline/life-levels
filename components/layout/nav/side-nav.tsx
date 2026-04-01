@@ -7,7 +7,7 @@ import { GoSidebarExpand, GoSidebarCollapse } from "react-icons/go";
 import { BiSolidDashboard, BiSolidChat } from "react-icons/bi";
 import { FaRotate, FaSquareCheck, FaStar, FaCircleArrowUp, FaUserGroup, FaRegCalendarDays } from "react-icons/fa6";
 import { SiTarget } from "react-icons/si";
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/general'
 
 const SideNav = () => {
   const [expanded, setExpanded] = useState(true);

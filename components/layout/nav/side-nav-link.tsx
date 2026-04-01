@@ -8,7 +8,7 @@ import {
   TooltipTrigger 
 } from '@radix-ui/react-tooltip'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/general';
 
 interface NavLinkProps {
     href: string;
