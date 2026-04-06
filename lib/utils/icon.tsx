@@ -5,9 +5,9 @@ import { IconType } from 'react-icons'
 export const AVAILABLE_ICONS = [
   'FaCircleArrowUp', 'FaStar', 'FaTrophy', 'FaFire', 'FaBolt',
   'FaHeart', 'FaBrain', 'FaDumbbell', 'FaBook', 'FaCode',
-  'FaPalette', 'FaMusic', 'FaGamepad', 'FaCamera', 'FaPenNib',
+  'FaPalette', 'FaMusic', 'FaGamepad', 'FaCamera', 'FaComment', 'FaPenNib',
   'FaRocket', 'FaLightbulb', 'FaGem', 'FaCrown', 'FaShield',
-  'FaSwords', 'FaWandMagicSparkles', 'FaMountain', 'FaLeaf', 'FaSeedling', 'FaCoins', 'FaChartLine', 'FaGraduationCap', 'FaMedal', 'FaAward', 'FaSquareCheck', 'FaRotate', 'FaFolder', 'FaBullseye', 'FaFlag', 'FaSun'
+  'FaSwords', 'FaWandMagicSparkles', 'FaMountain', 'FaLeaf', 'FaSeedling', 'FaCoins', 'FaChartLine', 'FaGraduationCap', 'FaMedal', 'FaAward', 'FaSquareCheck', 'FaRotate', 'FaFolder', 'FaBullseye', 'FaFlag', 'FaSun', 'FaCarrot', 'FaAppleAlt', 'FaChessQueen', 'FaChessKnight', ' FaChessRook', ' FaChessBishop', ' FaChessKing', 'FaWeight', 
 ] as const
 
 export type AvailableIconName = typeof AVAILABLE_ICONS[number]

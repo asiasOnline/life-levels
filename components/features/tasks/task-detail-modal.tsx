@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { useState } from 'react'
-import type { TaskWithSkills } from '@/lib/actions/tasks'
+import { TaskWithRelations } from '@/lib/types/tasks'
 import { deleteTask } from '@/lib/actions/tasks'
 import { 
   getTaskStatusColor,
@@ -36,18 +36,39 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Pencil, Trash2, Link2, Users, Target, ListTodo, RefreshCw, CheckCircle2, Calendar, Coins, Sparkles, Swords } from 'lucide-react'
+import { 
+  Pencil, 
+  Trash2, 
+  Link2, 
+  Users, 
+  Target, 
+  ListTodo, 
+  RefreshCw, 
+  CheckCircle2, 
+  Calendar, 
+  Coins, 
+  Sparkles, 
+  Swords 
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/general'
 import { TASK_DIFFICULTY_LABELS, TASK_PRIORITY_LABELS } from '@/lib/types/tasks'
 
+// =======================================
+// PROPS
+// =======================================
+
 interface TaskDetailModalProps {
-  task: TaskWithSkills | null
+  task: TaskWithRelations | null
   isOpen: boolean
   onClose: (isOpen: boolean) => void
   onTaskUpdated: () => void
   onTaskDeleted: () => void
 }
+
+// =======================================
+// MAIN COMPONENT
+// =======================================
 
 export function TaskDetailModal({
   task,
@@ -62,6 +83,11 @@ export function TaskDetailModal({
 
   if (!task) return null
 
+  // ===============================
+  // HANDLERS
+  // ===============================
+
+  // ---- HANDLE DELETE TASK ----
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
@@ -80,10 +106,21 @@ export function TaskDetailModal({
     }
   }
 
-  const { skillXP, characterXP } = calculateTaskXP(
-    task.difficulty,
-    task.task_skills.length,
-  )
+  // ---- XP RESOLUTION ----
+  // Use custom XP if set, otherwise calculate based on difficulty and number of linked skills/characters
+  const { skillXP, characterXP } = task.use_custom_xp
+  ? {
+      skillXP: task.skill_xp ?? 0,
+      characterXP: task.character_xp ?? 0,
+    }
+  : calculateTaskXP(task.difficulty, task.skills.length, task.characters.length)
+
+  const totalSkillXP = skillXP * task.skills.length
+  const totalCharacterXP = characterXP * task.characters.length
+
+// =======================================
+// COMPONENT RENDER
+// =======================================
 
   return (
     <>
@@ -125,7 +162,7 @@ export function TaskDetailModal({
           <TabsList className="w-full grid grid-cols-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="skills">
-              Number of Linked Skills: {task.task_skills.length}
+              Number of Linked Skills: {task.skills.length}
             </TabsTrigger>
           </TabsList>
 
@@ -231,7 +268,7 @@ export function TaskDetailModal({
                     <div>
                       <p className="text-xs text-muted-foreground">Skill XP</p>
                       <p className="text-lg font-bold text-violet-600">
-                        {skillXP} × {task.task_skills.length}
+                        {skillXP} × {task.skills.length}
                       </p>
                     </div>
                   </div>
@@ -275,15 +312,14 @@ export function TaskDetailModal({
 
             {/* Linked Skills Tab */}
             <TabsContent value="skills" className="mt-6">
-              {task.task_skills.length === 0 ? (
+              {task.skills.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Swords className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No skills linked to this task</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {task.task_skills.map((taskSkill) => {
-                    const skill = taskSkill.skills
+                  {task.skills.map((skill) => {
                     const skillIcon = skill.icon as any
 
                     return (
@@ -325,7 +361,7 @@ export function TaskDetailModal({
 
                   <div className="mt-6 rounded-lg bg-muted/50 p-4">
                     <p className="text-sm text-muted-foreground">
-                      Completing this task will award <strong className="text-violet-600">{skillXP} XP</strong> to each of the {task.task_skills.length} skill{task.task_skills.length !== 1 ? 's' : ''} above.
+                      Completing this task will award <strong className="text-violet-600">{skillXP} XP</strong> to each of the {task.skills.length} skill{task.skills.length !== 1 ? 's' : ''} above.
                     </p>
                   </div>
                 </div>

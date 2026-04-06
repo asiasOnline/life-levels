@@ -3,7 +3,6 @@ import type { AvatarProps } from "../avatar-registry";
 
 export const Prometheus: React.FC<AvatarProps> = ({
     skinTone, 
-    clothingColor,
     className
 }) => {
     const uid = useId().replace(/:/g, '') 

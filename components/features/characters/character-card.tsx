@@ -15,7 +15,8 @@ import {
   CardDescription, 
   CardHeader, 
   CardTitle, 
-  CardFooter} from '@/components/ui/card'
+  CardFooter
+} from '@/components/ui/card'
 import { cn } from '@/lib/utils/general'
 
 interface CharacterCardProps {
@@ -35,10 +36,7 @@ export function CharacterCard({
   }: CharacterCardProps) {
   const progressPercentage = getProgressPercentage(character.current_xp, character.xp_to_next_level)
 
-  const avatar = character.avatar
-
-  // Effective clothing color: explicit override, or falls back to character's color theme
-  const clothingColor = avatar?.clothing_color ?? character.color_theme
+  const avatar = character.avatar as CharacterAvatarData | null
 
   const handleClick = () => {
     if (onClick) {
@@ -50,7 +48,7 @@ export function CharacterCard({
     <Card
       onClick={handleClick}
       className={cn(
-        'group relative flex flex-col rounded-xl border bg-card overflow-hidden transition-all duration-200',
+        'group relative flex flex-row gap-0 rounded-xl border py-4 bg-card overflow-hidden transition-all duration-200',
         onClick && 'cursor-pointer hover:shadow-md hover:-translate-y-0.5',
         character.is_archived && 'opacity-60',
         className
@@ -58,14 +56,37 @@ export function CharacterCard({
     >
       {/* Color theme accent bar */}
       <div
-        className="h-1 w-full shrink-0"
+        className="h-full w-1 shrink-0 rounded-b-full"
         style={{ backgroundColor: character.color_theme }}
       />
 
-      <CardContent className="flex flex-col flex-1 p-4 gap-4">
+      <CardContent className="w-full flex flex-col gap-2 px-0 pb-4">
+
+      <CardHeader className="flex justify-start items-center gap-3 px-0">
+      {/* Avatar Preview (if set) */}
+        {avatar && (
+        <div className="flex flex-col items-center gap-3">
+          <div
+            className="w-full rounded-tr-3xl rounded-br-3xl border overflow-hidden py-2 px-6"
+            style={{
+              backgroundColor: character.color_theme  + '22',
+              borderColor: character.color_theme  + '66',
+            }}
+          >
+            <div className='flex justify-center'>
+            <AvatarRenderer
+              archetypeId={avatar.archetype_id}
+              skinTone={avatar.skin_tone as 'light' | 'mediumLight' | 'medium' | 'mediumDark' | 'deep'}
+              size={96}
+            />
+            </div>
+          </div>
+
+        </div>
+        )}
 
         {/*  Icon, Title & Level */}
-        <CardHeader className="flex items-start justify-between gap-3">
+        <div className='flex flex-col gap-3'>
           <div className="flex items-center gap-3 min-w-0">
             {/* Icon */}
             <div
@@ -95,56 +116,18 @@ export function CharacterCard({
           </div>
 
           {/* Level Badge */}
-          <div
-            className="flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold tabular-nums"
-            style={{
-              backgroundColor: character.color_theme + '22',
-              color: character.color_theme,
-            }}
-          >
-            Lv {character.level}
+            <div
+              className="w-32 flex justify-center border shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold tabular-nums"
+              style={{
+                backgroundColor: character.color_theme + '22',
+                color: character.color_theme,
+                borderColor: character.color_theme  + '66',
+              }}
+            >
+              Lv {character.level}
+            </div>
           </div>
         </CardHeader>
-
-        {/* Avatar Preview (if set) */}
-        {avatar && (
-        <div className="flex items-center gap-3">
-          <div
-            className="shrink-0 rounded-xl border overflow-hidden"
-            style={{
-              backgroundColor: clothingColor + '22',
-              borderColor: clothingColor + '55',
-            }}
-          >
-            <AvatarRenderer
-              archetypeId={avatar.archetype_id}
-              skinTone={avatar.skin_tone}
-              clothingColor={clothingColor}
-              size={48}
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1.5">
-              <div
-                className="w-2.5 h-2.5 rounded-full border border-border/50"
-                style={{ backgroundColor: avatar.skin_tone }}
-              />
-              <span className="text-xs text-muted-foreground capitalize">
-                {avatar.archetype_id}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div
-                className="w-2.5 h-2.5 rounded-full border border-border/50"
-                style={{ backgroundColor: clothingColor }}
-              />
-              <span className="text-xs text-muted-foreground">
-                {avatar.clothing_color ? 'Custom color' : 'Theme color'}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
 
         {/* Description */}
         <CardDescription>
@@ -159,14 +142,22 @@ export function CharacterCard({
         <div className="flex-1" />
 
         {/* XP progress */}
-        <div className="space-y-2 pt-4">
+        <div className="space-y-2 pt-4 px-6">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">{character.xp_to_next_level - character.current_xp} to level up!</div>
-            <div className="text-sm text-muted-foreground">XP: {character.current_xp} / {character.xp_to_next_level}</div>
+            <div className="text-sm text-muted-foreground">
+              {character.xp_to_next_level - character.current_xp} to level up!
+              </div>
+            <div className="text-sm text-muted-foreground">
+              XP: {character.current_xp} / {character.xp_to_next_level}
+              </div>
           </div>
           <div className='flex items-center justify-between gap-4'>
-            <span className="text-sm text-muted-foreground">{Math.floor((character.current_xp / character.xp_to_next_level) * 100)}%</span>
-            <Progress value={progressPercentage} className="h-2" style={{ backgroundColor: character.color_theme }} />
+            <span className="text-sm text-muted-foreground">
+              {Math.floor((character.current_xp / character.xp_to_next_level) * 100)}%</span>
+            <Progress 
+              value={progressPercentage} 
+              className="h-2" 
+              style={{ backgroundColor: character.color_theme }} />
           </div>
         </div>
 

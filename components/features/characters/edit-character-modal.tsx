@@ -1,5 +1,5 @@
 'use client'
-
+ 
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -18,7 +18,13 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { IconPicker } from '@/components/layout/app/icon-picker'
 import { IconData, IconType } from '@/lib/types/icon'
-import { Character, CharacterAvatarData } from '@/lib/types/character'
+import {
+  Character,
+  CharacterAvatarData,
+  SKIN_TONES,
+  SkinToneKey,
+  DEFAULT_SKIN_TONE,
+} from '@/lib/types/character'
 import { AVATAR_REGISTRY } from './avatars/avatar-registry'
 import { AvatarRenderer } from './avatars/avatar-renderer'
 import { updateCharacter } from '@/lib/actions/characters'
@@ -43,30 +49,37 @@ const COLOR_PALETTE = [
   { hex: '#a16207', label: 'Amber'    },
   { hex: '#64748b', label: 'Slate'    },
 ]
-
-const SKIN_TONES = [
-  { value: '#FDDBB4', label: 'Light'        },
-  { value: '#F5C89A', label: 'Light Medium' },
-  { value: '#D4A57A', label: 'Medium'       },
-  { value: '#B07D50', label: 'Medium Dark'  },
-  { value: '#7C4E2A', label: 'Dark'         },
-  { value: '#4A2C15', label: 'Deep'         },
-]
+ 
+const SKIN_TONE_LABELS: Record<SkinToneKey, string> = {
+  light:       'Light',
+  mediumLight: 'Medium Light',
+  medium:      'Medium',
+  mediumDark:  'Medium Dark',
+  deep:        'Deep',
+}
 
 // =======================================
 // SCHEMA
 // =======================================
 
 const editCharacterSchema = z.object({
-  title: z.string()
+  title: z
+    .string()
     .min(1, 'Title is required')
     .max(50, 'Title must be 50 characters or fewer'),
-  icon: z.string().optional(),
-    iconType: z.enum(['emoji', 'fontawesome', 'image']),
-    iconColor: z.string().optional(),
-  color_theme: z.string()
+  icon: z
+    .string()
+    .optional(),
+  iconType: z
+    .enum(['emoji', 'fontawesome', 'image']),
+  iconColor: z
+    .string()
+    .optional(),
+  color_theme: z
+    .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, 'Please select a color theme'),
-  description: z.string()
+  description: z
+    .string()
     .max(500, 'Description must be 500 characters or fewer')
     .optional(),
 })
@@ -96,25 +109,20 @@ export function EditCharacterModal({
 }: EditCharacterModalProps) {
   const existingAvatar = character.avatar as CharacterAvatarData | null
   const existingIcon   = character.icon   as IconData
-
-  // ── Local state for fields outside RHF ──────────────────────────────────
-  const [icon, setIcon]                         = useState<IconData>(existingIcon)
+ 
+  const [icon, setIcon]                           = useState<IconData>(existingIcon)
   const [selectedArchetype, setSelectedArchetype] = useState<string | null>(
     existingAvatar?.archetype_id ?? null
   )
-  const [skinTone, setSkinTone]                 = useState<string>(
-    existingAvatar?.skin_tone ?? SKIN_TONES[0].value
+  const [skinTone, setSkinTone] = useState<SkinToneKey>(
+    (existingAvatar?.skin_tone as SkinToneKey) ?? DEFAULT_SKIN_TONE
   )
-  // null = follow color_theme; string = explicit override
-  const [clothingColor, setClothingColor]       = useState<string | null>(
-    existingAvatar?.clothing_color ?? null
-  )
-  const [isSubmitting, setIsSubmitting]         = useState(false)
-
+  const [isSubmitting, setIsSubmitting] = useState(false)
+ 
   const form = useForm<EditCharacterFormValues>({
     resolver: zodResolver(editCharacterSchema),
     defaultValues: {
-      title:       character.title,
+      title: character.title,
       icon: character.icon.value,
       iconType: character.icon.type,
       iconColor: character.icon.color,
@@ -123,79 +131,67 @@ export function EditCharacterModal({
     },
   })
 
-  // Reset all state when the character prop changes (e.g. opening on a different character)
+  // Reset all local state whenever the character prop changes
   useEffect(() => {
     const latestAvatar = character.avatar as CharacterAvatarData | null
     const latestIcon   = character.icon   as IconData
-
+ 
     form.reset({
       title:       character.title,
-      icon: character.icon.value,
-      iconType: character.icon.type,
-      iconColor: character.icon.color,
+      icon:        character.icon.value,
+      iconType:    character.icon.type,
+      iconColor:   character.icon.color,
       color_theme: character.color_theme,
       description: character.description || '',
     })
+ 
     setIcon(latestIcon)
     setSelectedArchetype(latestAvatar?.archetype_id ?? null)
-    setSkinTone(latestAvatar?.skin_tone ?? SKIN_TONES[0].value)
-    setClothingColor(latestAvatar?.clothing_color ?? null)
+    setSkinTone((latestAvatar?.skin_tone as SkinToneKey) ?? DEFAULT_SKIN_TONE)
   }, [character, form])
 
-  const selectedColor     = form.watch('color_theme')
-  const effectiveClothing = clothingColor ?? selectedColor
-
-  // When the color theme changes and clothing is following the theme, nothing extra
-  // is needed — effectiveClothing derives from selectedColor automatically.
-  // But if the user had previously set the clothing to match the OLD theme color
-  // explicitly, we leave that alone (it's their explicit choice).
+  const selectedColor = form.watch('color_theme')
 
   function handleIconChange(value: string, type: IconType, color?: string) {
     setIcon({ type, value, color })
+    form.setValue('icon',      value)
+    form.setValue('iconType',  type)
+    form.setValue('iconColor', color ?? '')
   }
 
   async function onSubmit(values: EditCharacterFormValues) {
     setIsSubmitting(true)
     try {
       const avatar: CharacterAvatarData | null = selectedArchetype
-        ? {
-            archetype_id:   selectedArchetype,
-            skin_tone:      skinTone,
-            clothing_color: clothingColor,
-          }
+        ? { archetype_id: selectedArchetype, skin_tone: skinTone }
         : null
-
-      await updateCharacter(character.id, {
-        title:       values.title,
+ 
+      const result = await updateCharacter({
+        id: character.id,
+        title: values.title,
         color_theme: values.color_theme,
-        icon: values.icon,
-        icon_type: values.iconType,
-        icon_color: values.iconColor,
+        icon: values.icon ?? character.icon.value,
         description: values.description || undefined,
         avatar,
       })
-
+ 
+      if (!result.success) {
+        if (result.error.includes('title')) {
+          form.setError('title', { message: result.error })
+        } else if (result.error.includes('color')) {
+          form.setError('color_theme', { message: result.error })
+        } else {
+          toast.error(result.error)
+        }
+        return
+      }
+ 
       toast.success(`${values.title} has been updated.`)
       onCharacterUpdated()
       onOpenChange(false)
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating character:', error)
-
-      if (error?.code === '23505') {
-        if (error.message?.includes('unique_character_title_per_user')) {
-          form.setError('title', {
-            message: 'You already have a character with this title.',
-          })
-        } else if (error.message?.includes('unique_color_theme_per_user')) {
-          form.setError('color_theme', {
-            message: 'You already have a character using this color.',
-          })
-        } else {
-          toast.error('A character with this title or color already exists.')
-        }
-      } else {
-        toast.error('Failed to update character. Please try again.')
-      }
+      toast.error('Failed to update character. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -254,6 +250,8 @@ export function EditCharacterModal({
                 <Label>
                   Color Theme <span className="text-destructive">*</span>
                 </Label>
+ 
+                {/* Preset palette */}
                 <div className="flex flex-wrap gap-2">
                   {COLOR_PALETTE.map((color) => (
                     <button
@@ -273,19 +271,45 @@ export function EditCharacterModal({
                     />
                   ))}
                 </div>
-
-                {/* Live preview swatch */}
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <div
-                    className="w-8 h-8 rounded-md shadow-sm shrink-0 transition-colors"
-                    style={{ backgroundColor: selectedColor }}
+ 
+                {/* Custom color row */}
+                <div className="flex items-center gap-3">
+                  {/* Native colour wheel */}
+                  <div className="relative w-9 h-9 shrink-0">
+                    <div
+                      className="w-9 h-9 rounded-full border-2 border-border cursor-pointer overflow-hidden"
+                      style={{ backgroundColor: selectedColor }}
+                    >
+                      <input
+                        type="color"
+                        value={selectedColor}
+                        onChange={(e) =>
+                          form.setValue('color_theme', e.target.value, { shouldValidate: true })
+                        }
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        title="Pick a custom colour"
+                      />
+                    </div>
+                  </div>
+ 
+                  {/* Hex text input */}
+                  <Input
+                    value={selectedColor}
+                    onChange={(e) => {
+                      const raw = e.target.value.trim()
+                      const withHash = raw.startsWith('#') ? raw : `#${raw}`
+                      form.setValue('color_theme', withHash, { shouldValidate: true })
+                    }}
+                    maxLength={7}
+                    className="font-mono text-sm w-32"
+                    placeholder="#6366f1"
                   />
+ 
                   <span className="text-sm text-muted-foreground">
-                    {COLOR_PALETTE.find(c => c.hex === selectedColor)?.label ?? 'Custom'} —{' '}
-                    <span className="font-mono text-xs">{selectedColor}</span>
+                    {COLOR_PALETTE.find(c => c.hex === selectedColor)?.label ?? 'Custom'}
                   </span>
                 </div>
-
+ 
                 {form.formState.errors.color_theme && (
                   <p className="text-sm text-destructive">
                     {form.formState.errors.color_theme.message}
@@ -316,7 +340,7 @@ export function EditCharacterModal({
 
             {/* ─── AVATAR TAB ─────────────────────────────────── */}
             <TabsContent value="avatar" className="space-y-5 pt-2">
-
+ 
               {/* Archetype selection */}
               <div className="space-y-2">
                 <Label>
@@ -328,11 +352,11 @@ export function EditCharacterModal({
                 </p>
                 <div className="grid grid-cols-4 gap-2">
                   {AVATAR_REGISTRY.map((archetype) => {
-                    const isLocked = archetype.lockedUntilLevel
+                    const isLocked   = archetype.lockedUntilLevel
                       ? character.level < archetype.lockedUntilLevel
                       : false
                     const isSelected = selectedArchetype === archetype.id
-
+ 
                     return (
                       <button
                         key={archetype.id}
@@ -352,7 +376,6 @@ export function EditCharacterModal({
                         <AvatarRenderer
                           archetypeId={archetype.id}
                           skinTone={skinTone}
-                          clothingColor={effectiveClothing}
                           size={48}
                         />
                         <span className="font-medium text-foreground">{archetype.label}</span>
@@ -366,79 +389,29 @@ export function EditCharacterModal({
                   })}
                 </div>
               </div>
-
-              {/* Customization — only shown when an archetype is selected */}
+ 
+              {/* Skin tone + preview — only when an archetype is selected */}
               {selectedArchetype && (
-                <>
-                  {/* Skin Tone */}
-                  <div className="space-y-3">
-                    <Label>Skin Tone</Label>
-                    <div className="flex gap-2">
-                      {SKIN_TONES.map((tone) => (
-                        <button
-                          key={tone.value}
-                          type="button"
-                          title={tone.label}
-                          onClick={() => setSkinTone(tone.value)}
-                          className={cn(
-                            'w-8 h-8 rounded-full border-2 transition-all',
-                            skinTone === tone.value
-                              ? 'border-foreground scale-110 shadow-md'
-                              : 'border-transparent hover:scale-105'
-                          )}
-                          style={{ backgroundColor: tone.value }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Clothing Color */}
-                  <div className="space-y-3">
-                    <Label>Clothing Color</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Defaults to your character's color theme. Override below if you'd like.
-                    </p>
-
-                    {/* "Follow theme" toggle */}
-                    <div className="flex items-center gap-2">
+                <div className="space-y-3">
+                  <Label>Skin Tone</Label>
+                  <div className="flex gap-2">
+                    {(Object.keys(SKIN_TONES) as SkinToneKey[]).map((key) => (
                       <button
+                        key={key}
                         type="button"
-                        onClick={() => setClothingColor(null)}
+                        title={SKIN_TONE_LABELS[key]}
+                        onClick={() => setSkinTone(key)}
                         className={cn(
-                          'px-3 py-1.5 rounded-md text-xs font-medium border transition-all',
-                          clothingColor === null
-                            ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-border text-muted-foreground hover:border-muted-foreground/40'
+                          'w-8 h-8 rounded-full border-2 transition-all',
+                          skinTone === key
+                            ? 'border-foreground scale-110 shadow-md'
+                            : 'border-transparent hover:scale-105'
                         )}
-                      >
-                        Follow theme
-                      </button>
-                      <div
-                        className="w-5 h-5 rounded-full border border-border shrink-0"
-                        style={{ backgroundColor: selectedColor }}
-                        title="Current theme color"
+                        style={{ backgroundColor: SKIN_TONES[key].base }}
                       />
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {COLOR_PALETTE.map((color) => (
-                        <button
-                          key={color.hex}
-                          type="button"
-                          title={color.label}
-                          onClick={() => setClothingColor(color.hex)}
-                          className={cn(
-                            'w-8 h-8 rounded-full border-2 transition-all',
-                            clothingColor === color.hex
-                              ? 'border-foreground scale-110 shadow-md'
-                              : 'border-transparent hover:scale-105'
-                          )}
-                          style={{ backgroundColor: color.hex }}
-                        />
-                      ))}
-                    </div>
+                    ))}
                   </div>
-
+ 
                   {/* Live preview */}
                   <div className="space-y-2">
                     <Label>Preview</Label>
@@ -446,14 +419,13 @@ export function EditCharacterModal({
                       <div
                         className="rounded-xl shadow-sm border overflow-hidden shrink-0"
                         style={{
-                          backgroundColor: effectiveClothing + '22',
-                          borderColor: effectiveClothing + '66',
+                          backgroundColor: selectedColor + '22',
+                          borderColor:     selectedColor + '66',
                         }}
                       >
                         <AvatarRenderer
-                          archetypeId={selectedArchetype!}
+                          archetypeId={selectedArchetype}
                           skinTone={skinTone}
-                          clothingColor={effectiveClothing}
                           size={64}
                         />
                       </div>
@@ -464,28 +436,16 @@ export function EditCharacterModal({
                         <div className="flex items-center gap-2">
                           <div
                             className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: skinTone }}
+                            style={{ backgroundColor: SKIN_TONES[skinTone]?.base }}
                           />
                           <span className="text-muted-foreground text-xs">
-                            {SKIN_TONES.find(t => t.value === skinTone)?.label} skin
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: effectiveClothing }}
-                          />
-                          <span className="text-muted-foreground text-xs">
-                            {clothingColor === null
-                              ? `${COLOR_PALETTE.find(c => c.hex === selectedColor)?.label ?? 'Theme'} (theme)`
-                              : COLOR_PALETTE.find(c => c.hex === clothingColor)?.label ?? 'Custom'
-                            }{' '}clothing
+                            {SKIN_TONE_LABELS[skinTone]} skin
                           </span>
                         </div>
                       </div>
                     </div>
                   </div>
-                </>
+                </div>
               )}
             </TabsContent>
           </Tabs>

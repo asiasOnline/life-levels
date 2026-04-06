@@ -94,13 +94,13 @@ const CHARACTER_WITH_RELATIONS_SELECT = `
   skill_characters(
     skills(id, title, icon)
   ),
-  habit_skills(
+  habit_characters(
     habits(id, title, icon, status)
   ),
-  task_skills(
+  task_characters(
     tasks(id, title, icon, status)
   ),
-  goal_skills(
+  goal_characters(
     goals(id, title, icon, status)
   )
 ` as const
@@ -126,26 +126,26 @@ function mapRowToCharacter(row: CharacterRowWithSkills): Character {
     }))
 
   return {
-    id:               row.id,
-    title:            row.title,
-    color_theme:      row.color_theme,
-    icon:             row.icon as unknown as IconData,
-    description:      row.description ?? undefined,
-    avatar:           (row.avatar as unknown as CharacterAvatarData) ?? null,
-    level:            row.level ?? 1,
-    current_xp:       row.current_xp ?? 0,
+    id:  row.id,
+    title: row.title,
+    color_theme: row.color_theme,
+    icon: row.icon as unknown as IconData,
+    description: row.description ?? undefined,
+    avatar: (row.avatar as unknown as CharacterAvatarData) ?? null,
+    level: row.level ?? 1,
+    current_xp: row.current_xp ?? 0,
     xp_to_next_level: row.xp_to_next_level ?? 0,
-    total_xp:         row.total_xp ?? 0,
-    is_archived:      row.is_archived ?? false,
-    skills:           skills.length > 0 ? skills : undefined,
-    created_at:       row.created_at ? new Date(row.created_at) : new Date(),
-    updated_at:       row.updated_at ? new Date(row.updated_at) : new Date(),
+    total_xp: row.total_xp ?? 0,
+    is_archived: row.is_archived ?? false,
+    skills:  skills.length > 0 ? skills : undefined,
+    created_at: row.created_at ? new Date(row.created_at) : new Date(),
+    updated_at: row.updated_at ? new Date(row.updated_at) : new Date(),
   }
 }
 
-// ==============================================
+// ===========================================
 // CHARACTER RELATION MAPPER
-// ==============================================
+// ===========================================
 /**
  * Maps a raw Supabase row (all relations) → CharacterWithRelations.
  * Used by fetchCharacterById and as the return shape for all write operations, so the Character detail modal always receives fully hydrated data.
@@ -229,9 +229,8 @@ async function syncCharacterSkills(
 // =======================================
 // FETCH ALL CHARACTERS (GRID/LIST VIEW)
 // =======================================
-/** -------------------------------------
+/** 
  * Fetch all characters for the authenticated user with linked Skills hydrated. 
- * --------------------------------------
  */
 export async function fetchCharacters(): Promise<ActionResult<Character[]>> {
   try {
@@ -312,9 +311,8 @@ export async function fetchActiveCharacters(): Promise<ActionResult<Character[]>
 // =======================================
 // FETCH A SINGLE CHARACTER BY ID (DETAIL VIEW)
 // =======================================
-/** -------------------------------------
+/** 
  * Returns a single character by ID with all relations hydrated (skills, habits, tasks, goals). Used by the Character detail page and as the return path after all write operations.
- * --------------------------------------
  */
 export async function fetchCharacterById(
   id: string
@@ -327,7 +325,10 @@ export async function fetchCharacterById(
       error: authError,
     } = await supabase.auth.getUser()
  
-    if (authError || !user) return { success: false, error: 'Not authenticated' }
+    if (authError || !user) return { 
+      success: false, 
+      error: 'Not authenticated' 
+    }
  
     const { data, error } = await supabase
       .from('characters')
@@ -336,16 +337,24 @@ export async function fetchCharacterById(
       .eq('user_id', user.id)
       .single()
  
-    if (error) return { success: false, error: error.message }
-    if (!data)  return { success: false, error: 'Character not found' }
+    if (error) return { 
+      success: false, 
+      error: error.message }
+    if (!data)  return { 
+      success: false, 
+      error: 'Character not found' }
  
     return {
       success: true,
       data: mapRowToCharacterWithRelations(data as CharacterRowWithRelations),
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unexpected error fetching character'
-    return { success: false, error: message }
+    const message = err instanceof Error ? 
+                    err.message : 'Unexpected error fetching character'
+    return { 
+      success: false, 
+      error: message 
+    }
   }
 }
 
@@ -374,9 +383,9 @@ export async function createCharacter(
       title:       input.title,
       color_theme: input.color_theme,
       icon: {
-        type:  input.icon?.type  ?? DEFAULT_ICON_TYPE,
-        value: input.icon?.value ?? DEFAULT_ICON,
-        color: input.icon?.color ?? DEFAULT_ICON_COLOR,
+        type: input.icon_type || DEFAULT_ICON_TYPE,
+        value: input.icon || DEFAULT_ICON,
+        color: input.icon_color || DEFAULT_ICON_COLOR,
       },
       description:      input.description ?? null,
       avatar:           (input.avatar ?? null) as unknown as CharacterInsert['avatar'],
@@ -448,13 +457,7 @@ export async function updateCharacter(
     if (input.avatar      !== undefined) {
       characterUpdate.avatar = input.avatar as unknown as CharacterUpdate['avatar']
     }
-    if (input.icon !== undefined) {
-      characterUpdate.icon = {
-        type:  input.icon.type  ?? DEFAULT_ICON_TYPE,
-        value: input.icon.value ?? DEFAULT_ICON,
-        color: input.icon.color ?? DEFAULT_ICON_COLOR,
-      }
-    }
+    if (input.icon        !== undefined) characterUpdate.icon        = input.icon as unknown as CharacterUpdate['icon']
  
     if (Object.keys(characterUpdate).length > 0) {
       const { error } = await supabase

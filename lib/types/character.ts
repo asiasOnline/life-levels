@@ -1,5 +1,20 @@
 import { IconData, IconType } from "@/lib/types/icon";
 import { SkillSummary } from "./skills";
+
+// =======================================
+// CONSTANTS
+// =======================================
+export const SKIN_TONES = {
+  light:        { base: "#ffd3d1", dark: "#f59f9b", shadow: "#e07a86" },
+  mediumLight:  { base: "#f5c4a8", dark: "#d99b78", shadow: "#c07a55" },
+  medium:       { base: "#d4956a", dark: "#b5724a", shadow: "#9a5a35" },
+  mediumDark:   { base: "#b07040", dark: "#8a5228", shadow: "#6e3c18" },
+  deep:         { base: "#874c30", dark: "#5c3020", shadow: "#3e1e10" },
+} as const;
+
+export type SkinToneKey = keyof typeof SKIN_TONES;
+export const DEFAULT_SKIN_TONE: SkinToneKey = "light";
+
 // =================================
 // SHARED / SUMMARY
 // =================================
@@ -42,16 +57,22 @@ export type CharacterLinkedGoal  = {
 // INPUT TYPES
 // =======================================
 
+export interface CharacterStyleProps {
+  className?: string;
+  skinTone?: SkinToneKey;
+}
+
 export interface CharacterAvatarData {
   archetype_id: string
   skin_tone: string
-  clothing_color: string | null // null = clothing inherits character's color theme
 }
 
 export interface CreateCharacterInput {
   title: string
   description?: string
-  icon: IconData
+  icon?: string
+  icon_type?: IconType
+  icon_color?: string
   color_theme: string;
   avatar?: CharacterAvatarData | null 
   skill_ids?: string[]; // for linking existing Skills during Character creation
@@ -61,7 +82,9 @@ export interface UpdateCharacterInput {
   id: string;
   title?: string;
   description?: string;
-  icon?: IconData;
+  icon?: string
+  icon_type?: IconType
+  icon_color?: string
   color_theme?: string;
   avatar?: CharacterAvatarData | null 
   is_archived?: boolean;

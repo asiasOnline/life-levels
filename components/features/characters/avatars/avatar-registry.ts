@@ -1,4 +1,5 @@
 import { Aphrodite } from "./mythology/aphrodite"
+import { Artemis } from "./mythology/artemis"
 import { Athena } from "./mythology/athena"
 import { Chiron } from "./mythology/chiron"
 import { Cyclops } from "./mythology/cyclops"
@@ -9,16 +10,16 @@ import { Prometheus } from "./mythology/prometheus"
 import { Themis } from "./mythology/themis"
 import { Zeus } from "./mythology/zeus"
 import { Knight } from "./rpg/knight"
+import { SkinToneKey } from "@/lib/types/character"
 
 export type AvatarProps = {
-  skinTone: string    // hex color
-  clothingColor: string  // hex color
+  skinTone: SkinToneKey    // hex color
   className?: string
 }
 
 export type AvatarArchetype = {
   id: string
-  label: string       // "Warrior", "Scholar", etc.
+  label: string 
   component: React.FC<AvatarProps>
   tags: string[]      // e.g. ["strength", "combat"] — useful for filtering later
   lockedUntilLevel?: number  // for milestone-locked avatars per your PRD
@@ -30,6 +31,12 @@ export const AVATAR_REGISTRY: AvatarArchetype[] = [
     label: 'Aphrodite',
     component: Aphrodite,
     tags: ['intellect', 'courage', 'leadership', 'strategy'],
+  },
+  {
+    id: 'artemis',
+    label: 'Artemis',
+    component: Artemis,
+    tags: ['hunt', 'wilderness', 'nature', 'chastity'],
   },
     {
     id: 'athena',

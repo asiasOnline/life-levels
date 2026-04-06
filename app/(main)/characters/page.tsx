@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Character } from "@/lib/types/character";
 import { IconType } from "@/lib/types/icon";
 import { ViewMode } from "@/components/layout/app/item-container-header";
@@ -25,6 +25,8 @@ import {
 } from "@/lib/actions/characters";
 import { Button } from "@/components/ui/button";
 import { FaPlus, FaXmark } from "react-icons/fa6";
+import { SkillSummary } from "@/lib/types/skills";
+import { fetchSkills } from "@/lib/actions/skills";
 
 export default function CharactersPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
@@ -32,19 +34,38 @@ export default function CharactersPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
+    const [availableSkills, setAvailableSkills] = useState<SkillSummary[]>([])
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
-    const loadCharacters = async () => {
+    const loadCharacters = useCallback(async () => {
       setIsLoading(true)
       try {
-        const result = await fetchCharacters()
-        
-        if (!result.success) {
+        const [skillsResult, charactersResult] = await Promise.all([
+          fetchSkills(),
+          fetchCharacters(),
+        ])
+
+        if (!skillsResult.success) {
+        toast.error('Failed to load skills.')
+        return
+      }
+
+        if (!charactersResult.success) {
           toast.error('Failed to load characters. Please refresh the page.')
           return
         }
-        
-        setCharacters(result.data)
+
+        setCharacters(charactersResult.data)
+
+        setAvailableSkills(
+        (skillsResult.data ?? []).map((s) => ({
+          id:    s.id,
+          title: s.title,
+          icon:  s.icon,
+          level: s.level,
+        }))
+      )
+
       } catch (error) {
         console.error('Error loading skills:', error)
         toast.error('Failed to load skills. Please refresh the page.')
@@ -52,7 +73,7 @@ export default function CharactersPage() {
       } finally {
         setIsLoading(false)
       }
-    }
+    }, [])
 
   useEffect(() => {
     loadCharacters()
@@ -173,6 +194,7 @@ export default function CharactersPage() {
         isOpen={isCreateModalOpen}
         onClose={setIsCreateModalOpen}
         onCharacterCreated={handleCharacterCreated}
+        availableSkills={availableSkills}
       />
 
       {/* Character Detail Modal */}

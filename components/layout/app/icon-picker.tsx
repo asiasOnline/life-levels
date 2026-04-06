@@ -28,16 +28,17 @@ interface IconPickerProps {
 }
 
 const PRESET_COLORS = [
-  '#3b82f6', // blue
+  '#ec4899', // pink
   '#ef4444', // red
+  '#f97316', // orange
   '#f59e0b', // amber
   '#10b981', // green
-  '#8b5cf6', // purple
-  '#ec4899', // pink
-  '#06b6d4', // cyan
-  '#f97316', // orange
-  '#6366f1', // indigo
   '#14b8a6', // teal
+  '#06b6d4', // cyan
+  '#3b82f6', // blue
+  '#6366f1', // indigo
+  '#8b5cf6', // purple
+  '#070606', // black
 ]
 
 const RECENT_ICONS_KEY = 'icon-picker-recent'

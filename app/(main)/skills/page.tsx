@@ -46,18 +46,25 @@ export default function SkillsPage() {
         return
       }
 
+      if(1 && !charactersResult.success) {
+        toast.error('Failed to load characters. Please refresh the page.')
+      }
+
       setSkills(skillsResult.data)
 
+      if (charactersResult.success) {
       setAvailableCharacters(
-        (charactersResult.data ?? [])
+        charactersResult.data
           .filter((c) => !c.is_archived)
           .map((c) => ({
-            id:           c.id,
-            title:        c.title,
-            icon:         c.icon,
-            color_theme:  c.color_theme,
+            id: c.id,
+            title: c.title,
+            icon: c.icon,
+            color_theme: c.color_theme,
           }))
       )
+    }
+      
     } catch (error) {
       console.error('Error loading skills:', error)
       toast.error('Failed to load skills. Please refresh the page.')

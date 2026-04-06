@@ -14,7 +14,7 @@ import {
   UpdateSkillInput
 } from '../types/skills'
 import { calculateXPForLevel } from '@/lib/utils/skills'
-import { CharacterSummaryWithLevel } from '../types/character'
+import { CharacterSummary } from '../types/character'
 
 // =======================================
 //  INTERNAL DATABASE TYPES
@@ -111,20 +111,19 @@ const SKILL_WITH_RELATIONS_SELECT = `
 // ==============================================
 // ==============================================
 // SKILL & CHARACTER MAPPER
-// ==============================================
+// ===========================================
 /**
  * Maps a raw Supabase row (characters join only) to a clean Skill.
  * Used by fetchSkills for the grid/list view.
  */
 function mapRowToSkill(row: SkillRowWithCharacters): Skill {
-  const characters: CharacterSummaryWithLevel[] = (row.skill_characters ?? [])
+  const characters: CharacterSummary[] = (row.skill_characters ?? [])
     .filter((sc) => sc.characters !== null)
     .map((sc) => ({
       id: sc.characters!.id,
       title: sc.characters!.title,
       icon: sc.characters!.icon as unknown as IconData,
       color_theme: sc.characters!.color_theme,
-      level: sc.characters!.level,
     }))
  
   return {
@@ -142,14 +141,16 @@ function mapRowToSkill(row: SkillRowWithCharacters): Skill {
   }
 }
 
-// ==============================================
+// ===========================================
 // SKILL RELATION MAPPER
-// ==============================================
+// ===========================================
 /**
  * Maps a raw Supabase row (all relations) → SkillWithRelations.
  * Used by fetchSkillById and as the return shape for all write operations, so the Skill detail modal always receives fully hydrated data.
  */
-function mapRowToSkillWithRelations(row: SkillRowWithRelations): SkillWithRelations {
+function mapRowToSkillWithRelations(
+  row: SkillRowWithRelations
+): SkillWithRelations {
   const base = mapRowToSkill(row)
  
   const habits = (row.habit_skills ?? [])
@@ -187,10 +188,10 @@ function mapRowToSkillWithRelations(row: SkillRowWithRelations): SkillWithRelati
   }
 }
 
-// ====================================================
+// ==============================================
 // JUNCTION TABLE HELPERS
 // All junction writes use the delete-then-insert pattern — no diffing, safe because junction rows carry no data beyond the foreign keys.
-// =====================================================
+// ===========================================
 async function syncSkillCharacters(
   supabase: ReturnType<typeof createClient>,
   skill_id: string,
@@ -298,8 +299,12 @@ export async function fetchSkillById(
       .eq('user_id', user.id)
       .single()
  
-    if (error) return { success: false, error: error.message }
-    if (!data) return { success: false, error: 'Skill not found' }
+    if (error) return { 
+      success: false, 
+      error: error.message }
+    if (!data) return { 
+      success: false, 
+      error: 'Skill not found' }
  
     return { 
       success: true, 
@@ -347,9 +352,9 @@ export async function createSkill(
     title: input.title,
     description: input.description ?? null,
     icon: {
-      type: input.icon.type || DEFAULT_ICON_TYPE,
-      value: input.icon.value || DEFAULT_ICON,
-      color: input.icon.color || DEFAULT_ICON_COLOR,
+      type: input.icon_type || DEFAULT_ICON_TYPE,
+      value: input.icon || DEFAULT_ICON,
+      color: input.icon_color || DEFAULT_ICON_COLOR,
     },
     tags: input.tags ?? [],
     level: initialSkillLevel,

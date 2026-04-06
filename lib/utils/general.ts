@@ -25,23 +25,26 @@ export function formatDueDate(date: string | Date): { label: string; overdue: bo
   }
 }
 
-export function formatDateShort(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
+export function formatDateShort(date: string | Date): string {
+  const due = typeof date === 'string' ? new Date(date) : date
+  return new Date(date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   })
 }
 
-export function formatDateLong(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
+export function formatDateLong(date: string | Date): string {
+  const due = typeof date === 'string' ? new Date(date) : date
+  return new Date(date).toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   })
 }
 
-export function isOverdue(dateString: string): boolean {
-  return new Date(dateString) < new Date()
+export function isOverdue(date: string | Date): boolean {
+  const due = typeof date === 'string' ? new Date(date) : date
+  return new Date(date) < new Date()
 }
 

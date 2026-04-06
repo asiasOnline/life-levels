@@ -25,6 +25,7 @@ export type Database = {
           id: string
           is_archived: boolean
           level: number
+          skin_tone: string
           title: string
           total_xp: number
           updated_at: string
@@ -41,6 +42,7 @@ export type Database = {
           id?: string
           is_archived?: boolean
           level?: number
+          skin_tone?: string
           title: string
           total_xp?: number
           updated_at?: string
@@ -57,6 +59,7 @@ export type Database = {
           id?: string
           is_archived?: boolean
           level?: number
+          skin_tone?: string
           title?: string
           total_xp?: number
           updated_at?: string

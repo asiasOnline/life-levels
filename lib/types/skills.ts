@@ -1,5 +1,5 @@
 import { IconData, IconType } from "@/lib/types/icon";
-import { CharacterSummaryWithLevel } from "./character";
+import { CharacterSummary } from "./character";
 // =================================
 // SHARED / SUMMARY
 // =================================
@@ -41,8 +41,8 @@ export interface CreateSkillInput {
   description?: string
   starting_level?: number; // defaults to 1, maxes at 5
   icon?: string
-      icon_type?: IconType
-      icon_color?: string
+  icon_type?: IconType
+  icon_color?: string
   tags?: string[]
   character_ids?: string[];
 }
@@ -67,7 +67,7 @@ export interface Skill {
     description?: string;
     tags?: string[];
     level: number;
-    characters?: CharacterSummaryWithLevel[]
+    characters?: CharacterSummary[]
     current_xp: number;
     xp_to_next_level: number;
     created_at: string;

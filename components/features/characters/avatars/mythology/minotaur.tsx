@@ -1,8 +1,14 @@
+import { useId } from 'react'
 import type { AvatarProps } from "../avatar-registry"; 
+import { 
+  SKIN_TONES, 
+  SkinToneKey, 
+  DEFAULT_SKIN_TONE, 
+  CharacterStyleProps 
+} from '@/lib/types/character'
 
 export const Minotaur: React.FC<AvatarProps> = ({
     skinTone, 
-    clothingColor,
     className
 }) => (
     <svg 

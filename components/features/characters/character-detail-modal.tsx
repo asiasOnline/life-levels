@@ -34,7 +34,16 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { EditCharacterModal } from './edit-character-modal'
-import { Pencil, Trash2, Archive, ArchiveRestore, Target, ListTodo, RefreshCw, Trophy } from 'lucide-react'
+import { 
+  Pencil, 
+  Trash2, 
+  Archive, 
+  ArchiveRestore, 
+  Target, 
+  ListTodo, 
+  RefreshCw, 
+  Trophy 
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { 
   archiveCharacter, 
@@ -55,7 +64,7 @@ interface CharacterDetailModalProps {
 }
 
 // =======================================
-// COMPONENT
+// MAIN COMPONENT
 // =======================================
 
 export function CharacterDetailModal({
@@ -65,18 +74,18 @@ export function CharacterDetailModal({
   onCharacterUpdated,
   onCharacterDeleted,
 }: CharacterDetailModalProps) {
-  const [isEditModalOpen, setIsEditModalOpen]     = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false)
-  const [isDeleting, setIsDeleting]               = useState(false)
-  const [isArchiving, setIsArchiving]             = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isArchiving, setIsArchiving] = useState(false)
 
   if (!character) return null
 
+  const selectedColor = character.color_theme
   const avatar = character.avatar as CharacterAvatarData | null
   const icon   = character.icon   as IconData
 
-  const clothingColor  = avatar?.clothing_color ?? character.color_theme
   const progressPct    = Math.min(100, Math.round((character.current_xp / character.xp_to_next_level) * 100))
   const xpRemaining    = character.xp_to_next_level - character.current_xp
 
@@ -128,7 +137,9 @@ export function CharacterDetailModal({
     }
   }
 
-  // ── Render ─────────────────────────────────
+// =======================================
+// COMPONENT RENDER
+// =======================================
 
   return (
     <>
@@ -253,14 +264,13 @@ export function CharacterDetailModal({
                     <div
                       className="shrink-0 rounded-xl border overflow-hidden"
                       style={{
-                        backgroundColor: clothingColor + '22',
-                        borderColor: clothingColor + '55',
+                        backgroundColor: selectedColor + '22',
+                        borderColor: selectedColor + '66',
                       }}
                     >
                       <AvatarRenderer
                         archetypeId={avatar.archetype_id}
-                        skinTone={avatar.skin_tone}
-                        clothingColor={clothingColor}
+                        skinTone={avatar.skin_tone as 'light' | 'mediumLight' | 'medium' | 'mediumDark' | 'deep'}
                         size={56}
                       />
                     </div>
@@ -278,11 +288,7 @@ export function CharacterDetailModal({
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <div
                           className="w-3 h-3 rounded-full border border-border/50"
-                          style={{ backgroundColor: clothingColor }}
                         />
-                        <span>
-                          {avatar.clothing_color ? 'Custom clothing color' : 'Theme color clothing'}
-                        </span>
                       </div>
                     </div>
                   </div>

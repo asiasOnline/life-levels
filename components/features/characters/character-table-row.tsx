@@ -20,21 +20,6 @@ interface CharacterTableRowProps {
 }
 
 // =======================================
-// AVATAR ARCHETYPES (mirrors CreateCharacterModal)
-// =======================================
-
-const AVATAR_ARCHETYPES: Record<string, string> = {
-  warrior:   '⚔️',
-  scholar:   '📚',
-  explorer:  '🧭',
-  athlete:   '🏃',
-  artisan:   '🎨',
-  mystic:    '🔮',
-  healer:    '💚',
-  architect: '🏛️',
-}
-
-// =======================================
 // HELPERS
 // =======================================
 
@@ -110,9 +95,6 @@ export function CharacterTableRow({
   className,
 }: CharacterTableRowProps) {
   const avatar = character.avatar as unknown as CharacterAvatarData | null
-
-  const avatarEmoji = avatar ? AVATAR_ARCHETYPES[avatar.archetype_id] : null
-  const clothingColor = avatar?.clothing_color ?? character.color_theme
 
   const handleClick = () => {
     if (onClick) {

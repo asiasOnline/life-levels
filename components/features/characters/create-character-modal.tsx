@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { 
   Field,
+  FieldDescription,
   FieldLabel
 } from '@/components/ui/field'
 import {
@@ -19,6 +21,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { 
   Tabs, 
   TabsContent, 
@@ -30,13 +34,24 @@ import {
   IconType, 
   DEFAULT_ICON, 
   DEFAULT_ICON_TYPE, 
-  DEFAULT_ICON_COLOR 
+  DEFAULT_ICON_COLOR, 
+  DEFAULT_ICON_DATA
 } from "@/lib/types/icon"
 import { AVATAR_REGISTRY } from './avatars/avatar-registry'
 import { AvatarRenderer } from './avatars/avatar-renderer'
-import { CharacterAvatarData } from '@/lib/types/character'
+import { 
+  CharacterAvatarData, 
+  CreateCharacterInput,
+  SKIN_TONES, 
+  SkinToneKey,
+  DEFAULT_SKIN_TONE,
+ } from '@/lib/types/character'
+import {  } from '@/lib/types/character'
 import { createCharacter } from '@/lib/actions/characters'
 import { cn } from '@/lib/utils/general'
+import { SkillSummary } from '@/lib/types/skills'
+import { FaCheck } from 'react-icons/fa6'
+import { toast } from "sonner" 
 
 // =======================================
 // CONSTANTS
@@ -57,34 +72,40 @@ const COLOR_PALETTE = [
   { hex: '#64748b', label: 'Slate'    },
 ]
 
-const SKIN_TONES = [
-  { value: '#FDDBB4', label: 'Light'        },
-  { value: '#F5C89A', label: 'Light Medium' },
-  { value: '#D4A57A', label: 'Medium'       },
-  { value: '#B07D50', label: 'Medium Dark'  },
-  { value: '#7C4E2A', label: 'Dark'         },
-  { value: '#4A2C15', label: 'Deep'         },
-]
+const SKIN_TONE_LABELS: Record<SkinToneKey, string> = {
+  light:      'Light',
+  mediumLight: 'Medium Light',
+  medium:     'Medium',
+  mediumDark: 'Medium Dark',
+  deep:       'Deep',
+}
 
 // =======================================
 // SCHEMA
 // =======================================
 
 const createCharacterSchema = z.object({
-  title: z.string()
+  title: z
+    .string()
     .min(1, 'Title is required')
     .max(50, 'Title must be 50 characters or fewer'),
   icon: z
-      .string()
-      .optional(),
-      iconType: z
-      .enum(['emoji', 'fontawesome', 'image']),
-      iconColor: z
-      .string()
-      .optional(),
-  color_theme: z.string()
+    .string()
+    .optional(),
+  iconType: z
+    .enum(['emoji', 'fontawesome', 'image']),
+  iconColor: z
+    .string()
+    .optional(),
+  color_theme: z
+    .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, 'Please select a color theme'),
-  description: z.string().max(500, 'Description must be 500 characters or fewer').optional(),
+  description: z
+    .string()
+    .max(500, 'Description must be 500 characters or fewer')
+    .optional(),
+  skillIds: z
+    .array(z.string())
 })
 
 type CreateCharacterFormValues = z.infer<typeof createCharacterSchema>
@@ -98,10 +119,11 @@ interface CreateCharacterModalProps {
   onClose: (open: boolean) => void
   onCharacterCreated?: () => void
   characterLevel?: number // defaults to 1 for creation
+  availableSkills: SkillSummary[]
 }
 
 // =======================================
-// COMPONENT
+// MAIN COMPONENT
 // =======================================
 
 export function CreateCharacterModal({
@@ -112,8 +134,9 @@ export function CreateCharacterModal({
 }: CreateCharacterModalProps) {
   const [activeTab, setActiveTab] = useState<'basics' | 'avatar'>('basics')
   const [selectedArchetype, setSelectedArchetype] = useState<string | null>(null)
-  const [skinTone, setSkinTone] = useState<string>(SKIN_TONES[0].value)
-  const [clothingColor, setClothingColor] = useState<string | null>(null) // null = follow color_theme
+  const [skinTone, setSkinTone] = useState<SkinToneKey>(DEFAULT_SKIN_TONE)
+  const [skills, setSkills] = useState<SkillSummary[]>([])
+  const [isLoadingSkills, setIsLoadingSkills] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -122,23 +145,45 @@ export function CreateCharacterModal({
     defaultValues: {
       title: '',
       icon: DEFAULT_ICON,
-      iconType: DEFAULT_ICON_TYPE,
+       iconType: DEFAULT_ICON_TYPE as 'emoji' | 'fontawesome' | 'image',
       iconColor: DEFAULT_ICON_COLOR,
       color_theme: COLOR_PALETTE[0].hex,
       description: '',
+      skillIds: [],
     },
   })
 
   const selectedColor = form.watch('color_theme')
+  const selectedSkillIds = form.watch('skillIds')
 
-  // The effective clothing color — either manually set or inheriting the character's theme
-  const effectiveClothingColor = clothingColor ?? selectedColor
+  // Load skills on mount
+    useEffect(() => {
+      loadSkills()
+    }, [])
+
+  async function loadSkills() {
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('skills')
+        .select('id, title, icon, level')
+        .order('title')
+
+      if (error) throw error
+
+      setSkills(data || [])
+    } catch (error) {
+      console.error('Error loading skills:', error)
+      toast.error('Error loading skills')
+    } finally {
+      setIsLoadingSkills(false)
+    }
+  }
 
   function handleClose() {
     form.reset()
     setSelectedArchetype(null)
-    setSkinTone(SKIN_TONES[0].value)
-    setClothingColor(null)
+   setSkinTone(DEFAULT_SKIN_TONE)
     setActiveTab('basics')
     setSubmitError(null)
     onClose(false)
@@ -152,6 +197,14 @@ export function CreateCharacterModal({
       }
     }
 
+  function toggleSkill(id: string) {
+    const current = form.getValues('skillIds')
+    form.setValue(
+      'skillIds',
+      current.includes(id) ? current.filter((s) => s !== id) : [...current, id]
+    )
+  }
+
   async function onSubmit(values: CreateCharacterFormValues) {
     setIsSubmitting(true)
     setSubmitError(null)
@@ -161,19 +214,32 @@ export function CreateCharacterModal({
         ? {
             archetype_id:   selectedArchetype,
             skin_tone:      skinTone,
-            clothing_color: clothingColor, // null = inherits color_theme at render time
           }
         : null
 
-      await createCharacter({
+      const input: CreateCharacterInput = {
         title: values.title,
         color_theme: values.color_theme,
-        icon: values.icon || DEFAULT_ICON,
+        icon: values.icon || DEFAULT_ICON_DATA.value,
         icon_type: values.iconType,
         icon_color: values.iconColor,
         description: values.description || undefined,
         avatar,
-      })
+        skill_ids: values.skillIds,
+      }
+
+      const result = await createCharacter(input)
+
+      if (!result.success) {
+        if (result.error.includes('title')) {
+          form.setError('title', { message: result.error })
+        } else if (result.error.includes('color')) {
+          form.setError('color_theme', { message: result.error })
+        } else {
+          setSubmitError(result.error)
+        }
+        return
+      }
 
       handleClose()
       onCharacterCreated?.()
@@ -197,9 +263,13 @@ export function CreateCharacterModal({
     }
   }
 
+// =======================================
+// COMPONENT RENDER
+// =======================================
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-140 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-5/6 sm:max-w-140 lg:max-w-240 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>New Character</DialogTitle>
         </DialogHeader>
@@ -219,19 +289,19 @@ export function CreateCharacterModal({
 
               {/* Icon */}
               <Field>
-              <FieldLabel htmlFor="chararcter-icon">Icon</FieldLabel>
-              <IconPicker
-                currentIcon={form.watch('icon')}
-                currentIconType={form.watch('iconType')}
-                currentIconColor={form.watch('iconColor')}
-                onIconChange={handleIconChange}
-              />
-              {form.formState.errors.icon && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.icon.message}
-                </p>
-              )}
-            </Field>
+                <FieldLabel htmlFor="chararcter-icon">Icon</FieldLabel>
+                <IconPicker
+                  currentIcon={form.watch('icon')}
+                  currentIconType={form.watch('iconType')}
+                  currentIconColor={form.watch('iconColor')}
+                  onIconChange={handleIconChange}
+                />
+                {form.formState.errors.icon && (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.icon.message}
+                  </p>
+                )}
+              </Field>
 
               {/* Title */}
               <Field className="space-y-2">
@@ -253,6 +323,7 @@ export function CreateCharacterModal({
                 <Label>
                   Color Theme <span className="text-destructive">*</span>
                 </Label>
+                {/* Preset Palette Colors */}
                 <div className="flex flex-wrap gap-2">
                   {COLOR_PALETTE.map((color) => (
                     <button
@@ -261,10 +332,6 @@ export function CreateCharacterModal({
                       title={color.label}
                       onClick={() => {
                         form.setValue('color_theme', color.hex, { shouldValidate: true })
-                        // If clothing color was following the old theme, keep following
-                        if (clothingColor === null) {
-                          // no-op: clothing will auto-follow the new theme
-                        }
                       }}
                       className={cn(
                         'w-8 h-8 rounded-full border-2 transition-all',
@@ -289,6 +356,46 @@ export function CreateCharacterModal({
                   </span>
                 </div>
 
+                {/* Custom color row */}
+                <div className="flex items-center gap-3">
+                  {/* Native colour wheel */}
+                  <div className="relative w-9 h-9 shrink-0">
+                    <div
+                      className="w-9 h-9 rounded-full border-2 border-border cursor-pointer overflow-hidden"
+                      style={{ backgroundColor: selectedColor }}
+                    >
+                      <input
+                        type="color"
+                        value={selectedColor}
+                        onChange={(e) =>
+                          form.setValue('color_theme', e.target.value, { shouldValidate: true })
+                        }
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        title="Pick a custom colour"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Hex text input */}
+                  <Input
+                    value={selectedColor}
+                    onChange={(e) => {
+                      const raw = e.target.value.trim()
+                      // Always keep the leading # while typing
+                      const withHash = raw.startsWith('#') ? raw : `#${raw}`
+                      form.setValue('color_theme', withHash, { shouldValidate: true })
+                    }}
+                    maxLength={7}
+                    className="font-mono text-sm w-32"
+                    placeholder="#6366f1"
+                  />
+
+                  {/* Live swatch label */}
+                  <span className="text-sm text-muted-foreground">
+                    {COLOR_PALETTE.find(c => c.hex === selectedColor)?.label ?? 'Custom'}
+                  </span>
+                </div>
+
                 {form.formState.errors.color_theme && (
                   <p className="text-sm text-destructive">{form.formState.errors.color_theme.message}</p>
                 )}
@@ -310,6 +417,48 @@ export function CreateCharacterModal({
                 {form.formState.errors.description && (
                   <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>
                 )}
+              </Field>
+
+              {/* Skills */}
+              <Field>
+                <FieldLabel>Link to Skills</FieldLabel>
+                {isLoadingSkills ? (
+              <div className="text-sm text-muted-foreground">Loading skills...</div>
+            ) : skills.length === 0 ? (
+              <div className="rounded-lg border border-dashed p-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  No skills found. Create a skill first to continue.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto rounded-lg border p-3">
+                {skills.map((skill) => (
+                  <Field
+                    key={skill.id}
+                    orientation="horizontal"
+                    className={`flex items-center gap-2 rounded-lg border p-2 text-left transition-colors ${
+                      selectedSkillIds.includes(skill.id)
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:bg-muted'
+                    }`}
+                  >
+                    <Checkbox
+                      checked={selectedSkillIds.includes(skill.id)}
+                      onCheckedChange={() => toggleSkill(skill.id)}
+                    />
+                    <span className="text-sm font-medium truncate flex-1">
+                      {skill.title}
+                    </span>
+                    <Badge variant="outline" className="text-xs">
+                      Lv {skill.level}
+                    </Badge>
+                  </Field>
+                ))}
+              </div>
+            )}
+                <FieldDescription>
+                  Select skills this character is associated with.
+                </FieldDescription>
               </Field>
 
               <div className="flex justify-end">
@@ -361,7 +510,6 @@ export function CreateCharacterModal({
                         <AvatarRenderer
                           archetypeId={archetype.id}
                           skinTone={skinTone}
-                          clothingColor={effectiveClothingColor}
                         />
                         <span className="font-medium text-foreground">{archetype.label}</span>
                         {isLocked && (
@@ -375,91 +523,46 @@ export function CreateCharacterModal({
                 </div>
               </div>
 
-              {/* Customization — only shown if an archetype is selected */}
-              {selectedArchetype && (
-                <>
-                  {/* Skin Tone */}
+              {/* Skin Tone */}
                   <div className="space-y-3">
                     <Label>Skin Tone</Label>
                     <div className="flex gap-2">
-                      {SKIN_TONES.map((tone) => (
+                      {(Object.keys(SKIN_TONES) as SkinToneKey[]).map((key) => (
                         <button
-                          key={tone.value}
+                          key={key}
                           type="button"
-                          title={tone.label}
-                          onClick={() => setSkinTone(tone.value)}
+                          title={SKIN_TONE_LABELS[key]}
+                          onClick={() => setSkinTone(key)}
                           className={cn(
                             'w-8 h-8 rounded-full border-2 transition-all',
-                            skinTone === tone.value
+                            skinTone === key
                               ? 'border-foreground scale-110 shadow-md'
                               : 'border-transparent hover:scale-105'
                           )}
-                          style={{ backgroundColor: tone.value }}
+                          style={{ backgroundColor: SKIN_TONES[key].base }}  // ← use .base for display
                         />
                       ))}
                     </div>
                   </div>
 
-                  {/* Clothing Color */}
-                  <div className="space-y-3">
-                    <Label>Clothing Color</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Defaults to your character's color theme. Override below if you'd like.
-                    </p>
+              {/* Customization — only shown if an archetype is selected */}
+              {selectedArchetype && (
+                <>
 
-                    {/* "Follow theme" toggle */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setClothingColor(null)}
-                        className={cn(
-                          'px-3 py-1.5 rounded-md text-xs font-medium border transition-all',
-                          clothingColor === null
-                            ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-border text-muted-foreground hover:border-muted-foreground/40'
-                        )}
-                      >
-                        Follow theme
-                      </button>
-                      <div
-                        className="w-5 h-5 rounded-full border border-border shrink-0"
-                        style={{ backgroundColor: selectedColor }}
-                        title="Current theme color"
-                      />
-                    </div>
-
-                    {/* Palette override */}
-                    <div className="flex flex-wrap gap-2">
-                      {COLOR_PALETTE.map((color) => (
-                        <button
-                          key={color.hex}
-                          type="button"
-                          title={color.label}
-                          onClick={() => setClothingColor(color.hex)}
-                          className={cn(
-                            'w-8 h-8 rounded-full border-2 transition-all',
-                            clothingColor === color.hex
-                              ? 'border-foreground scale-110 shadow-md'
-                              : 'border-transparent hover:scale-105'
-                          )}
-                          style={{ backgroundColor: color.hex }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Live avatar preview */}
+                  {/* Live Avatar Preview */}
                   <Field>
                     <FieldLabel>Preview</FieldLabel>
                     <div
                       className="w-16 h-16 rounded-xl flex items-center justify-center shadow-sm border overflow-hidden"
-                      style={{ backgroundColor: effectiveClothingColor + '22', borderColor: effectiveClothingColor + '66' }}
+                      style={{
+                        backgroundColor: selectedColor + '22',
+                        borderColor: selectedColor + '66',
+                      }}
                     >
                       {selectedArchetype && (
                         <AvatarRenderer
                           archetypeId={selectedArchetype}
                           skinTone={skinTone}
-                          clothingColor={effectiveClothingColor}
                           size={56}
                         />
                       )}
@@ -474,19 +577,7 @@ export function CreateCharacterModal({
                             style={{ backgroundColor: skinTone }}
                           />
                           <span className="text-muted-foreground text-xs">
-                            {SKIN_TONES.find(t => t.value === skinTone)?.label} skin
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: effectiveClothingColor }}
-                          />
-                          <span className="text-muted-foreground text-xs">
-                            {clothingColor === null
-                              ? `${COLOR_PALETTE.find(c => c.hex === selectedColor)?.label ?? 'Theme'} (theme)`
-                              : COLOR_PALETTE.find(c => c.hex === clothingColor)?.label ?? 'Custom'}{' '}
-                            clothing
+                            {SKIN_TONE_LABELS[skinTone]} skin
                           </span>
                         </div>
                       </div>
