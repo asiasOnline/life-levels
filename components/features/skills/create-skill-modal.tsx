@@ -34,7 +34,7 @@ import {
 import { toast } from "sonner"
 import { FaPlus, FaXmark, FaCheck } from "react-icons/fa6";
 import { fetchActiveCharacters } from "@/lib/actions/characters"
-import { CharacterSummary } from "@/lib/types/character"
+import { CharacterSummaryWithLevel } from "@/lib/types/character"
 
 // ==========================================
 // ZOD SCHEMA
@@ -73,7 +73,7 @@ interface CreateSkillModalProps {
     isOpen: boolean
     onClose: (open: boolean) => void
     onSkillCreated: () => void
-    availableCharacters: CharacterSummary[]
+    availableCharacters: CharacterSummaryWithLevel[]
 }
 
 // ===============================

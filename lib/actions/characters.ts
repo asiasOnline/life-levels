@@ -1,3 +1,4 @@
+
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/lib/database.types'
 import { Json } from '@/lib/database.types'
@@ -26,7 +27,7 @@ type CharacterInsert = Database['public']['Tables']['characters']['Insert']
 type CharacterUpdate = Database['public']['Tables']['characters']['Update']
 
 type HabitStatus = Database["public"]["Enums"]["habit_status"]
-type TypeStatus = Database["public"]["Enums"]["task_status"]
+type TaskStatus = Database["public"]["Enums"]["task_status"]
 type GoalStatus = Database["public"]["Enums"]["goal_status"]
 
 // Raw shape returned by Supabase for the grid/list view (includes links with skills only).
@@ -58,7 +59,7 @@ type CharacterRowWithRelations = CharacterRowWithSkills & {
       id: string
       title: string 
       icon: Json
-      status: TypeStatus
+      status: TaskStatus
     } | null
   }[]
   goal_characters: {
@@ -85,14 +86,14 @@ type ActionResult<T> =
 const CHARACTER_WITH_SKILLS_SELECT = `
   *,
   skill_characters(
-    skills(id, title, icon)
+    skills(id, title, icon, level)
   )
 ` as const
 
 const CHARACTER_WITH_RELATIONS_SELECT = `
   *,
   skill_characters(
-    skills(id, title, icon)
+    skills(id, title, icon, level)
   ),
   habit_characters(
     habits(id, title, icon, status)
@@ -457,7 +458,13 @@ export async function updateCharacter(
     if (input.avatar      !== undefined) {
       characterUpdate.avatar = input.avatar as unknown as CharacterUpdate['avatar']
     }
-    if (input.icon        !== undefined) characterUpdate.icon        = input.icon as unknown as CharacterUpdate['icon']
+    if (input.icon !== undefined) {
+      characterUpdate.icon = {
+        value: input.icon,
+        type:  input.icon_type  ?? DEFAULT_ICON_TYPE,
+        color: input.icon_color ?? DEFAULT_ICON_COLOR,
+      } as unknown as CharacterUpdate['icon']
+    }
  
     if (Object.keys(characterUpdate).length > 0) {
       const { error } = await supabase
@@ -577,9 +584,14 @@ export async function addXPToCharacter(
       error: authError,
     } = await supabase.auth.getUser()
  
-    if (authError || !user) return { success: false, error: 'Not authenticated' }
+    if (authError || !user) return { 
+      success: false, 
+      error: 'Not authenticated' }
  
-    const { data: character, error: fetchError } = await supabase
+    const { 
+      data: character, 
+      error: fetchError 
+    } = await supabase
       .from('characters')
       .select('level, current_xp, total_xp')
       .eq('id', id)
@@ -587,12 +599,16 @@ export async function addXPToCharacter(
       .single()
  
     if (fetchError || !character) {
-      return { success: false, error: fetchError?.message ?? 'Character not found' }
-    }
+      return { 
+        success: false, 
+        error: fetchError?.message ??         
+              'Character not found' 
+            }}
  
-    let newXP    = character.current_xp + xpGained
-    let newLevel = character.level
+    let newXP = character.current_xp + xpGained
     const previousLevel = character.level
+    let newLevel = character.level
+    
  
     // Recalculate threshold per iteration so multi-level-ups use the correct
     // XP requirement for each successive level.

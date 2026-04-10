@@ -46,11 +46,9 @@ import {
   SkinToneKey,
   DEFAULT_SKIN_TONE,
  } from '@/lib/types/character'
-import {  } from '@/lib/types/character'
 import { createCharacter } from '@/lib/actions/characters'
 import { cn } from '@/lib/utils/general'
 import { SkillSummary } from '@/lib/types/skills'
-import { FaCheck } from 'react-icons/fa6'
 import { toast } from "sonner" 
 
 // =======================================
@@ -119,7 +117,6 @@ interface CreateCharacterModalProps {
   onClose: (open: boolean) => void
   onCharacterCreated?: () => void
   characterLevel?: number // defaults to 1 for creation
-  availableSkills: SkillSummary[]
 }
 
 // =======================================

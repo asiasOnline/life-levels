@@ -1,4 +1,5 @@
 import { Aphrodite } from "./mythology/aphrodite"
+import { Ares } from "./mythology/ares"
 import { Artemis } from "./mythology/artemis"
 import { Athena } from "./mythology/athena"
 import { Chiron } from "./mythology/chiron"
@@ -6,6 +7,7 @@ import { Cyclops } from "./mythology/cyclops"
 import { Demeter } from "./mythology/demeter"
 import { Hephaestus } from "./mythology/hephaestus"
 import { Hercules } from "./mythology/hercules"
+import { Nike } from "./mythology/nike"
 import { Prometheus } from "./mythology/prometheus"
 import { Themis } from "./mythology/themis"
 import { Zeus } from "./mythology/zeus"
@@ -31,6 +33,12 @@ export const AVATAR_REGISTRY: AvatarArchetype[] = [
     label: 'Aphrodite',
     component: Aphrodite,
     tags: ['intellect', 'courage', 'leadership', 'strategy'],
+  },
+  {
+    id: 'ares',
+    label: 'Ares',
+    component: Ares,
+    tags: ['battle', 'powerful', 'combat', 'physical'],
   },
   {
     id: 'artemis',
@@ -73,6 +81,12 @@ export const AVATAR_REGISTRY: AvatarArchetype[] = [
     label: 'Hercules',
     component: Hercules,
     tags: ['strength', 'perserverance', 'heroism', 'potential'],
+  },
+  {
+    id: 'nike',
+    label: 'Nike',
+    component: Nike,
+    tags: ['victory', 'triumph', 'contests', 'discipline'],
   },
   {
     id: 'prometheus',

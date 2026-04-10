@@ -1,7 +1,7 @@
 import React from 'react'
 import SearchBar from './search-bar'
 import { IoMdNotifications, IoMdSunny } from "react-icons/io";
-import { FaGear } from "react-icons/fa6";
+import SettingsMenu from './settings-menu';
 
 const TopNav = () => {
   return (
@@ -12,7 +12,7 @@ const TopNav = () => {
           </div>
           <div className='flex items-center gap-8'>
             <IoMdNotifications className='w-6 h-6'/>
-            <FaGear className='w-5 h-5'/>
+            <SettingsMenu />
             <IoMdSunny className='w-6 h-6' />
           </div>
         </div>

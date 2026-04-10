@@ -5,6 +5,7 @@ import PageHeader from '@/components/layout/app/page-header'
 import ItemContainer from '@/components/layout/app/item-container'
 import { ItemContainerHeader, ViewMode } from '@/components/layout/app/item-container-header'
 import { HabitCard } from '@/components/features/habits/habit-card'
+import { HabitDetailModal } from '@/components/features/habits/habit-detail-modal'
 import { CreateHabitModal } from '@/components/features/habits/create-habit-modal'
 import { Button } from '@/components/ui/button'
 import { fetchHabits } from '@/lib/actions/habits'
@@ -135,8 +136,7 @@ export default function HabitPage() {
 
   // ── Handlers ───────────────────────────────
 
-  const handleCardClick = (id: string) => {
-    const habit = habits.find((h) => h.id === id) ?? null
+  const handleHabitClick = (habit: HabitWithRelations) => {
     setSelectedHabit(habit)
     setIsDetailModalOpen(true)
   }
@@ -144,6 +144,14 @@ export default function HabitPage() {
   const handleHabitCreated = () => {
     loadHabits()
     setIsCreateModalOpen(false)
+  }
+
+  function handleHabitUpdated() {
+    loadHabits()
+  }
+
+  function handleHabitDeleted() {
+    loadHabits()
   }
 
   // ==========================================
@@ -216,14 +224,16 @@ export default function HabitPage() {
                 </h2>
                 <div className={
                   viewMode === 'grid'
-                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
+                    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
                     : 'flex flex-col gap-2'
                 }>
                   {activeHabits.map((habit) => (
                     <HabitCard
                       key={habit.id}
                       habit={habit}
-                      onClick={handleCardClick}
+                      onClick={handleHabitClick}
+                      consistencyScore={habit.consistency_score}
+                      onCompleted={loadHabits}
                     />
                   ))}
                 </div>
@@ -245,7 +255,7 @@ export default function HabitPage() {
                     <HabitCard
                       key={habit.id}
                       habit={habit}
-                      onClick={handleCardClick}
+                      onClick={handleHabitClick}
                     />
                   ))}
                 </div>
@@ -267,7 +277,7 @@ export default function HabitPage() {
                     <HabitCard
                       key={habit.id}
                       habit={habit}
-                      onClick={handleCardClick}
+                      onClick={handleHabitClick}
                     />
                   ))}
                 </div>
@@ -287,15 +297,23 @@ export default function HabitPage() {
         availableCharacters={availableCharacters}
       />
 
-      {/* ── Detail modal ────────────────────────────────────
-          Wire in HabitDetailModal here once it is built.
-          <HabitDetailModal
-            habit={selectedHabit}
-            isOpen={isDetailModalOpen}
-            onClose={() => setIsDetailModalOpen(false)}
-            onHabitUpdated={fetchData}
-          />
-      ──────────────────────────────────────────────────────────────── */}
+      {/* ── Detail modal ────────────────────────────────────*/}
+      <HabitDetailModal
+        habit={selectedHabit}
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        onHabitUpdated={handleHabitUpdated}
+        onHabitDeleted={handleHabitDeleted}
+        onEditRequest={(habit) => {
+          // Wire to an EditHabitModal here once it is built.
+          // For now, close the detail modal so the user isn't stuck.
+          setIsDetailModalOpen(false)
+        }}
+        consistencyScore={
+          habits.find((h) => h.id === selectedHabit?.id)?.consistency_score ?? 0
+        }
+      />
+     
     </>
   )
 }

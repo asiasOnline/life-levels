@@ -5,6 +5,7 @@ import {
   DEFAULT_ICON_TYPE, 
   DEFAULT_ICON_COLOR  
  } from '@/lib/types/icon'
+import { awardGold } from './stats'
 import {
   Habit,
   HabitWithRelations,
@@ -20,6 +21,8 @@ import {
   calculateHabitResilienceAward,
 } from '@/lib/utils/habits'
 import type { SkillSummary } from '@/lib/types/skills'
+import { addXPToSkill } from './skills'
+import { addXPToCharacter } from './characters'
 import type { CharacterSummary } from '@/lib/types/character'
 
 // =============================================
@@ -223,8 +226,10 @@ export async function fetchHabits(): Promise<ActionResult<HabitWithRelations[]>>
   }
 }
 
+// =======================================
+// FETCH A SINGLE HABIT
+// =======================================
 /**
- * FETCH A SINGLE HABIT
  * Returns a single habit by ID with all relations hydrated.
  */
 export async function fetchHabitById(
@@ -264,8 +269,10 @@ export async function fetchHabitById(
   }
 }
 
+// =======================================
+// CREATE A NEW HABIT
+// =======================================
 /**
- * CREATE A NEW HABIT
  * Creates a new habit and links it to the provided skills, characters,
  * and optionally goals. Rewards default to algorithm output when
  * use_custom_xp is false or omitted.
@@ -384,8 +391,10 @@ export async function createHabit(
   }
 }
 
+// =======================================
+// UPDATE A HABIT
+// =======================================
 /**
- * UPDATE A HABIT.
  * Updates habit fields and/or replaces junction table links.
  * Only fields present on UpdateHabitInput are written — omitted fields are left unchanged. Junction tables use full-replacement delete-then-insert when the corresponding _ids array is provided; omitting an _ids array leaves those links untouched.
  * If recurrence or time_consumption changes and use_custom_xp is false,
@@ -518,12 +527,14 @@ export async function updateHabit(
   }
 }
 
-// =============================================================================
+// =======================================
 // ARCHIVE / PAUSE
-// Separate from updateHabit because status transitions have side-effects:
-// timestamp writes and consistency window freezing.
-// Reactivation: call updateHabit({ id, status: 'active' }).
-// =============================================================================
+// =======================================
+/**
+ * Separate from updateHabit because status transitions have side-effects:
+ * timestamp writes and consistency window freezing.
+ * Reactivation: call updateHabit({ id, status: 'active' }).
+ */
 
 export async function setHabitStatus(
   input: ArchiveHabitInput
@@ -561,10 +572,9 @@ export async function setHabitStatus(
   }
 }
 
-// =================================================
+// ===========================================
 // DELETE
-// =================================================
-
+// ===========================================
 /**
  * Permanently deletes a habit. Junction rows are removed automatically by
  * ON DELETE CASCADE. Gold and XP already awarded are retained by the user.
@@ -609,9 +619,9 @@ export async function deleteHabit(
   }
 }
 
-// =================================================
-// COMPLETE
-// =================================================
+// ==============================================
+// COMPLETE HABIT
+// ===========================================
 /**
  * Records a single habit completion and applies all stat effects:
  * Energy deduction (or Resilience if already at 0), Gold award,
@@ -633,14 +643,23 @@ export async function completeHabit(
   skill_xp_per_skill:   number
   energy_cost:          number
   resilience_awarded:   number
+  leveled_up_skills:     string[]
+  leveled_up_characters: string[]
 }>> {
   try {
     const supabase = createClient()
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) return { success: false, error: 'Not authenticated' }
+    const { 
+      data: { user }, 
+      error: authError 
+    } = await supabase.auth.getUser()
+    
+    if (authError || !user) return { 
+      success: false, 
+      error: 'Not authenticated' 
+    }
 
-    // ── Load habit + linked IDs ───────────────────────────────────────────
+    // ── Load habit + linked IDs ────────────
     const { data: habit, error: habitError } = await supabase
       .from('habits')
       .select(`
@@ -653,22 +672,27 @@ export async function completeHabit(
       .single()
 
     if (habitError || !habit) {
-      return { success: false, error: habitError?.message ?? 'Habit not found' }
+      return { 
+        success: false, 
+        error: habitError?.message 
+              ?? 'Habit not found' }
     }
 
     if (habit.status !== 'active') {
-      return { success: false, error: 'Only active habits can be completed.' }
+      return { 
+        success: false, 
+        error: 'Only active habits can be completed.' }
     }
 
-    const skillIds     = (habit.habit_skills     as { skill_id: string     }[]).map((r) => r.skill_id)
+    const skillIds = (habit.habit_skills as { skill_id: string }[]).map((r) => r.skill_id)
     const characterIds = (habit.habit_characters as { character_id: string }[]).map((r) => r.character_id)
 
     // Reward values are stored on the row — use them directly.
-    const characterXp = habit.custom_character_xp ?? 0
-    const skillXpEach = habit.custom_skill_xp     ?? 0  // already per-skill amount
-    const goldReward  = habit.gold_reward          ?? 0
+    const characterXp = habit.character_xp ?? 0
+    const skillXpEach = habit.skill_xp     ?? 0  // already per-skill amount
+    const goldReward  = habit.gold_reward  ?? 0
 
-    // ── Energy / Resilience ───────────────────────────────────────────────
+    // ── Energy / Resilience ──────────────────
     const { data: stats, error: statsError } = await supabase
       .from('user_stats')
       .select('energy_current')
@@ -714,28 +738,35 @@ export async function completeHabit(
       }
     }
 
-    // ── Gold ──────────────────────────────────────────────────────────────
+    // ── Gold ────────────────────────────────
     if (goldReward > 0) {
       await supabase.rpc('increment_gold', { user_id_input: user.id, amount: goldReward })
     }
 
-    // ── Character XP ──────────────────────────────────────────────────────
-    // Awarded in full to every linked Character (no split).
-    // Uncomment once addXPToCharacter import is confirmed non-circular:
-    //
-    // import { addXPToCharacter } from '@/lib/actions/characters'
-    // for (const characterId of characterIds) {
-    //   await addXPToCharacter(characterId, characterXp)
-    // }
+   // ── Character XP ─────────────────────────
+    // Each character receives the full amount — no split.
+    const leveledUpCharacters: string[] = []
+    if (characterXp > 0) {
+      for (const characterId of characterIds) {
+        const result = await addXPToCharacter(characterId, characterXp)
+        if (result.success && result.data.leveledUp) {
+          leveledUpCharacters.push(characterId)
+        }
+      }
+    }
 
-    // ── Skill XP ──────────────────────────────────────────────────────────
-    // skillXpEach is already the per-skill amount (divided at create/update).
-    // Uncomment once addXPToSkill import is confirmed non-circular:
-    //
-    // import { addXPToSkill } from '@/lib/actions/skills'
-    // for (const skillId of skillIds) {
-    //   await addXPToSkill(skillId, skillXpEach)
-    // }
+    // ── Skill XP ─────────────────────────────
+    // skillXpEach is the already-divided per-skill amount stored at creation.
+    const leveledUpSkills: string[] = []
+    if (skillXpEach > 0) {
+      for (const skillId of skillIds) {
+        const result = await addXPToSkill(skillId, skillXpEach)
+
+        if (result.success && result.data.leveledUp) {
+          leveledUpSkills.push(skillId)
+        }
+      }
+    }
 
     return {
       success: true,
@@ -745,6 +776,8 @@ export async function completeHabit(
         skill_xp_per_skill:   skillXpEach,
         energy_cost:          energyDeducted,
         resilience_awarded:   resilienceAwarded,
+        leveled_up_skills:     leveledUpSkills,
+        leveled_up_characters: leveledUpCharacters,
       },
     }
   } catch (err) {

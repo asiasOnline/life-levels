@@ -1,14 +1,12 @@
 'use client'
 
-import React, { useMemo } from 'react'
-import { Database } from '@/lib/database.types'
-import { IconData } from '@/lib/types/icon'
 import { renderIcon } from '@/lib/utils/icon'
 import { Character } from '@/lib/types/character'
 import { CharacterAvatarData } from '@/lib/types/character'
 import { AvatarRenderer } from './avatars/avatar-renderer'
 import { getProgressPercentage } from '@/lib/utils/character'
 import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
 import {
   Card, 
   CardContent, 
@@ -35,7 +33,6 @@ export function CharacterCard({
     className 
   }: CharacterCardProps) {
   const progressPercentage = getProgressPercentage(character.current_xp, character.xp_to_next_level)
-
   const avatar = character.avatar as CharacterAvatarData | null
 
   const handleClick = () => {
@@ -67,13 +64,13 @@ export function CharacterCard({
         {avatar && (
         <div className="flex flex-col items-center gap-3">
           <div
-            className="w-full rounded-tr-3xl rounded-br-3xl border overflow-hidden py-2 px-6"
+            className="w-full rounded-tr-3xl rounded-br-3xl border overflow-hidden py-2 px-4"
             style={{
               backgroundColor: character.color_theme  + '22',
               borderColor: character.color_theme  + '66',
             }}
           >
-            <div className='flex justify-center'>
+            <div className='flex justify-center min-h-24'>
             <AvatarRenderer
               archetypeId={avatar.archetype_id}
               skinTone={avatar.skin_tone as 'light' | 'mediumLight' | 'medium' | 'mediumDark' | 'deep'}
@@ -96,7 +93,7 @@ export function CharacterCard({
                 borderColor: character.color_theme + '55',
               }}
             >
-              {renderIcon(character.icon.value, character.icon.type, character.icon.color, 'w-6 h-6')}
+              {renderIcon(character.icon.value, character.icon.type, character.icon.color, 'w-5 h-5')}
             </div>
 
             {/* Title & Archive Badge */}
@@ -117,7 +114,7 @@ export function CharacterCard({
 
           {/* Level Badge */}
             <div
-              className="w-32 flex justify-center border shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold tabular-nums"
+              className="w-16 flex justify-center border shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold tabular-nums"
               style={{
                 backgroundColor: character.color_theme + '22',
                 color: character.color_theme,
@@ -129,23 +126,13 @@ export function CharacterCard({
           </div>
         </CardHeader>
 
-        {/* Description */}
-        <CardDescription>
-          {character.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-            {character.description}
-          </p>
-        )}
-        </CardDescription>
-
         {/* Spacer pushes XP bar to bottom */}
-        <div className="flex-1" />
-
+        <div />
         {/* XP progress */}
-        <div className="space-y-2 pt-4 px-6">
+        <div className="space-y-2 px-6">
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              {character.xp_to_next_level - character.current_xp} to level up!
+              {character.xp_to_next_level - character.current_xp}xp to level up!
               </div>
             <div className="text-sm text-muted-foreground">
               XP: {character.current_xp} / {character.xp_to_next_level}
@@ -159,13 +146,45 @@ export function CharacterCard({
               className="h-2" 
               style={{ backgroundColor: character.color_theme }} />
           </div>
-        </div>
-
-        {/* Total XP footnote */}
-        <CardFooter>
           <p className="text-xs text-muted-foreground text-right tabular-nums">
             {character.total_xp.toLocaleString()} total XP
           </p>
+        </div>
+
+        {/* Description */}
+        <CardDescription className="px-4 pt-2 text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+          {character.description && (
+          <p>
+            {character.description}
+          </p>
+        )}
+        </CardDescription>
+
+        {/* Linked Skills */}
+        <CardFooter className="flex flex-col px-4 items-start gap-2">
+          <p className='text-sm font-medium'>
+            {character.skills && character.skills.length > 0
+              ? 'Linked Skills:'
+              : 'No skills linked to this character.'}
+          </p>
+          {character.skills?.map((skill) => (
+            <div
+              key={skill.id}
+              className={`flex items-center gap-2 rounded-lg border p-2 text-left transition-colors`}
+              style={{borderColor:`${skill.icon.color}`}}
+            >
+              {renderIcon(skill.icon.value, skill.icon.type, skill.icon.color, 'w-4 h-4')}
+              <span className="text-xs font-medium truncate flex-1 max-w-32">
+                {skill.title}
+              </span>
+              <Badge 
+                variant="outline" 
+                className="text-xs"
+                style={{borderColor:`${skill.icon.color}`}}>
+                  Lv {skill.level}
+              </Badge>
+            </div>
+          )) }
         </CardFooter>
       </CardContent>
     </Card>

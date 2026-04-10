@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { fetchSkills, fetchSkillById } from "@/lib/actions/skills";
-import { CharacterSummary } from '@/lib/types/character'
+import { CharacterSummaryWithLevel } from '@/lib/types/character'
 import { fetchCharacters } from "@/lib/actions/characters";
 import { FaPlus } from "react-icons/fa6";
 
@@ -30,7 +30,7 @@ export default function SkillsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [selectedSkill, setSelectedSkill] = useState<SkillWithRelations | null>(null)
-  const [availableCharacters, setAvailableCharacters] = useState<CharacterSummary[]>([])
+  const [availableCharacters, setAvailableCharacters] = useState<CharacterSummaryWithLevel[]>([])
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
  const loadSkills = async () => {
@@ -61,6 +61,7 @@ export default function SkillsPage() {
             title: c.title,
             icon: c.icon,
             color_theme: c.color_theme,
+            level: c.level,
           }))
       )
     }
@@ -134,8 +135,9 @@ export default function SkillsPage() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
+      
       {/* Skills Display */}
-      {skills.length === 0 ? (
+      {!isLoading && skills.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg">
           {/* No Skills View */}
           <p className="text-muted-foreground mb-4">No skills yet</p>

@@ -14,7 +14,7 @@ import {
   UpdateSkillInput
 } from '../types/skills'
 import { calculateXPForLevel } from '@/lib/utils/skills'
-import { CharacterSummary } from '../types/character'
+import { CharacterSummaryWithLevel } from '../types/character'
 
 // =======================================
 //  INTERNAL DATABASE TYPES
@@ -36,6 +36,7 @@ type SkillRowWithCharacters = SkillRow & {
       title: string 
       icon: unknown
       color_theme: string 
+      level: number
     } | null
   }[]
 }
@@ -85,14 +86,14 @@ type ActionResult<T> =
 const SKILL_WITH_CHARACTERS_SELECT = `
   *,
   skill_characters(
-    characters(id, title, icon, color_theme)
+    characters(id, title, icon, color_theme, level)
   )
 ` as const
 
 const SKILL_WITH_RELATIONS_SELECT = `
   *,
   skill_characters(
-    characters(id, title, icon, color_theme)
+    characters(id, title, icon, color_theme, level)
   ),
   habit_skills(
     habits(id, title, icon, status)
@@ -106,9 +107,9 @@ const SKILL_WITH_RELATIONS_SELECT = `
 ` as const
 
  
-// ==============================================
+// =========================================
 // MAPPER
-// ==============================================
+// =========================================
 // ==============================================
 // SKILL & CHARACTER MAPPER
 // ===========================================
@@ -117,13 +118,14 @@ const SKILL_WITH_RELATIONS_SELECT = `
  * Used by fetchSkills for the grid/list view.
  */
 function mapRowToSkill(row: SkillRowWithCharacters): Skill {
-  const characters: CharacterSummary[] = (row.skill_characters ?? [])
+  const characters: CharacterSummaryWithLevel[] = (row.skill_characters ?? [])
     .filter((sc) => sc.characters !== null)
     .map((sc) => ({
       id: sc.characters!.id,
       title: sc.characters!.title,
       icon: sc.characters!.icon as unknown as IconData,
       color_theme: sc.characters!.color_theme,
+      level: sc.characters!.level,
     }))
  
   return {
@@ -501,16 +503,18 @@ export async function deleteSkill(
 // =======================================
 // ADD XP TO SKILL
 // =======================================
-/**-------------------------------------
- * Handles level-ups correctly including multi-level jumps in a single XP grant.
- * Each iteration recalculates the threshold for the new level — this prevents
- * the stale-threshold bug where all iterations used the originally fetched value.
- * -------------------------------------
+/**
+ * Handles level-ups correctly including 
+ * multi-level jumps in a single XP grant.
+ * Each iteration recalculates the threshold
+ * for the new level — this prevents
+ * the stale-threshold bug where all iterations
+ * used the originally fetched value.
  */
 export async function addXPToSkill(
   id: string,
   xpGained: number
-): Promise<ActionResult<SkillWithRelations>> {
+): Promise<ActionResult<SkillWithRelations & { leveledUp: boolean; newLevel: number }>> {
   try {
     const supabase = createClient()
  
@@ -519,9 +523,14 @@ export async function addXPToSkill(
       error: authError,
     } = await supabase.auth.getUser()
  
-    if (authError || !user) return { success: false, error: 'Not authenticated' }
+    if (authError || !user) return { 
+      success: false, 
+      error: 'Not authenticated' }
  
-    const { data: skill, error: fetchError } = await supabase
+    const { 
+      data: skill, 
+      error: fetchError 
+    } = await supabase
       .from('skills')
       .select('level, current_xp')
       .eq('id', id)
@@ -529,11 +538,16 @@ export async function addXPToSkill(
       .single()
  
     if (fetchError || !skill) {
-      return { success: false, error: fetchError?.message ?? 'Skill not found' }
-    }
+      return { 
+        success: false, 
+        error: fetchError?.message ?? 
+              'Skill not found'
+        }}
  
-    let newXP    = skill.current_xp + xpGained
+    let newXP = skill.current_xp + xpGained
+    const previousLevel = skill.level
     let newLevel = skill.level
+    
  
     // Recalculate the threshold on every iteration so multi-level-ups use
     // the correct XP requirement for each successive level.
@@ -557,7 +571,14 @@ export async function addXPToSkill(
     const result = await fetchSkillById(id)
     if (!result.success) return result
  
-    return { success: true, data: result.data }
+    return { 
+      success: true, 
+      data: {
+        ...result.data,
+        leveledUp: newLevel > previousLevel,
+        newLevel,
+      }, 
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unexpected error adding XP to skill'
     return { success: false, error: message }

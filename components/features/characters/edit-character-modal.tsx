@@ -171,6 +171,8 @@ export function EditCharacterModal({
         title: values.title,
         color_theme: values.color_theme,
         icon: values.icon ?? character.icon.value,
+        icon_type: values.iconType ?? character.icon.type,
+        icon_color: values.iconColor ?? character.icon.color,
         description: values.description || undefined,
         avatar,
       })
