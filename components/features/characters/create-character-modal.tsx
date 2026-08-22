@@ -284,36 +284,38 @@ export function CreateCharacterModal({
             {/* ─── BASICS TAB ─────────────────────────────────── */}
             <TabsContent value="basics" className="space-y-5 pt-2">
 
-              {/* Icon */}
-              <Field>
-                <FieldLabel htmlFor="chararcter-icon">Icon</FieldLabel>
-                <IconPicker
-                  currentIcon={form.watch('icon')}
-                  currentIconType={form.watch('iconType')}
-                  currentIconColor={form.watch('iconColor')}
-                  onIconChange={handleIconChange}
-                />
-                {form.formState.errors.icon && (
-                  <p className="text-sm text-destructive">
-                    {form.formState.errors.icon.message}
-                  </p>
-                )}
-              </Field>
+              <div className="w-full flex">
+                {/* Icon */}
+                <Field className="w-1/5 pr-4 space-y-2">
+                  <FieldLabel htmlFor="chararcter-icon">Icon</FieldLabel>
+                  <IconPicker
+                    currentIcon={form.watch('icon')}
+                    currentIconType={form.watch('iconType')}
+                    currentIconColor={form.watch('iconColor')}
+                    onIconChange={handleIconChange}
+                  />
+                  {form.formState.errors.icon && (
+                    <p className="text-sm text-destructive">
+                      {form.formState.errors.icon.message}
+                    </p>
+                  )}
+                </Field>
 
-              {/* Title */}
-              <Field className="space-y-2">
-                <FieldLabel htmlFor="title">
-                  Title <span className="text-destructive">*</span>
-                </FieldLabel>
-                <Input
-                  id="title"
-                  placeholder="e.g. Work Self, The Athlete, Aphrodite"
-                  {...form.register('title')}
-                />
-                {form.formState.errors.title && (
-                  <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
-                )}
-              </Field>
+                {/* Title */}
+                <Field className="w-2/3 pl-4 space-y-2">
+                  <FieldLabel htmlFor="title">
+                    Title <span className="text-destructive">*</span>
+                  </FieldLabel>
+                  <Input
+                    id="title"
+                    placeholder="e.g. Work Self, The Athlete, Aphrodite"
+                    {...form.register('title')}
+                  />
+                  {form.formState.errors.title && (
+                    <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
+                  )}
+                </Field>
+              </div>
 
               {/* Color Theme */}
               <Field className="space-y-3">
