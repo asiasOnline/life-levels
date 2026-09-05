@@ -14,10 +14,11 @@ interface NavLinkProps {
     href: string;
     label: string;
     icon: React.ComponentType<{ className?: string }>
+    iconSize?: string;
     expanded: boolean
 }
 
-const SideNavLink = ({href, label, icon: Icon, expanded}: NavLinkProps) => {
+const SideNavLink = ({href, label, icon: Icon, expanded, iconSize}: NavLinkProps) => {
     const pathname = usePathname()
     const isActive = pathname === href || pathname.startsWith(`${href}/`)
 
@@ -34,7 +35,7 @@ const SideNavLink = ({href, label, icon: Icon, expanded}: NavLinkProps) => {
         )}
         title={!expanded ? label : undefined} // Tooltip on hover when collapsed
     >
-    <Icon className='w-5 h-5'/>
+    <Icon className={iconSize}/>
     {expanded && <span className="whitespace-nowrap">{label}</span>}
     </Link>
   )

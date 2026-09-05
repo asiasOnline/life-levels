@@ -57,7 +57,6 @@ export function ItemContainerHeader({
       
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-12">
-          <h1 className="text-lg font-medium text-stone-500">{title}</h1>
         
           {/* Search */}
           <div className="w-120 flex-1 max-w-md">
@@ -77,13 +76,6 @@ export function ItemContainerHeader({
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          {/* Add Button */}
-          {onAddNew && (
-            <Button onClick={onAddNew}>
-              <Plus className="h-4 w-4 mr-2" />
-              {addButtonLabel}
-            </Button>
-          )}
 
           {/* Filter */}
           {showFilter && filterGroups.length > 0 && onFilterChange && (
@@ -117,6 +109,14 @@ export function ItemContainerHeader({
                 <List className="h-4 w-4" />
               </ToggleGroupItem>
             </ToggleGroup>
+          )}
+
+          {/* Add Button */}
+          {onAddNew && (
+            <Button onClick={onAddNew}>
+              <Plus className="h-4 w-4 mr-2" />
+              {addButtonLabel}
+            </Button>
           )}
 
         </div>

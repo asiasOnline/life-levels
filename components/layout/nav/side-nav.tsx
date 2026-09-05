@@ -3,9 +3,19 @@ import React from 'react'
 import Link from 'next/link'
 import { useState, useEffect } from 'react';
 import SideNavLink from './side-nav-link';
-import { GoSidebarExpand, GoSidebarCollapse } from "react-icons/go";
+import { PiArrowsClockwise } from "react-icons/pi";
+import { 
+  GoCheckbox, 
+  GoSidebarExpand, 
+  GoSidebarCollapse } from "react-icons/go";
 import { BiSolidDashboard, BiSolidChat } from "react-icons/bi";
-import { FaRotate, FaSquareCheck, FaStar, FaCircleArrowUp, FaUserGroup, FaRegCalendarDays } from "react-icons/fa6";
+import { 
+  FaRotate, 
+  FaSquareCheck, 
+  FaStar, 
+  FaCircleArrowUp, 
+  FaUserGroup, 
+  FaRegCalendarDays } from "react-icons/fa6";
 import { SiTarget } from "react-icons/si";
 import { cn } from '@/lib/utils/general'
 
@@ -28,9 +38,18 @@ const SideNav = () => {
   }, [])
 
   const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: BiSolidDashboard },
-    { href: '/habits', label: 'Habits', icon: FaRotate },
-    { href: '/tasks', label: 'Tasks', icon: FaSquareCheck },
+    { href: '/dashboard', 
+      label: 'Dashboard', 
+      icon: BiSolidDashboard, 
+      iconSize: 'w-5 h-5'},
+    { href: '/habits', 
+      label: 'Habits', 
+      icon: PiArrowsClockwise,
+      iconSize: 'w-5 h-5' },
+    { href: '/tasks', 
+      label: 'Tasks', 
+      icon: GoCheckbox,
+      iconSize: 'w-5 h-5' },
     { href: '/goals', label: 'Goals', icon: SiTarget },
     { href: '/rewards', label: 'Rewards', icon: FaStar },
     { href: '/skills', label: 'Skills', icon: FaCircleArrowUp },
@@ -79,6 +98,7 @@ const SideNav = () => {
               label={item.label}
               icon={item.icon}
               expanded={expanded}
+              iconSize={item.iconSize}
             />
           ))}
         </nav>

@@ -18,6 +18,7 @@ import {
   calculateConsistencyScore,
   getConsistencyWindowStart,
 } from '@/lib/utils/habits'
+import { PiArrowsClockwise } from "react-icons/pi";
 import { Plus, Repeat } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -161,6 +162,8 @@ export default function HabitPage() {
   return (
     <>
       <PageHeader
+        icon={PiArrowsClockwise}
+        iconSize='w-6 h-6'
         title="Habits"
         subtitle="Recurring activities that help develop consistent behaviors."
       />

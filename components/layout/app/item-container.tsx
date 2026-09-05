@@ -8,7 +8,7 @@ interface PageContainerProps {
 
 const ItemContainer = ({ children, className }: PageContainerProps) => {
   return (
-    <div className={cn('w-full rounded-lg border bg-card', className)}>
+    <div className={cn('w-full', className)}>
         {children}
     </div>
   )

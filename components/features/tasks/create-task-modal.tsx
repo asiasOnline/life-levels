@@ -112,11 +112,10 @@ const createTaskSchema = z.object({
   // STEP 3
   skillIds: z
     .array(z.string())
-    .min(1, 'At least 1 skill is required')
     .max(3, 'Maximum 3 skills allowed'),
-  character_ids: z
+  characterIds: z
     .array(z.string())
-    .min(1, 'At least one character required'),
+    .max(3, 'Maximum 3 skills allowed'),
   goldReward: z
     .number()
     .min(0)
@@ -179,14 +178,6 @@ function StepIndicator({ current }: { current: number }) {
           >
             {current > step.id ? <FaCheck className="w-3.5 h-3.5" /> : step.id}
           </div>
-          <span
-            className={cn(
-              'text-xs font-medium hidden sm:block',
-              current === step.id ? 'text-foreground' : 'text-muted-foreground'
-            )}
-          >
-            {step.label}
-          </span>
           {i < STEPS.length - 1 && (
             <div className={cn('w-6 h-px', current > step.id ? 'bg-violet-300' : 'bg-border')} />
           )}
@@ -307,7 +298,7 @@ export function CreateTaskModal({
         start_date: values.startDate,
         due_date: values.dueDate,
         skill_ids: values.skillIds,
-        character_ids: values.character_ids,
+        character_ids: values.characterIds,
         gold_reward: values.goldReward ?? getDefaultGoldReward(values.difficulty),
         use_custom_xp: values.useCustomXP,
         character_xp: values.characterXP ?? previewXP.characterXP,

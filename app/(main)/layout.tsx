@@ -17,7 +17,7 @@ export default async function AppLayout({
           <div className="w-full">
             <TopNav />
             <GoldProvider initialBalance={initialGold}>
-              <div className="h-full p-5 bg-stone-100">
+              <div className="h-full p-10 bg-neutral-50">
                 {children}
               </div>
             </GoldProvider>

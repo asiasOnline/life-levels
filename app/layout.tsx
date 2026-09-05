@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Gabarito, Lexend } from "next/font/google";
-import "./globals.css";
+import "./globals.css"
 
 const gabarito = Gabarito({
   subsets: ["latin"],

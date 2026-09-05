@@ -1,14 +1,7 @@
 'use client'
 
-import { 
-  useState, 
-  useEffect, 
-  useCallback
-} from 'react'
-import { 
-  useForm, 
-  Controller 
-} from 'react-hook-form'
+import { useState, useEffect, useCallback} from 'react'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import {
@@ -229,14 +222,6 @@ function StepIndicator({ current }: { current: number }) {
           >
             {current > step.id ? <Check className="w-3.5 h-3.5" /> : step.id}
           </div>
-          <span
-            className={cn(
-              'text-xs font-medium hidden sm:block',
-              current === step.id ? 'text-foreground' : 'text-muted-foreground'
-            )}
-          >
-            {step.label}
-          </span>
           {i < STEPS.length - 1 && (
             <div className={cn('w-6 h-px', current > step.id ? 'bg-violet-300' : 'bg-border')} />
           )}
@@ -466,9 +451,6 @@ export function CreateHabitModal({
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">New Habit</DialogTitle>
-          <DialogDescription>
-            Build a recurring routine that grows your skills over time.
-          </DialogDescription>
         </DialogHeader>
 
         <StepIndicator current={step} />
@@ -479,11 +461,11 @@ export function CreateHabitModal({
               STEP 1 — BASICS
           ================================ */}
           {step === 1 && (
-            <FieldSet className="space-y-5">
+            <FieldSet className="space-y-5 gap-4">
 
               <div className="flex items-start gap-3">
                 {/* Icon */}
-                <FieldGroup className='flex-1 min-w-20'>
+                <FieldGroup className='flex-1 min-w-12'>
                   <IconPicker
                     currentIcon={form.watch('icon') || DEFAULT_ICON.value}
                     currentIconType={form.watch('iconType') as IconType}
@@ -493,7 +475,7 @@ export function CreateHabitModal({
                  </FieldGroup>
                 
                 {/* Title */}
-                <FieldGroup className="min-w-0">
+                <FieldGroup className="min-w-0 gap-2">
                   <FieldLabel htmlFor="title" className="text-xs text-muted-foreground block">
                     Title <span className="text-destructive">*</span>
                   </FieldLabel>
@@ -512,7 +494,7 @@ export function CreateHabitModal({
               {/* Description */}
               <div>
                 <Label htmlFor="description" className="text-xs text-muted-foreground mb-1.5 block">
-                  Description <span className="text-muted-foreground/60">(optional)</span>
+                  Description
                 </Label>
                 <Textarea
                   id="description"
@@ -1124,7 +1106,9 @@ export function CreateHabitModal({
           {/* =================================
               NAVIGATION
           ================================= */}
+          
           <div className="flex items-center justify-between pt-2 border-t">
+            
             {step > 1 ? (
               <Button type="button" variant="ghost" onClick={retreat} className="gap-1.5">
                 <ChevronLeft className="w-4 h-4" /> Back

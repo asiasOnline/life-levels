@@ -140,7 +140,7 @@ export function IconPicker({
     : AVAILABLE_ICONS
 
   return (
-    <div className="flex flex-col items-center gap-1.5">
+    <div className="flex flex-col items-center gap-2">
 
       <span className="text-xs text-muted-foreground">{label}</span>
       {/* Trigger button */}
@@ -148,8 +148,8 @@ export function IconPicker({
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          'group relative flex items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200',
-          'w-16 h-16',
+          'group relative flex items-center justify-center rounded-lg border transition-all duration-200',
+          'w-12 h-12',
           hasIcon
             ? 'border-border bg-muted/40 hover:border-primary/60 hover:bg-muted/70'
             : 'border-border/60 bg-muted/20 hover:border-primary/40 hover:bg-muted/40'
@@ -159,7 +159,7 @@ export function IconPicker({
         {hasIcon ? (
           <>
             <div className="flex items-center justify-center w-10 h-10">
-              {renderIcon(currentIcon, currentIconType, currentIconColor, 'w-8 h-8')}
+              {renderIcon(currentIcon, currentIconType, currentIconColor, 'w-6 h-6')}
             </div>
             {/* Hover overlay */}
             <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/60 opacity-0 transition-opacity group-hover:opacity-100">

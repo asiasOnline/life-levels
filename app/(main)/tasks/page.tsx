@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { GoCheckbox } from "react-icons/go";
 import { FaPlus, FaXmark } from "react-icons/fa6";
 import { CharacterSummary } from "@/lib/types/character";
 import { fetchCharacters } from "@/lib/actions/characters";
@@ -128,8 +129,9 @@ export default function TaskPage() {
     return (
       <>
         <PageHeader 
+        icon={GoCheckbox}
+        iconSize="w-8 h-8"
         title="Tasks"
-        subtitle="Manage all of the tasks that must be completed to contribute to larger projects and goals."
         />
         <ItemContainer>
           <ItemContainerHeader
@@ -146,7 +148,7 @@ export default function TaskPage() {
 
            {/* Tasks Display */}
             {tasks.length === 0 ? (
-              <div className="flex flex-col items-center justify-center min-h-100 rounded-lg border border-dashed">
+              <div className="flex flex-col items-center justify-center min-h-100 rounded-lg">
                 <div className="text-center space-y-3">
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                     <FaPlus className="h-6 w-6 text-muted-foreground" />
