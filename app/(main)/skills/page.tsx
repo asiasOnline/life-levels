@@ -23,6 +23,7 @@ import { fetchSkills, fetchSkillById } from "@/lib/actions/skills";
 import { CharacterSummaryWithLevel } from '@/lib/types/character'
 import { fetchCharacters } from "@/lib/actions/characters";
 import { FaPlus } from "react-icons/fa6";
+import { RxDoubleArrowUp } from "react-icons/rx";
 
 export default function SkillsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
@@ -118,10 +119,12 @@ export default function SkillsPage() {
   
     return (
      <>
-      <PageHeader 
-        title="Skills"
-        subtitle="Track long-term mastery and capability development across all life contexts, with clear progression milestones that unlock meaningful rewards."
+      <PageHeader
+        icon={RxDoubleArrowUp}
+        iconSize='w-6 h-6'
+        title="Habits"
       />
+
       {/* Skill Log Container */}
       <ItemContainer>
       <ItemContainerHeader 

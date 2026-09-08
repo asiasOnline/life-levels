@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { FaPlus, FaXmark } from "react-icons/fa6";
 import { SkillSummary } from "@/lib/types/skills";
 import { fetchSkills } from "@/lib/actions/skills";
+import { HiOutlineUserGroup } from "react-icons/hi2";
 
 export default function CharactersPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
@@ -119,9 +120,10 @@ export default function CharactersPage() {
 
     return (
       <>
-        <PageHeader 
+        <PageHeader
         title="Characters"
-        subtitle="Create characters to define different versions of yourself."
+        icon={HiOutlineUserGroup}
+        iconSize='w-6 h-6'
       />
       {/* Character Log Container */}
       <ItemContainer>

@@ -165,7 +165,6 @@ export default function HabitPage() {
         icon={PiArrowsClockwise}
         iconSize='w-6 h-6'
         title="Habits"
-        subtitle="Recurring activities that help develop consistent behaviors."
       />
 
       <ItemContainer>

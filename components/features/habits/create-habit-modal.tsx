@@ -453,8 +453,6 @@ export function CreateHabitModal({
           <DialogTitle className="text-xl font-bold">New Habit</DialogTitle>
         </DialogHeader>
 
-        <StepIndicator current={step} />
-
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
           {/* ============================
@@ -1109,6 +1107,8 @@ export function CreateHabitModal({
           
           <div className="flex items-center justify-between pt-2 border-t">
             
+            <StepIndicator current={step} />
+
             {step > 1 ? (
               <Button type="button" variant="ghost" onClick={retreat} className="gap-1.5">
                 <ChevronLeft className="w-4 h-4" /> Back
