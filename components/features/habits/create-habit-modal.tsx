@@ -467,7 +467,7 @@ export function CreateHabitModal({
           {step === 1 && (
             <FieldSet className="space-y-5 gap-4">
 
-              <div className="flex items-start gap-3">
+              <div className="flex items-end gap-3">
                 {/* Icon */}
                 <FieldGroup className='flex-1 min-w-12'>
                   <IconPicker
@@ -508,19 +508,11 @@ export function CreateHabitModal({
                   className="resize-none"
                 />
               </div>
-            </FieldSet>
-          )}
 
-          {/* =================================
-              STEP 2 — SCHEDULE
-          ==============================*/}
-          {step === 2 && (
-            <FieldSet className="space-y-5">
-
-              {/* Recurrence pattern */}
+              {/* Repetition pattern */}
               <div>
                 <Label className="text-xs text-muted-foreground mb-1.5 block">
-                  Recurrence <span className="text-destructive">*</span>
+                  Repetition <span className="text-destructive">*</span>
                 </Label>
                 <Controller
                   name="recurrence"
@@ -775,6 +767,16 @@ export function CreateHabitModal({
                   </div>
                 </div>
               )}
+            </FieldSet>
+          )}
+
+          {/* =================================
+              STEP 2 — SCHEDULE
+          ==============================*/}
+          {step === 2 && (
+            <FieldSet className="space-y-5">
+
+              
 
               {/* Time consumption */}
               <div>
