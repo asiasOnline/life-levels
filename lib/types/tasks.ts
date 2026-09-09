@@ -142,8 +142,8 @@ export interface CreateTaskInput {
     start_date?: string
     due_date?: string
 
-    skill_ids:     string[];   // Min 1, max 3 — enforced by DB trigger + action guard
-    character_ids: string[];   // Min 1 — enforced by action guard
+    skill_ids?:     string[];   // Optional, max 3 — enforced by action guard
+    character_ids?: string[];   // Optional, max 3 — enforced by action guard
     goal_ids?:     string[];   // Optional parent Goals
     gold_reward: number
     use_custom_xp?: boolean

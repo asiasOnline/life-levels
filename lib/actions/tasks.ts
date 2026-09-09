@@ -304,20 +304,18 @@ export async function createTask(
   }
 
   // ── Application-layer guards ──────────────────────────────────────────
-  if (!input.skill_ids || input.skill_ids.length === 0) {
-      return { 
-        success: false, 
-        error: 'At least one skill must be assigned.' }
+  const skillIds = input.skill_ids ?? []
+  const characterIds = input.character_ids ?? []
+
+  if (skillIds.length > 3) {
+      return {
+        success: false,
+        error: 'A task cannot be assigned to more than 3 skills.' }
     }
-    if (input.skill_ids.length > 3) {
-      return { 
-        success: false, 
-        error: 'A habit cannot be assigned to more than 3 skills.' }
-    }
-    if (!input.character_ids || input.character_ids.length === 0) {
-      return { 
-        success: false, 
-        error: 'At least one character must be assigned.' }
+    if (characterIds.length > 3) {
+      return {
+        success: false,
+        error: 'A task cannot be assigned to more than 3 characters.' }
     }
 
     // ── Reward defaults ───────────────────────────────────────────────────
@@ -330,9 +328,9 @@ export async function createTask(
 
     if (!useCustom) {
       const rewards = calculateTaskXP(
-        input.difficulty, 
-        input.skill_ids.length, 
-        input.character_ids.length
+        input.difficulty,
+        skillIds.length,
+        characterIds.length
       )
       characterXp = rewards.characterXP
       skillXp = rewards.skillXP
@@ -374,23 +372,20 @@ export async function createTask(
         error: insertError?.message ?? 'Failed to create new task' }
     }
 
-  // Insert task-skill relationships
-  const taskSkills = input.skill_ids.map((skill_id) => ({
-    task_id: task.id,
-    skill_id,
-  }))
-
-  const { error: skillsError } = await supabase
-    .from('task_skills')
-    .insert(taskSkills)
-
-  if (skillsError) {
-    // Rollback: delete the task if skill linking fails
+  // Insert task-skill and task-character relationships
+  try {
+    await syncTaskSkills(supabase, task.id, skillIds)
+    await syncTaskCharacters(supabase, task.id, characterIds)
+  } catch (linkError) {
+    // Rollback: delete the task if linking fails
     await supabase
-    .from('tasks')
-    .delete().eq('id', task.id)
-    console.error('Error linking skills to task:', skillsError)
-    throw skillsError
+      .from('tasks')
+      .delete().eq('id', task.id)
+    throw linkError
+  }
+
+  if (input.goal_ids && input.goal_ids.length > 0) {
+    await syncTaskGoals(supabase, task.id, input.goal_ids)
   }
 
   const result = await fetchTaskById(task.id)
@@ -444,15 +439,10 @@ export async function updateTask(
   // ── Skill count for reward recalc ─────────────────────────────────────
     let currentSkillCount = 1
 
-    if (input.skill_ids) {
-      if (input.skill_ids.length === 0) {
-        return { 
-          success: false, 
-          error: 'At least one skill must be assigned.' }
-      }
+    if (input.skill_ids !== undefined) {
       if (input.skill_ids.length > 3) {
-        return { 
-          success: false, 
+        return {
+          success: false,
           error: 'A task cannot be assigned to more than 3 skills.' }
       }
       currentSkillCount = input.skill_ids.length
@@ -464,10 +454,12 @@ export async function updateTask(
       currentSkillCount = count ?? 1
     }
 
-    if (input.character_ids !== undefined && input.character_ids.length === 0) {
-      return { 
-        success: false, 
-        error: 'At least one character must be assigned.' }
+    if (input.character_ids !== undefined) {
+      if (input.character_ids.length > 3) {
+        return {
+          success: false,
+          error: 'A task cannot be assigned to more than 3 characters.' }
+      }
     }
 
   // ── Build the update payload ─────────────────────

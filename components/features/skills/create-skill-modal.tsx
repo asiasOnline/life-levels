@@ -14,6 +14,7 @@ import {
 import {
     Field,
     FieldDescription,
+    FieldSet,
     FieldGroup,
     FieldLabel,
 } from "@/components/ui/field"
@@ -35,15 +36,30 @@ import { toast } from "sonner"
 import { FaPlus, FaXmark, FaCheck } from "react-icons/fa6";
 import { fetchActiveCharacters } from "@/lib/actions/characters"
 import { CharacterSummaryWithLevel } from "@/lib/types/character"
+import { HabitSummary } from "@/lib/types/habits"
+import { TaskSummary } from "@/lib/types/tasks"
+import { GoalSummary } from "@/lib/types/goals"
+
+// ==========================================
+// CONSTANTS
+// ==========================================
+
+const STEPS = [
+  { id: 1, label: 'Basics'   },
+  { id: 2, label: 'Setup' },
+  { id: 3, label: 'Assign'   },
+  { id: 4, label: 'Review'  },
+] as const
 
 // ==========================================
 // ZOD SCHEMA
 // ==========================================
 
 const createSkillSchema = z.object({
+  // STEP 1
     title: z
     .string()
-    .min(1, "Name is required"),
+    .min(1, "Skill title is required"),
     description: z
     .string()
     .optional(),
@@ -58,9 +74,22 @@ const createSkillSchema = z.object({
     tags: z
     .array(z.string())
     .optional(),
+
+    // STEP 2
+    starting_level: z
+    .number()
+    .optional(),
+    goldReward: z
+    .number()
+    .min(0)
+    .optional(),
     character_ids: z
     .array(z.string())
     .optional(),
+
+    // STEP 3
+    
+
 })
 
 type CreateSkillFormValues = z.infer<typeof createSkillSchema>
@@ -176,50 +205,51 @@ export function CreateSkillModal({
     }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={onClose}
+      >
+      <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto p-8">
         <DialogHeader>
-          <DialogTitle>Create New Skill</DialogTitle>
-          <DialogDescription>
-            Add a new skill to track your progress and earn XP.
-          </DialogDescription>
+          <DialogTitle className="text-2xl">Create New Skill</DialogTitle>
         </DialogHeader>
 
           <form onSubmit={form.handleSubmit(onSubmit)}>
-          <FieldGroup>
-            {/* Icon Picker */}
-            <Field>
-              <FieldLabel htmlFor="skill-icon">Icon</FieldLabel>
-              <IconPicker
-                currentIcon={form.watch('icon')}
-                currentIconType={form.watch('iconType')}
-                currentIconColor={form.watch('iconColor')}
-                onIconChange={handleIconChange}
-              />
-              {form.formState.errors.icon && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.icon.message}
-                </p>
-              )}
-            </Field>
+          <FieldSet>
+            <div className="flex items-end gap-6">
+              {/* Icon Picker */}
+              <FieldGroup className='flex-1 min-w-12'>
+                <IconPicker
+                  currentIcon={form.watch('icon')}
+                  currentIconType={form.watch('iconType')}
+                  currentIconColor={form.watch('iconColor')}
+                  onIconChange={handleIconChange}
+                />
+                {form.formState.errors.icon && (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.icon.message}
+                  </p>
+                )}
+              </FieldGroup>
 
-            {/* Title Field */}
-            <Field>
-              <FieldLabel htmlFor="skill-title">Title *</FieldLabel>
-              <Input
-                id="skill-title"
-                placeholder="e.g., Guitar Playing"
-                {...form.register('title')}
-              />
-              {form.formState.errors.title && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.title.message}
-                </p>
-              )}
-            </Field>
+              {/* Title Field */}
+              <Field className="grow">
+                <FieldLabel htmlFor="skill-title" className="font-normal">Skill Title *</FieldLabel>
+                <Input
+                  id="skill-title"
+                  placeholder="e.g., Guitar Playing"
+                  {...form.register('title')}
+                />
+                {form.formState.errors.title && (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.title.message}
+                  </p>
+                )}
+              </Field>
+            </div>
 
             {/* Description Field */}
-            <Field>
+            <FieldGroup className="min-w-0 gap-2">
               <FieldLabel htmlFor="skill-description">Description</FieldLabel>
               <Textarea
                 id="skill-description"
@@ -233,7 +263,7 @@ export function CreateSkillModal({
                   {form.formState.errors.description.message}
                 </p>
               )}
-            </Field>
+            </FieldGroup>
 
             {/* Tags Field */}
             <Field>
@@ -324,7 +354,7 @@ export function CreateSkillModal({
                 Cancel
               </Button>
             </Field>
-          </FieldGroup>
+          </FieldSet>
         </form>
       </DialogContent>
     </Dialog>

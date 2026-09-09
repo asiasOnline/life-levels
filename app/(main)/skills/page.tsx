@@ -122,7 +122,7 @@ export default function SkillsPage() {
       <PageHeader
         icon={RxDoubleArrowUp}
         iconSize='w-6 h-6'
-        title="Habits"
+        title="Skills"
       />
 
       {/* Skill Log Container */}

@@ -45,6 +45,7 @@ import {
   isCustomRecurrenceTooFrequent,
 } from '@/lib/utils/habits'
 import { cn } from '@/lib/utils/general'
+import { renderIcon } from '@/lib/utils/icon'
 import { toast } from 'sonner'
 import {
   Check,
@@ -95,6 +96,7 @@ const STEPS = [
   { id: 2, label: 'Schedule' },
   { id: 3, label: 'Assign'   },
   { id: 4, label: 'Rewards'  },
+  { id: 5, label: 'Review'   },
 ] as const
 
 // ===============================
@@ -161,11 +163,10 @@ const createHabitSchema = z.object({
   // STEP 3
   skill_ids: z
     .array(z.string())
-    .min(1, 'At least one skill required')
     .max(3, 'Max 3 skills'),
   character_ids: z.
     array(z.string())
-    .min(1, 'At least one character required'),
+    .max(3, 'Max 3 characters'),
   goal_ids: z
     .array(z.string())
     .optional(),
@@ -348,7 +349,7 @@ export function CreateHabitModal({
 
   const advance = async () => {
     const valid = await validateStep(step)
-    if (valid) setStep((s) => Math.min(s + 1, 4))
+    if (valid) setStep((s) => Math.min(s + 1, STEPS.length))
   }
   const retreat = () => setStep((s) => Math.max(s - 1, 1))
 
@@ -419,11 +420,13 @@ export function CreateHabitModal({
 
   const toggleCharacter = (id: string) => {
     const current = characterIds ?? []
-    setValue(
-      'character_ids',
-      current.includes(id) ? current.filter((c) => c !== id) : [...current, id],
-      { shouldValidate: true }
-    )
+    if (current.includes(id)) {
+      setValue('character_ids', current.filter((c) => c !== id), { shouldValidate: true })
+    } else if (current.length < 3) {
+      setValue('character_ids', [...current, id], { shouldValidate: true })
+    } else {
+      toast.error('You can assign a maximum of 3 characters.')
+    }
   }
 
   const toggleXPerWeekDay = (day: number) => {
@@ -447,7 +450,10 @@ export function CreateHabitModal({
   // ===================================
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => !open && onClose()}
+    >
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">New Habit</DialogTitle>
@@ -854,7 +860,7 @@ export function CreateHabitModal({
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <Label className="text-xs text-muted-foreground">
-                    Skills <span className="text-destructive">*</span>
+                    Skills <span className="text-muted-foreground">(optional)</span>
                   </Label>
                   <span className={cn(
                     'text-xs tabular-nums',
@@ -864,7 +870,7 @@ export function CreateHabitModal({
                   </span>
                 </div>
                 {availableSkills.length === 0 ? (
-                  <p className="text-sm text-muted-foreground italic">No skills found. Create a skill first.</p>
+                  <p className="text-sm text-muted-foreground italic">No skills yet. You can create one later and link it from this habit.</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {availableSkills.map((skill) => {
@@ -903,26 +909,17 @@ export function CreateHabitModal({
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <Label className="text-xs text-muted-foreground">
-                    Characters <span className="text-destructive">*</span>
+                    Characters <span className="text-muted-foreground">(optional)</span>
                   </Label>
-                  {availableCharacters.length > 1 && (
-                    <button
-                      type="button"
-                      className="text-xs text-violet-600 hover:underline"
-                      onClick={() => {
-                        const allIds = availableCharacters.map((c) => c.id)
-                        const allSelected = allIds.every((id) => characterIds?.includes(id))
-                        setValue('character_ids', allSelected ? [] : allIds, { shouldValidate: true })
-                      }}
-                    >
-                      {availableCharacters.every((c) => characterIds?.includes(c.id))
-                        ? 'Deselect all'
-                        : 'Select all'}
-                    </button>
-                  )}
+                  <span className={cn(
+                    'text-xs tabular-nums',
+                    (characterIds?.length ?? 0) >= 3 ? 'text-amber-600' : 'text-muted-foreground'
+                  )}>
+                    {characterIds?.length ?? 0} / 3
+                  </span>
                 </div>
                 {availableCharacters.length === 0 ? (
-                  <p className="text-sm text-muted-foreground italic">No characters found.</p>
+                  <p className="text-sm text-muted-foreground italic">No characters yet. You can create one later and link it from this habit.</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {availableCharacters.map((character) => {
@@ -1082,8 +1079,29 @@ export function CreateHabitModal({
                   </p>
                 </div>
               )}
+            </FieldSet>
+          )}
 
-              {/* Recurrence summary */}
+          {/* ================================
+              STEP 5 — REVIEW
+          ================================= */}
+          {step === 5 && (
+            <FieldSet className="space-y-5">
+
+              {/* Basics summary */}
+              <div className="rounded-xl border bg-muted/20 p-4 flex items-start gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-background border text-lg shrink-0">
+                  {renderIcon(watch('icon'), watch('iconType'), watch('iconColor'), 'w-5 h-5')}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold truncate">{watch('title')}</p>
+                  {watch('description') && (
+                    <p className="text-sm text-muted-foreground mt-0.5">{watch('description')}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Schedule summary */}
               <div className="rounded-xl border bg-muted/20 px-4 py-3 flex items-center gap-3">
                 <Repeat className="w-4 h-4 text-muted-foreground shrink-0" />
                 <div>
@@ -1095,9 +1113,91 @@ export function CreateHabitModal({
                       monthly_day:      watch('monthly_day'),
                       custom_recurrence_config: watch('custom_recurrence_config') as HabitCustomRecurrenceConfig,
                     })}
+                    {' · '}
+                    {timeConsumption >= 60
+                      ? `${Math.floor(timeConsumption / 60)}h ${timeConsumption % 60}m`
+                      : `${timeConsumption}m`}
+                    {watch('completion_time') ? ` · ${watch('completion_time')}` : ''}
                   </p>
                 </div>
               </div>
+
+              {/* Skills & characters summary */}
+              {((skillIds?.length ?? 0) > 0 || (characterIds?.length ?? 0) > 0) && (
+                <div className="space-y-3">
+                  {(skillIds?.length ?? 0) > 0 && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Skills</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {availableSkills.filter((s) => skillIds.includes(s.id)).map((skill) => (
+                          <span
+                            key={skill.id}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border bg-muted/40 text-sm font-medium"
+                          >
+                            <span className="text-base leading-none">
+                              {skill.icon.type === 'emoji' ? skill.icon.value : '⚡'}
+                            </span>
+                            {skill.title}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(characterIds?.length ?? 0) > 0 && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1.5 block">Characters</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {availableCharacters.filter((c) => characterIds.includes(c.id)).map((character) => (
+                          <span
+                            key={character.id}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-white text-sm font-medium"
+                            style={{ backgroundColor: character.color_theme, borderColor: character.color_theme }}
+                          >
+                            <span className="text-base leading-none">
+                              {character.icon.type === 'emoji' ? character.icon.value : '👤'}
+                            </span>
+                            {character.title}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Rewards summary */}
+              <div className="rounded-xl border bg-muted/30 p-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                  Rewards
+                </p>
+                <div className="flex gap-3 flex-wrap">
+                  <RewardPill
+                    icon={<Star className="w-4 h-4 text-amber-500" />}
+                    label="Char. XP"
+                    value={useCustomXp ? (watch('custom_character_xp') ?? 0) : algorithmRewards.character_xp}
+                  />
+                  <RewardPill
+                    icon={<Zap className="w-4 h-4 text-violet-500" />}
+                    label={`Skill XP${(skillIds?.length ?? 1) > 1 ? ' ea.' : ''}`}
+                    value={useCustomXp ? (watch('custom_skill_xp') ?? 0) : perSkillXp}
+                  />
+                  <RewardPill
+                    icon={<Coins className="w-4 h-4 text-yellow-500" />}
+                    label="Gold"
+                    value={useCustomXp ? (watch('gold_reward') ?? 0) : algorithmRewards.gold}
+                  />
+                  <RewardPill
+                    icon={<Zap className="w-4 h-4 text-blue-500" />}
+                    label="Energy"
+                    value={`-${algorithmRewards.energy_cost}`}
+                  />
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground text-center">
+                Review the details above, then create your habit.
+              </p>
             </FieldSet>
           )}
 
@@ -1105,37 +1205,39 @@ export function CreateHabitModal({
               NAVIGATION
           ================================= */}
           
-          <div className="flex items-center justify-between pt-2 border-t">
-            
+          <div className="space-y-3 pt-2 border-t">
+
             <StepIndicator current={step} />
 
-            {step > 1 ? (
-              <Button type="button" variant="ghost" onClick={retreat} className="gap-1.5">
-                <ChevronLeft className="w-4 h-4" /> Back
-              </Button>
-            ) : (
-              <Button type="button" variant="ghost" onClick={onClose}>
-                Cancel
-              </Button>
-            )}
+            <div className="flex items-center justify-between">
+              {step > 1 ? (
+                <Button type="button" variant="ghost" onClick={retreat} className="gap-1.5">
+                  <ChevronLeft className="w-4 h-4" /> Back
+                </Button>
+              ) : (
+                <Button type="button" variant="ghost" onClick={onClose}>
+                  Cancel
+                </Button>
+              )}
 
-            {step < 4 ? (
-              <Button type="button" onClick={advance} className="gap-1.5">
-                Next <ChevronRight className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button type="submit" disabled={isSubmitting} className="gap-1.5 min-w-25">
-                {isSubmitting ? (
-                  <span className="flex items-center gap-1.5">
-                    <span className="animate-spin">⟳</span> Creating…
-                  </span>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4" /> Create Habit
-                  </>
-                )}
-              </Button>
-            )}
+              {step < STEPS.length ? (
+                <Button type="button" onClick={advance} className="gap-1.5">
+                  Next <ChevronRight className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button type="submit" disabled={isSubmitting} className="gap-1.5 min-w-25">
+                  {isSubmitting ? (
+                    <span className="flex items-center gap-1.5">
+                      <span className="animate-spin">⟳</span> Creating…
+                    </span>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" /> Create Habit
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
 
         </form>

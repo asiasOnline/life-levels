@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -32,104 +32,51 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { IconPicker } from "@/components/layout/app/icon-picker"
-import { 
-  IconType, 
-  DEFAULT_ICON, 
-  DEFAULT_ICON_TYPE, 
-  DEFAULT_ICON_COLOR 
-} from "@/lib/types/icon"
-import { toast } from "sonner" 
+import { IconPicker } from '@/components/layout/app/icon-picker'
 import {
-  TASK_STATUS,
+  IconType,
+  DEFAULT_ICON,
+  DEFAULT_ICON_TYPE,
+  DEFAULT_ICON_COLOR,
+} from '@/lib/types/icon'
+import { toast } from 'sonner'
+import {
   TASK_PRIORITY,
   TASK_DIFFICULTY,
   TASK_PRIORITY_LABELS,
   TASK_DIFFICULTY_LABELS,
-  TASK_STATUS_LABELS,
-  CreateTaskInput,
+  TaskWithRelations,
+  UpdateTaskInput,
 } from '@/lib/types/tasks'
-import { 
-  getDefaultGoldReward, 
-  calculateTaskXP, 
-  validateSkillCount 
-} from '@/lib/utils/tasks'
-import { createTask } from '@/lib/actions/tasks'
+import { getDefaultGoldReward, calculateTaskXP } from '@/lib/utils/tasks'
+import { updateTask } from '@/lib/actions/tasks'
 import { SkillSummary } from '@/lib/types/skills'
 import { CharacterSummary } from '@/lib/types/character'
-import { FaCheck, FaRegCalendarDays, FaClock, FaCoins, FaStar, FaCircleArrowUp, FaUserGroup } from "react-icons/fa6";
+import { FaCoins, FaCircleArrowUp, FaUserGroup } from 'react-icons/fa6'
 import { cn } from '@/lib/utils/general'
-import { renderIcon } from '@/lib/utils/icon'
-
-// ==========================================
-// CONSTANTS
-// ==========================================
-
-const STEPS = [
-  { id: 1, label: 'Basics'   },
-  { id: 2, label: 'Schedule' },
-  { id: 3, label: 'Assign'   },
-  { id: 4, label: 'Rewards'  },
-] as const
 
 // ==========================================
 // ZOD SCHEMA
 // ==========================================
 
-const createTaskSchema = z.object({
-  // STEP 1
-  title: z
-    .string()
-    .min(1, 'Title is required')
-    .max(200, 'Title is too long'),
-  description: z
-    .string()
-    .max(500, 'Description is too long')
-    .optional(),
-  icon: z
-    .string()
-    .optional(),
-  iconType: z
-    .enum(['emoji', 'fontawesome', 'image']),
-  iconColor: z
-    .string()
-    .optional(),
+const editTaskSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200, 'Title is too long'),
+  description: z.string().max(500, 'Description is too long').optional(),
+  icon: z.string().optional(),
+  iconType: z.enum(['emoji', 'fontawesome', 'image']),
+  iconColor: z.string().optional(),
 
-  // STEP 2
-  status: z
-    .enum(['backlog', 'in_progress', 'paused', 'completed']),
-  priority: z
-    .enum(['critical', 'high', 'mid', 'low']),
-  difficulty: z
-    .enum(['easy', 'normal', 'hard', 'expert']),
-  startDate: z
-    .string()
-    .optional(),
-  dueDate: z
-    .string()
-    .optional(),
+  priority: z.enum(['critical', 'high', 'mid', 'low']),
+  difficulty: z.enum(['easy', 'normal', 'hard', 'expert']),
+  startDate: z.string().optional(),
+  dueDate: z.string().optional(),
 
-  // STEP 3
-  skillIds: z
-    .array(z.string())
-    .max(3, 'Maximum 3 skills allowed'),
-  characterIds: z
-    .array(z.string())
-    .max(3, 'Maximum 3 characters allowed'),
-  goldReward: z
-    .number()
-    .min(0)
-    .optional(),
-  useCustomXP: z
-    .boolean(),
-  characterXP: z
-    .number()
-    .min(0)
-    .optional(),
-  skillXP: z
-    .number()
-    .min(0)
-    .optional(),
+  skillIds: z.array(z.string()).max(3, 'Maximum 3 skills allowed'),
+  characterIds: z.array(z.string()).max(3, 'Maximum 3 characters allowed'),
+  goldReward: z.number().min(0).optional(),
+  useCustomXP: z.boolean(),
+  characterXP: z.number().min(0).optional(),
+  skillXP: z.number().min(0).optional(),
 }).refine(
   (data) => {
     if (data.startDate && data.dueDate) {
@@ -143,16 +90,17 @@ const createTaskSchema = z.object({
   }
 )
 
-type CreateTaskFormValues = z.infer<typeof createTaskSchema>
+type EditTaskFormValues = z.infer<typeof editTaskSchema>
 
 // ================================
 // PROPS
 // ================================
 
-interface CreateTaskModalProps {
+interface EditTaskModalProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
-  onTaskCreated: () => void
+  onTaskUpdated: () => void
+  task: TaskWithRelations | null
   availableSkills: SkillSummary[]
   availableCharacters: CharacterSummary[]
 }
@@ -161,57 +109,35 @@ interface CreateTaskModalProps {
 // HELPERS
 // ================================
 
-function StepIndicator({ current }: { current: number }) {
-  return (
-    <div className="flex items-center gap-2 mb-6">
-      {STEPS.map((step, i) => (
-        <div key={step.id} className="flex items-center gap-2">
-          <div
-            className={cn(
-              'flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold transition-colors',
-              current === step.id
-                ? 'bg-violet-600 text-white'
-                : current > step.id
-                ? 'bg-violet-200 text-violet-700'
-                : 'bg-muted text-muted-foreground'
-            )}
-          >
-            {current > step.id ? <FaCheck className="w-3.5 h-3.5" /> : step.id}
-          </div>
-          {i < STEPS.length - 1 && (
-            <div className={cn('w-6 h-px', current > step.id ? 'bg-violet-300' : 'bg-border')} />
-          )}
-        </div>
-      ))}
-    </div>
-  )
+function toDateInputValue(value: unknown): string {
+  if (!value) return ''
+  const date = value instanceof Date ? value : new Date(value as string)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toISOString().slice(0, 10)
 }
 
 // ===============================
 // MAIN COMPONENT
 // ===============================
 
-export function CreateTaskModal({
+export function EditTaskModal({
   isOpen,
   onOpenChange,
-  onTaskCreated,
+  onTaskUpdated,
+  task,
   availableSkills,
   availableCharacters,
-}: CreateTaskModalProps) {
+}: EditTaskModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isReviewing, setIsReviewing] = useState(false)
 
-  const form = useForm<CreateTaskFormValues>
-  ({
-    resolver: zodResolver
-    (createTaskSchema),
+  const form = useForm<EditTaskFormValues>({
+    resolver: zodResolver(editTaskSchema),
     defaultValues: {
       title: '',
       description: '',
       icon: DEFAULT_ICON,
       iconType: DEFAULT_ICON_TYPE as 'emoji' | 'fontawesome' | 'image',
       iconColor: DEFAULT_ICON_COLOR,
-      status: TASK_STATUS.BACKLOG,
       priority: TASK_PRIORITY.MID,
       difficulty: TASK_DIFFICULTY.NORMAL,
       startDate: '',
@@ -225,36 +151,35 @@ export function CreateTaskModal({
     },
   })
 
+  // Re-populate the form whenever a different task is opened for editing
+  useEffect(() => {
+    if (task && isOpen) {
+      form.reset({
+        title: task.title,
+        description: task.description ?? '',
+        icon: task.icon.value,
+        iconType: task.icon.type as 'emoji' | 'fontawesome' | 'image',
+        iconColor: task.icon.color ?? DEFAULT_ICON_COLOR,
+        priority: task.priority,
+        difficulty: task.difficulty,
+        startDate: toDateInputValue(task.start_date),
+        dueDate: toDateInputValue(task.due_date),
+        skillIds: task.skills.map((s) => s.id),
+        characterIds: task.characters.map((c) => c.id),
+        goldReward: task.gold_reward,
+        useCustomXP: task.use_custom_xp,
+        characterXP: task.character_xp,
+        skillXP: task.skill_xp,
+      })
+    }
+  }, [task, isOpen, form])
+
   const watchedDifficulty = form.watch('difficulty')
   const watchedSkillIds = form.watch('skillIds')
   const watchedCharacterIds = form.watch('characterIds')
   const watchedUseCustomXP = form.watch('useCustomXP')
   const watchedCustomCharacterXP = form.watch('characterXP')
   const watchedCustomSkillXP = form.watch('skillXP')
-
-  // Auto-calculate gold reward when difficulty changes
-  useEffect(() => {
-    if (watchedDifficulty && form.getValues('goldReward') === undefined) {
-      const defaultGold = getDefaultGoldReward(watchedDifficulty)
-      form.setValue('goldReward', defaultGold)
-    }
-  }, [watchedDifficulty])
-
-  // Reset on close
-  useEffect(() => {
-    if (!isOpen) {
-      setTimeout(() => {
-        form.reset()
-        setIsReviewing(false)
-      }, 200)
-    }
-  }, [isOpen])
-
-  const handleReview = async () => {
-    const valid = await form.trigger()
-    if (valid) setIsReviewing(true)
-    else toast.error('Please fix the highlighted fields before continuing.')
-  }
 
   const handleIconChange = (icon: string, iconType: IconType, iconColor?: string) => {
     form.setValue('icon', icon)
@@ -267,11 +192,7 @@ export function CreateTaskModal({
   const toggleSkillSelection = (skillId: string) => {
     const currentSkills = watchedSkillIds || []
     if (currentSkills.includes(skillId)) {
-      form.setValue(
-        'skillIds',
-        currentSkills.filter((id) => id !== skillId),
-        { shouldValidate: true }
-      )
+      form.setValue('skillIds', currentSkills.filter((id) => id !== skillId), { shouldValidate: true })
     } else if (currentSkills.length < 3) {
       form.setValue('skillIds', [...currentSkills, skillId], { shouldValidate: true })
     } else {
@@ -282,11 +203,7 @@ export function CreateTaskModal({
   const toggleCharacterSelection = (characterId: string) => {
     const currentCharacters = watchedCharacterIds || []
     if (currentCharacters.includes(characterId)) {
-      form.setValue(
-        'characterIds',
-        currentCharacters.filter((id) => id !== characterId),
-        { shouldValidate: true }
-      )
+      form.setValue('characterIds', currentCharacters.filter((id) => id !== characterId), { shouldValidate: true })
     } else if (currentCharacters.length < 3) {
       form.setValue('characterIds', [...currentCharacters, characterId], { shouldValidate: true })
     } else {
@@ -294,21 +211,29 @@ export function CreateTaskModal({
     }
   }
 
-  const onSubmit = async (values: CreateTaskFormValues) => {
+  const previewXP = watchedUseCustomXP
+    ? {
+        characterXP: watchedCustomCharacterXP ?? 0,
+        skillXP: watchedCustomSkillXP ?? 0,
+      }
+    : calculateTaskXP(watchedDifficulty, watchedSkillIds.length, watchedCharacterIds.length)
+
+  const onSubmit = async (values: EditTaskFormValues) => {
+    if (!task) return
     setIsSubmitting(true)
 
     try {
-      const input: CreateTaskInput = {
+      const input: UpdateTaskInput = {
+        id: task.id,
         title: values.title,
         description: values.description,
         icon: values.icon || DEFAULT_ICON,
         icon_type: values.iconType,
         icon_color: values.iconColor,
-        status: values.status,
         priority: values.priority,
         difficulty: values.difficulty,
-        start_date: values.startDate,
-        due_date: values.dueDate,
+        start_date: values.startDate || undefined,
+        due_date: values.dueDate || undefined,
         skill_ids: values.skillIds,
         character_ids: values.characterIds,
         gold_reward: values.goldReward ?? getDefaultGoldReward(values.difficulty),
@@ -317,50 +242,37 @@ export function CreateTaskModal({
         skill_xp: values.skillXP ?? previewXP.skillXP,
       }
 
-      const result = await createTask(input)
+      const result = await updateTask(input)
 
       if (!result.success) {
         toast.error(result.error)
         return
       }
 
-      toast.success(`${values.title} has been created.`)
-
-      form.reset()
+      toast.success(`"${values.title}" has been updated.`)
       onOpenChange(false)
-      onTaskCreated()
+      onTaskUpdated()
     } catch (error) {
-      console.error('Error creating task:', error)
-      toast.error("Failed to create task. Please try again.")
+      console.error('Error updating task:', error)
+      toast.error('Failed to update task. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  // Calculate preview XP values
-  const previewXP = watchedUseCustomXP
-    ? {
-        characterXP: watchedCustomCharacterXP ?? 0,
-        skillXP: watchedCustomSkillXP ?? 0,
-      }
-    : calculateTaskXP(watchedDifficulty, watchedSkillIds.length, watchedCharacterIds.length)
+  if (!task) return null
 
   return (
-    <Dialog 
-      open={isOpen} 
-      onOpenChange={onOpenChange}
-    >
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
+          <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>
-            Add a one-time activity to track and complete
+            Update this task&apos;s details, or link skills and characters to it now
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {!isReviewing && (
-        <>
           {/* Icon Picker */}
           <FieldGroup>
             <FieldLabel>Icon</FieldLabel>
@@ -376,10 +288,7 @@ export function CreateTaskModal({
           {/* Title */}
           <FieldGroup>
             <FieldLabel>Title *</FieldLabel>
-            <Input
-              {...form.register('title')}
-              placeholder="e.g., Review Q4 budget report"
-            />
+            <Input {...form.register('title')} placeholder="e.g., Review Q4 budget report" />
             <FieldError>{form.formState.errors.title?.message}</FieldError>
           </FieldGroup>
 
@@ -394,33 +303,13 @@ export function CreateTaskModal({
             <FieldError>{form.formState.errors.description?.message}</FieldError>
           </FieldGroup>
 
-          {/* Status, Priority, Difficulty Row */}
-          <div className="grid grid-cols-3 gap-4">
-            <FieldGroup>
-              <FieldLabel>Status</FieldLabel>
-              <Select
-                value={form.watch('status')}
-                onValueChange={(value) => form.setValue('status', value as any)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(TASK_STATUS_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FieldError>{form.formState.errors.status?.message}</FieldError>
-            </FieldGroup>
-
+          {/* Priority, Difficulty Row */}
+          <div className="grid grid-cols-2 gap-4">
             <FieldGroup>
               <FieldLabel>Priority *</FieldLabel>
               <Select
                 value={form.watch('priority')}
-                onValueChange={(value) => form.setValue('priority', value as any)}
+                onValueChange={(value) => form.setValue('priority', value as EditTaskFormValues['priority'])}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -440,7 +329,7 @@ export function CreateTaskModal({
               <FieldLabel>Difficulty *</FieldLabel>
               <Select
                 value={form.watch('difficulty')}
-                onValueChange={(value) => form.setValue('difficulty', value as any)}
+                onValueChange={(value) => form.setValue('difficulty', value as EditTaskFormValues['difficulty'])}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -461,19 +350,13 @@ export function CreateTaskModal({
           <div className="grid grid-cols-2 gap-4">
             <FieldGroup>
               <FieldLabel>Start Date</FieldLabel>
-              <Input
-                type="date"
-                {...form.register('startDate')}
-              />
+              <Input type="date" {...form.register('startDate')} />
               <FieldError>{form.formState.errors.startDate?.message}</FieldError>
             </FieldGroup>
 
             <FieldGroup>
               <FieldLabel>Due Date</FieldLabel>
-              <Input
-                type="date"
-                {...form.register('dueDate')}
-              />
+              <Input type="date" {...form.register('dueDate')} />
               <FieldError>{form.formState.errors.dueDate?.message}</FieldError>
             </FieldGroup>
           </div>
@@ -495,7 +378,7 @@ export function CreateTaskModal({
             {availableSkills.length === 0 ? (
               <div className="rounded-lg border border-dashed p-6 text-center">
                 <p className="text-sm text-muted-foreground">
-                  No skills yet. You can create one later and link it from this task.
+                  No skills yet. Create one from the Skills page, then come back to link it here.
                 </p>
               </div>
             ) : (
@@ -514,9 +397,7 @@ export function CreateTaskModal({
                       checked={watchedSkillIds.includes(skill.id)}
                       onCheckedChange={() => toggleSkillSelection(skill.id)}
                     />
-                    <span className="text-sm font-medium truncate flex-1">
-                      {skill.title}
-                    </span>
+                    <span className="text-sm font-medium truncate flex-1">{skill.title}</span>
                     <Badge variant="outline" className="text-xs">
                       Lv {skill.level}
                     </Badge>
@@ -544,7 +425,7 @@ export function CreateTaskModal({
             {availableCharacters.length === 0 ? (
               <div className="rounded-lg border border-dashed p-6 text-center">
                 <p className="text-sm text-muted-foreground">
-                  No characters yet. You can create one later and link it from this task.
+                  No characters yet. Create one from the Characters page, then come back to link it here.
                 </p>
               </div>
             ) : (
@@ -563,9 +444,7 @@ export function CreateTaskModal({
                       checked={watchedCharacterIds.includes(character.id)}
                       onCheckedChange={() => toggleCharacterSelection(character.id)}
                     />
-                    <span className="text-sm font-medium truncate flex-1">
-                      {character.title}
-                    </span>
+                    <span className="text-sm font-medium truncate flex-1">{character.title}</span>
                   </Field>
                 ))}
               </div>
@@ -579,31 +458,27 @@ export function CreateTaskModal({
               <h4 className="text-sm font-semibold">Rewards</h4>
               <div className="flex items-center gap-2">
                 <Checkbox
-                  id="use-custom-xp"
+                  id="edit-use-custom-xp"
                   checked={watchedUseCustomXP}
-                  onCheckedChange={(checked) =>
-                    form.setValue('useCustomXP', checked as boolean)
-                  }
+                  onCheckedChange={(checked) => form.setValue('useCustomXP', checked as boolean)}
                 />
-                <Label htmlFor="use-custom-xp" className="text-sm cursor-pointer">
+                <Label htmlFor="edit-use-custom-xp" className="text-sm cursor-pointer">
                   Use custom XP values
                 </Label>
               </div>
             </div>
 
-            {/* Gold Reward */}
             <FieldGroup>
               <FieldLabel>Gold Reward</FieldLabel>
               <Input
                 type="number"
                 min="0"
-                {...form.register('goldReward', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
+                {...form.register('goldReward', { valueAsNumber: true })}
                 placeholder={`Default: ${getDefaultGoldReward(watchedDifficulty)}`}
               />
               <FieldError>{form.formState.errors.goldReward?.message}</FieldError>
             </FieldGroup>
 
-            {/* Custom XP inputs */}
             {watchedUseCustomXP && (
               <div className="grid grid-cols-2 gap-4">
                 <FieldGroup>
@@ -611,12 +486,10 @@ export function CreateTaskModal({
                   <Input
                     type="number"
                     min="0"
-                    {...form.register('characterXP', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
+                    {...form.register('characterXP', { valueAsNumber: true })}
                     placeholder="Enter custom XP"
                   />
-                  <FieldError>
-                    {form.formState.errors.characterXP?.message}
-                  </FieldError>
+                  <FieldError>{form.formState.errors.characterXP?.message}</FieldError>
                 </FieldGroup>
 
                 <FieldGroup>
@@ -624,17 +497,14 @@ export function CreateTaskModal({
                   <Input
                     type="number"
                     min="0"
-                    {...form.register('skillXP', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
+                    {...form.register('skillXP', { valueAsNumber: true })}
                     placeholder="Enter custom XP"
                   />
-                  <FieldError>
-                    {form.formState.errors.skillXP?.message}
-                  </FieldError>
+                  <FieldError>{form.formState.errors.skillXP?.message}</FieldError>
                 </FieldGroup>
               </div>
             )}
 
-            {/* XP Preview */}
             <div className="flex items-center gap-4 pt-2 border-t">
               <div className="flex items-center gap-1.5 text-sm">
                 <FaCoins className="h-4 w-4 text-amber-400" />
@@ -657,148 +527,19 @@ export function CreateTaskModal({
               </div>
             </div>
           </div>
-        </>
-        )}
-
-        {/* ================================
-            REVIEW
-        ================================= */}
-        {isReviewing && (
-          <div className="space-y-6">
-            {/* Basics summary */}
-            <div className="rounded-lg border bg-muted/20 p-4 flex items-start gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-background border text-lg shrink-0">
-                {renderIcon(form.watch('icon'), form.watch('iconType'), form.watch('iconColor'), 'w-5 h-5')}
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold truncate">{form.watch('title')}</p>
-                {form.watch('description') && (
-                  <p className="text-sm text-muted-foreground mt-0.5">{form.watch('description')}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Status / priority / difficulty */}
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline">{TASK_STATUS_LABELS[form.watch('status')]}</Badge>
-              <Badge variant="outline">{TASK_PRIORITY_LABELS[form.watch('priority')]} priority</Badge>
-              <Badge variant="outline">{TASK_DIFFICULTY_LABELS[form.watch('difficulty')]}</Badge>
-            </div>
-
-            {/* Dates */}
-            {(form.watch('startDate') || form.watch('dueDate')) && (
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <FaRegCalendarDays className="h-4 w-4" />
-                {form.watch('startDate') && <span>Starts {form.watch('startDate')}</span>}
-                {form.watch('startDate') && form.watch('dueDate') && <span>—</span>}
-                {form.watch('dueDate') && <span>Due {form.watch('dueDate')}</span>}
-              </div>
-            )}
-
-            {/* Skills & characters summary */}
-            {(watchedSkillIds.length > 0 || watchedCharacterIds.length > 0) && (
-              <div className="space-y-3">
-                {watchedSkillIds.length > 0 && (
-                  <div>
-                    <Label className="text-xs text-muted-foreground mb-1.5 block">Skills</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {availableSkills.filter((s) => watchedSkillIds.includes(s.id)).map((skill) => (
-                        <span
-                          key={skill.id}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-muted/40 text-sm font-medium"
-                        >
-                          {skill.title}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {watchedCharacterIds.length > 0 && (
-                  <div>
-                    <Label className="text-xs text-muted-foreground mb-1.5 block">Characters</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {availableCharacters.filter((c) => watchedCharacterIds.includes(c.id)).map((character) => (
-                        <span
-                          key={character.id}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-muted/40 text-sm font-medium"
-                        >
-                          {character.title}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Rewards summary */}
-            <div className="rounded-lg border p-4">
-              <h4 className="text-sm font-semibold mb-3">Rewards</h4>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1.5 text-sm">
-                  <FaCoins className="h-4 w-4 text-amber-400" />
-                  <span className="text-muted-foreground">Gold:</span>
-                  <span className="font-semibold">
-                    {form.watch('goldReward') ?? getDefaultGoldReward(watchedDifficulty)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 text-sm">
-                  <FaUserGroup className="h-4 w-4 text-cyan-400" />
-                  <span className="text-muted-foreground">Char XP:</span>
-                  <span className="font-semibold">{previewXP.characterXP}</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-sm">
-                  <FaCircleArrowUp className="h-4 w-4 text-violet-400" />
-                  <span className="text-muted-foreground">Skill XP:</span>
-                  <span className="font-semibold">
-                    {previewXP.skillXP} × {watchedSkillIds.length} = {previewXP.skillXP * watchedSkillIds.length}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-xs text-muted-foreground text-center">
-              Review the details above, then create your task.
-            </p>
-          </div>
-        )}
 
           <DialogFooter>
-            {!isReviewing ? (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleReview}
-                >
-                  Review
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsReviewing(false)}
-                  disabled={isSubmitting}
-                >
-                  Back
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Creating...' : 'Create Task'}
-                </Button>
-              </>
-            )}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

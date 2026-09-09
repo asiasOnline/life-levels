@@ -64,6 +64,8 @@ interface TaskDetailModalProps {
   onClose: (isOpen: boolean) => void
   onTaskUpdated: () => void
   onTaskDeleted: () => void
+  // Passed from the page so the modal can open the edit form over itself
+  onEditRequest: (task: TaskWithRelations) => void
 }
 
 // =======================================
@@ -76,8 +78,8 @@ export function TaskDetailModal({
   onClose,
   onTaskUpdated,
   onTaskDeleted,
+  onEditRequest,
 }: TaskDetailModalProps) {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -143,7 +145,7 @@ export function TaskDetailModal({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setIsEditModalOpen(true)}
+                  onClick={() => onEditRequest(task)}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>

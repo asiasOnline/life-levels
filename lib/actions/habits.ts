@@ -279,7 +279,7 @@ export async function fetchHabitById(
  *
  * Validation enforced here (in addition to DB constraints):
  * - At least 1 and at most 3 skill IDs
- * - At least 1 character ID
+ * - At least 1 and at most 3 character IDs
  */
 export async function createHabit(
   input: CreateHabitInput
@@ -298,20 +298,18 @@ export async function createHabit(
     }
 
     // ── Application-layer guards ──────────────────────────────────────────
-    if (!input.skill_ids || input.skill_ids.length === 0) {
-      return { 
-        success: false, 
-        error: 'At least one skill must be assigned.' }
-    }
-    if (input.skill_ids.length > 3) {
-      return { 
-        success: false, 
+    const skillIds = input.skill_ids ?? []
+    const characterIds = input.character_ids ?? []
+
+    if (skillIds.length > 3) {
+      return {
+        success: false,
         error: 'A habit cannot be assigned to more than 3 skills.' }
     }
-    if (!input.character_ids || input.character_ids.length === 0) {
-      return { 
-        success: false, 
-        error: 'At least one character must be assigned.' }
+    if (characterIds.length > 3) {
+      return {
+        success: false,
+        error: 'A habit cannot be assigned to more than 3 characters.' }
     }
 
     // ── Reward defaults ───────────────────────────────────────────────────
@@ -326,13 +324,13 @@ export async function createHabit(
       const rewards = calculateHabitRewards(
         input.recurrence,
         input.time_consumption,
-        input.skill_ids.length,
+        skillIds.length,
         input.recurrence === 'custom' ? input.custom_recurrence_config : undefined
       )
       characterXp = rewards.character_xp
       // Store the per-skill amount (pool ÷ count) so completeHabit can award
       // each skill directly without re-running the split.
-      skillXp    = Math.floor(rewards.skill_xp / input.skill_ids.length)
+      skillXp    = Math.floor(rewards.skill_xp / Math.max(skillIds.length, 1))
       goldReward = rewards.gold
     }
 
@@ -375,8 +373,8 @@ export async function createHabit(
     }
 
     // ── Junction table writes ─────────────────────────────────────────────
-    await syncHabitSkills(supabase, habit.id, input.skill_ids)
-    await syncHabitCharacters(supabase, habit.id, input.character_ids)
+    await syncHabitSkills(supabase, habit.id, skillIds)
+    await syncHabitCharacters(supabase, habit.id, characterIds)
     if (input.goal_ids && input.goal_ids.length > 0) {
       await syncHabitGoals(supabase, habit.id, input.goal_ids)
     }
@@ -433,15 +431,10 @@ export async function updateHabit(
     // ── Skill count for reward recalc ─────────────────────────────────────
     let currentSkillCount = 1
 
-    if (input.skill_ids) {
-      if (input.skill_ids.length === 0) {
-        return { 
-          success: false, 
-          error: 'At least one skill must be assigned.' }
-      }
+    if (input.skill_ids !== undefined) {
       if (input.skill_ids.length > 3) {
-        return { 
-          success: false, 
+        return {
+          success: false,
           error: 'A habit cannot be assigned to more than 3 skills.' }
       }
       currentSkillCount = input.skill_ids.length
@@ -453,10 +446,12 @@ export async function updateHabit(
       currentSkillCount = count ?? 1
     }
 
-    if (input.character_ids !== undefined && input.character_ids.length === 0) {
-      return { 
-        success: false, 
-        error: 'At least one character must be assigned.' }
+    if (input.character_ids !== undefined) {
+      if (input.character_ids.length > 3) {
+        return {
+          success: false,
+          error: 'A habit cannot be assigned to more than 3 characters.' }
+      }
     }
 
     // ── Build the update payload ───────────────
@@ -491,7 +486,7 @@ export async function updateHabit(
       )
       habitUpdate.gold_reward  = rewards.gold
       habitUpdate.character_xp = rewards.character_xp
-      habitUpdate.skill_xp     = Math.floor(rewards.skill_xp / currentSkillCount)
+      habitUpdate.skill_xp     = Math.floor(rewards.skill_xp / Math.max(currentSkillCount, 1))
     }
 
     // Honour explicit custom reward overrides regardless of recalc

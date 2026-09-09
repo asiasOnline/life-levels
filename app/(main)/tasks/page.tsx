@@ -10,6 +10,7 @@ import { TaskWithRelations } from "@/lib/types/tasks";
 import TaskCard from "@/components/features/tasks/task-card";
 import { TaskTableRow } from "@/components/features/tasks/task-table-row";
 import { CreateTaskModal } from "@/components/features/tasks/create-task-modal";
+import { EditTaskModal } from "@/components/features/tasks/edit-task-modal";
 import { TaskDetailModal } from "@/components/features/tasks/task-detail-modal";
 import { 
   Table, 
@@ -36,6 +37,8 @@ export default function TaskPage() {
     const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [taskToEdit, setTaskToEdit] = useState<TaskWithRelations | null>(null)
 
     useEffect(() => {
     loadTasks()
@@ -110,6 +113,12 @@ export default function TaskPage() {
 
   function handleTaskUpdated() {
     loadTasks()
+  }
+
+  function handleEditRequest(task: TaskWithRelations) {
+    setTaskToEdit(task)
+    setIsDetailModalOpen(false)
+    setIsEditModalOpen(true)
   }
 
   function handleTaskDeleted() {
@@ -211,12 +220,23 @@ export default function TaskPage() {
             />
 
             {/* Skill Detail Modal */}
-            <TaskDetailModal 
+            <TaskDetailModal
               task={selectedTask}
               isOpen={isDetailModalOpen}
               onClose={setIsDetailModalOpen}
               onTaskUpdated={handleTaskUpdated}
               onTaskDeleted={handleTaskDeleted}
+              onEditRequest={handleEditRequest}
+            />
+
+            {/* Edit Task Modal */}
+            <EditTaskModal
+              isOpen={isEditModalOpen}
+              onOpenChange={setIsEditModalOpen}
+              onTaskUpdated={handleTaskUpdated}
+              task={taskToEdit}
+              availableSkills={availableSkills}
+              availableCharacters={availableCharacters}
             />
 
         </ItemContainer>

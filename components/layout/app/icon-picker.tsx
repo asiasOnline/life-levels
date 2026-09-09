@@ -142,7 +142,6 @@ export function IconPicker({
   return (
     <div className="flex flex-col items-center gap-2">
 
-      <span className="text-xs text-muted-foreground">{label}</span>
       {/* Trigger button */}
       <button
         type="button"
@@ -182,7 +181,7 @@ export function IconPicker({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+                  className="h-7 px-2 mr-8 text-xs text-muted-foreground hover:text-destructive"
                   onClick={handleRemove}
                 >
                   <X className="w-3 h-3 mr-1" />

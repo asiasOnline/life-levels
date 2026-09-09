@@ -1,6 +1,7 @@
 'use client'
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import SideNavLink from './side-nav-link';
 import { PiArrowsClockwise } from "react-icons/pi";
@@ -40,22 +41,31 @@ const SideNav = () => {
   const navItems = [
     { href: '/dashboard', 
       label: 'Dashboard', 
-      icon: BiSolidDashboard, 
-      iconSize: 'w-5 h-5'},
+      icon: '/icons/dashboard.svg'},
     { href: '/habits', 
       label: 'Habits', 
-      icon: PiArrowsClockwise,
-      iconSize: 'w-5 h-5' },
+      icon:'/icons/habit.svg'},
     { href: '/tasks', 
       label: 'Tasks', 
-      icon: GoCheckbox,
-      iconSize: 'w-5 h-5' },
-    { href: '/goals', label: 'Goals', icon: SiTarget },
-    { href: '/rewards', label: 'Rewards', icon: FaStar },
-    { href: '/skills', label: 'Skills', icon: FaCircleArrowUp },
-    { href: '/characters', label: 'Characters', icon: FaUserGroup },
-    { href: '/schedule', label: 'Schedule', icon: FaRegCalendarDays },
-    { href: '/community', label: 'Community', icon: BiSolidChat },
+      icon: '/icons/task.svg'},
+    { href: '/goals', 
+      label: 'Goals', 
+      icon: '/icons/goal.svg' },
+    { href: '/skills', 
+      label: 'Skills', 
+      icon: '/icons/skill.svg' },
+    { href: '/rewards', 
+      label: 'Rewards', 
+      icon: '/icons/star.svg' },
+    { href: '/characters', 
+      label: 'Characters', 
+      icon: '/icons/people.svg' },
+    { href: '/schedule', 
+      label: 'Schedule', 
+      icon: '/icons/calendar.svg' },
+    { href: '/community', 
+      label: 'Community', 
+      icon: '/icons/chat.svg' },
   ]
 
   return (
@@ -98,7 +108,6 @@ const SideNav = () => {
               label={item.label}
               icon={item.icon}
               expanded={expanded}
-              iconSize={item.iconSize}
             />
           ))}
         </nav>

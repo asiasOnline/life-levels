@@ -7,6 +7,7 @@ import { ItemContainerHeader, ViewMode } from '@/components/layout/app/item-cont
 import { HabitCard } from '@/components/features/habits/habit-card'
 import { HabitDetailModal } from '@/components/features/habits/habit-detail-modal'
 import { CreateHabitModal } from '@/components/features/habits/create-habit-modal'
+import { EditHabitModal } from '@/components/features/habits/edit-habit-modal'
 import { Button } from '@/components/ui/button'
 import { fetchHabits } from '@/lib/actions/habits'
 import { fetchSkills } from '@/lib/actions/skills'
@@ -46,6 +47,8 @@ export default function HabitPage() {
   const [selectedHabit, setSelectedHabit] = useState<HabitWithRelations | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [habitToEdit, setHabitToEdit] = useState<HabitWithRelations | null>(null)
 
   // ── Data fetching ──────────────────────────
 
@@ -153,6 +156,12 @@ export default function HabitPage() {
 
   function handleHabitDeleted() {
     loadHabits()
+  }
+
+  function handleEditRequest(habit: HabitWithRelations) {
+    setHabitToEdit(habit)
+    setIsDetailModalOpen(false)
+    setIsEditModalOpen(true)
   }
 
   // ==========================================
@@ -306,16 +315,22 @@ export default function HabitPage() {
         onClose={() => setIsDetailModalOpen(false)}
         onHabitUpdated={handleHabitUpdated}
         onHabitDeleted={handleHabitDeleted}
-        onEditRequest={(habit) => {
-          // Wire to an EditHabitModal here once it is built.
-          // For now, close the detail modal so the user isn't stuck.
-          setIsDetailModalOpen(false)
-        }}
+        onEditRequest={handleEditRequest}
         consistencyScore={
           habits.find((h) => h.id === selectedHabit?.id)?.consistency_score ?? 0
         }
       />
-     
+
+      {/* ── Edit modal ──────────────────────────*/}
+      <EditHabitModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onHabitUpdated={handleHabitUpdated}
+        habit={habitToEdit}
+        availableSkills={availableSkills}
+        availableCharacters={availableCharacters}
+      />
+
     </>
   )
 }
