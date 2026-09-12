@@ -265,8 +265,10 @@ export function CreateCharacterModal({
 // =======================================
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="w-5/6 sm:max-w-140 lg:max-w-240 max-h-[90vh] overflow-y-auto">
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={handleClose}>
+      <DialogContent className="max-w-lg max-h-[70vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>New Character</DialogTitle>
         </DialogHeader>
@@ -284,9 +286,9 @@ export function CreateCharacterModal({
             {/* ─── BASICS TAB ─────────────────────────────────── */}
             <TabsContent value="basics" className="space-y-5 pt-2">
 
-              <div className="w-full flex">
+              <div className="flex items-end gap-3">
                 {/* Icon */}
-                <Field className="w-1/5 pr-4 space-y-2">
+                <Field className='flex-1 min-w-12'>
                   <FieldLabel htmlFor="chararcter-icon">Icon</FieldLabel>
                   <IconPicker
                     currentIcon={form.watch('icon')}
@@ -302,9 +304,9 @@ export function CreateCharacterModal({
                 </Field>
 
                 {/* Title */}
-                <Field className="w-2/3 pl-4 space-y-2">
+                <Field className="min-w-0 gap-2">
                   <FieldLabel htmlFor="title">
-                    Title <span className="text-destructive">*</span>
+                    Title<span className="text-destructive">*</span>
                   </FieldLabel>
                   <Input
                     id="title"
@@ -320,7 +322,7 @@ export function CreateCharacterModal({
               {/* Color Theme */}
               <Field className="space-y-3">
                 <Label>
-                  Color Theme <span className="text-destructive">*</span>
+                  Color Theme<span className="text-destructive">*</span>
                 </Label>
                 {/* Preset Palette Colors */}
                 <div className="flex flex-wrap gap-2">

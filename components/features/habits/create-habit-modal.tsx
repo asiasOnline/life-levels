@@ -40,7 +40,8 @@ import { createHabit } from '@/lib/actions/habits'
 import {
   calculateHabitRewards,
   getRecurrenceLabel,
-  isUnusuallyLongHabit,
+  getTimeConsumptionLabel,
+  TIME_CONSUMPTION_OPTIONS,
   isCustomRecurrenceConfigComplete,
   isCustomRecurrenceTooFrequent,
 } from '@/lib/utils/habits'
@@ -154,8 +155,7 @@ const createHabitSchema = z.object({
   custom_recurrence_config:  customRecurrenceSchema
     .optional(),
   time_consumption: z
-    .number()
-    .min(1, 'Must be at least 1 minute'),
+    .enum(['quick', 'medium', 'extended', 'long']),
   completion_time: z
     .enum(['morning', 'afternoon', 'evening', 'overnight'])
     .optional(),
@@ -265,7 +265,7 @@ export function CreateHabitModal({
       iconType: DEFAULT_ICON.type as 'emoji' | 'fontawesome' | 'image',
       iconColor: undefined,
       recurrence:         'daily',
-      time_consumption:   15,
+      time_consumption:   'quick',
       skill_ids:          [],
       character_ids:      [],
       goal_ids:           [],
@@ -305,7 +305,7 @@ export function CreateHabitModal({
   // ── Algorithm preview ──────────────────────────────────────────────────
   const algorithmRewards = calculateHabitRewards(
     recurrence as HabitRecurrence,
-    timeConsumption ?? 15,
+    timeConsumption ?? 'quick',
     Math.max(1, skillIds?.length ?? 1),
     recurrence === 'custom' ? (customConfig as HabitCustomRecurrenceConfig | undefined) : undefined
   )
@@ -469,17 +469,17 @@ export function CreateHabitModal({
 
               <div className="flex items-end gap-3">
                 {/* Icon */}
-                <FieldGroup className='flex-1 min-w-12'>
+                <Field className='flex-1 min-w-12'>
                   <IconPicker
                     currentIcon={form.watch('icon') || DEFAULT_ICON.value}
                     currentIconType={form.watch('iconType') as IconType}
                     currentIconColor={form.watch('iconColor')}
                     onIconChange={handleIconChange}
                   />
-                 </FieldGroup>
+                 </Field>
                 
                 {/* Title */}
-                <FieldGroup className="min-w-0 gap-2">
+                <Field className="min-w-0 gap-2">
                   <FieldLabel htmlFor="title" className="text-xs text-muted-foreground block">
                     Title <span className="text-destructive">*</span>
                   </FieldLabel>
@@ -492,7 +492,7 @@ export function CreateHabitModal({
                   {errors.title && (
                     <p className="text-xs text-destructive">{errors.title.message}</p>
                   )}
-                </FieldGroup>
+                </Field>
               </div>
 
               {/* Description */}
@@ -781,39 +781,35 @@ export function CreateHabitModal({
               {/* Time consumption */}
               <div>
                 <Label htmlFor="time_consumption" className="text-xs text-muted-foreground mb-1.5 block">
-                  Average duration (minutes) <span className="text-destructive">*</span>
+                  Time it takes <span className="text-destructive">*</span>
                 </Label>
-                <div className="flex items-center gap-3">
-                  <Controller
-                    name="time_consumption"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
+                <Controller
+                  name="time_consumption"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger
                         id="time_consumption"
-                        type="number"
-                        min={1}
-                        className={cn('w-28', errors.time_consumption && 'border-destructive')}
-                        value={field.value ?? ''}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    )}
-                  />
-                  <span className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    {timeConsumption ? (
-                      timeConsumption >= 60
-                        ? `${Math.floor(timeConsumption / 60)}h ${timeConsumption % 60}m`
-                        : `${timeConsumption}m`
-                    ) : '—'}
-                  </span>
-                </div>
+                        className={cn('w-full', errors.time_consumption && 'border-destructive')}
+                      >
+                        <SelectValue placeholder="How long does this take?" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TIME_CONSUMPTION_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            <span className="flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                              {opt.label}
+                              <span className="text-xs text-muted-foreground">· {opt.hint}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.time_consumption && (
                   <p className="text-xs text-destructive mt-1">{errors.time_consumption.message}</p>
-                )}
-                {timeConsumption && isUnusuallyLongHabit(timeConsumption) && (
-                  <p className="text-xs text-amber-600 mt-1.5">
-                    That's over 8 hours — double-check this is intentional.
-                  </p>
                 )}
               </div>
 
@@ -1116,9 +1112,7 @@ export function CreateHabitModal({
                       custom_recurrence_config: watch('custom_recurrence_config') as HabitCustomRecurrenceConfig,
                     })}
                     {' · '}
-                    {timeConsumption >= 60
-                      ? `${Math.floor(timeConsumption / 60)}h ${timeConsumption % 60}m`
-                      : `${timeConsumption}m`}
+                    {getTimeConsumptionLabel(timeConsumption)}
                     {watch('completion_time') ? ` · ${watch('completion_time')}` : ''}
                   </p>
                 </div>

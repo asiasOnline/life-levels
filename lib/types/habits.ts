@@ -36,6 +36,15 @@ export const HABIT_COMPLETION_TIME = {
 
 export type HabitCompletionTime = typeof HABIT_COMPLETION_TIME[keyof typeof HABIT_COMPLETION_TIME];
 
+export const HABIT_TIME_CONSUMPTION = {
+  QUICK: 'quick',
+  MEDIUM: 'medium',
+  EXTENDED: 'extended',
+  LONG: 'long',
+} as const;
+
+export type HabitTimeConsumption = typeof HABIT_TIME_CONSUMPTION[keyof typeof HABIT_TIME_CONSUMPTION]
+
 // =================================================
 // CUSTOM RECURRENCE CONFIG
 // Structured JSONB stored in habits.custom_recurrence_config.
@@ -87,7 +96,7 @@ export interface Habit {
   custom_recurrence_config?: HabitCustomRecurrenceConfig; // Only when recurrence = 'custom'
 
   // Scheduling
-  time_consumption:  number;              // Average minutes; always > 0
+  time_consumption:  HabitTimeConsumption;             
   completion_time?:  HabitCompletionTime;
 
   // Rewards
@@ -134,7 +143,7 @@ export interface CreateHabitInput {
   monthly_day?:              number;
   custom_recurrence_config?: HabitCustomRecurrenceConfig;
 
-  time_consumption:  number;
+  time_consumption:  HabitTimeConsumption;
   completion_time?:  HabitCompletionTime;
 
   // Rewards — omit to use algorithm output; provide both to override
@@ -164,7 +173,7 @@ export interface UpdateHabitInput {
   monthly_day?:              number | null;
   custom_recurrence_config?: HabitCustomRecurrenceConfig | null;
 
-  time_consumption?: number;
+  time_consumption?: HabitTimeConsumption;
   completion_time?:  HabitCompletionTime | null;
 
   gold_reward?:         number;
@@ -233,7 +242,7 @@ export function toHabit(row: HabitRow): Habit {
                                 : undefined,
 
     // Scheduling
-    time_consumption: row.time_consumption,
+    time_consumption: row.time_consumption as HabitTimeConsumption,
     completion_time:  row.completion_time
                         ? (row.completion_time as HabitCompletionTime)
                         : undefined,

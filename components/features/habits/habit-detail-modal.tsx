@@ -32,6 +32,8 @@ import { setHabitStatus, deleteHabit } from '@/lib/actions/habits'
 import {
   getRecurrenceLabel,
   getCompletionTimeLabel,
+  getTimeConsumptionLabel,
+  calculateHabitResilienceAward,
 } from '@/lib/utils/habits'
 import { cn } from '@/lib/utils/general'
 import { toast } from 'sonner'
@@ -188,10 +190,7 @@ export function HabitDetailModal({
     custom_recurrence_config: habit.custom_recurrence_config,
   })
 
-  const durationLabel =
-    habit.time_consumption >= 60
-      ? `${Math.floor(habit.time_consumption / 60)}h${habit.time_consumption % 60 > 0 ? ` ${habit.time_consumption % 60}m` : ''}`
-      : `${habit.time_consumption} min`
+  const durationLabel = getTimeConsumptionLabel(habit.time_consumption)
 
   // ── Status actions ─────────────────────────────────────────────────────────
 
@@ -473,9 +472,7 @@ export function HabitDetailModal({
                 <p className="text-sm text-muted-foreground">
                   Completing this habit when your Energy is depleted awards{' '}
                   <span className="font-semibold text-foreground">
-                    {habit.time_consumption <= 15 ? 4 :
-                     habit.time_consumption <= 45 ? 5 :
-                     habit.time_consumption <= 90 ? 7 : 10} Resilience
+                    {calculateHabitResilienceAward(habit.time_consumption)} Resilience
                   </span>{' '}
                   instead — recognising the extra push it took.
                 </p>

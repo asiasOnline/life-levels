@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { HabitWithRelations, HABIT_STATUS } from '@/lib/types/habits'
 import { IconData } from '@/lib/types/icon'
-import { getRecurrenceLabel, getCompletionTimeLabel } from '@/lib/utils/habits'
+import { getRecurrenceLabel, getCompletionTimeLabel, getTimeConsumptionLabel } from '@/lib/utils/habits'
 import { completeHabit } from '@/lib/actions/habits'
 import { useGold } from '@/lib/contexts/gold-context'
 import { cn } from '@/lib/utils/general'
@@ -282,9 +282,7 @@ export function HabitCard({
           )}
           <span className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            {habit.time_consumption >= 60
-              ? `${Math.floor(habit.time_consumption / 60)}h${habit.time_consumption % 60 > 0 ? ` ${habit.time_consumption % 60}m` : ''}`
-              : `${habit.time_consumption}m`}
+            {getTimeConsumptionLabel(habit.time_consumption)}
           </span>
           <StatusPill status={habit.status} />
         </div>

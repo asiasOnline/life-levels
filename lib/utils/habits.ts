@@ -1,22 +1,35 @@
 import type {
   HabitRecurrence,
   HabitTimeBucket,
+  HabitTimeConsumption,
   HabitRewardResult,
   HabitCustomRecurrenceConfig,
 } from "@/lib/types/habits";
 
 // ===============================================
-// TIME BUCKET
-// Converts a raw time_consumption (minutes) into the four reward tiers
-// defined in the PRD. The same bucket is used across XP, Gold, Energy, and
-// Resilience tables so only this one place needs updating if tiers change.
+// TIME CONSUMPTION OPTIONS
+// habit_time_consumption is stored as the tier itself (quick / medium /
+// extended / long) rather than raw minutes, so it doubles as the reward
+// bucket used across the XP, Gold, Energy, and Resilience tables below.
+// The minute ranges here are UI copy only, to help users pick a tier.
 // ===============================================
 
-export function getTimeBucket(minutes: number): HabitTimeBucket {
-  if (minutes <= 15) return "quick";
-  if (minutes <= 45) return "medium";
-  if (minutes <= 90) return "extended";
-  return "long";
+export const TIME_CONSUMPTION_OPTIONS: {
+  value: HabitTimeConsumption;
+  label: string;
+  hint: string;
+}[] = [
+  { value: "quick",    label: "Quick",    hint: "Up to 15 minutes" },
+  { value: "medium",   label: "Medium",   hint: "15 – 45 minutes"  },
+  { value: "extended", label: "Extended", hint: "45 – 90 minutes"  },
+  { value: "long",     label: "Long",     hint: "90+ minutes"      },
+];
+
+/**
+ * Returns a display label for a time_consumption value.
+ */
+export function getTimeConsumptionLabel(value: HabitTimeConsumption): string {
+  return TIME_CONSUMPTION_OPTIONS.find((o) => o.value === value)?.label ?? value;
 }
 
 // ================================================
@@ -118,11 +131,11 @@ export function getEffectiveRecurrenceForCustom(
  */
 export function calculateHabitRewards(
   recurrence: HabitRecurrence,
-  timeConsumption: number,
+  timeConsumption: HabitTimeConsumption,
   skillCount: number,
   customConfig?: HabitCustomRecurrenceConfig
 ): HabitRewardResult {
-  const bucket = getTimeBucket(timeConsumption);
+  const bucket = timeConsumption;
 
   const effectiveRecurrence: Exclude<HabitRecurrence, "custom"> =
     recurrence === "custom" && customConfig
@@ -156,10 +169,10 @@ export function calculateHabitRewards(
  */
 export function calculateHabitEnergyCost(
   recurrence: HabitRecurrence,
-  timeConsumption: number,
+  timeConsumption: HabitTimeConsumption,
   customConfig?: HabitCustomRecurrenceConfig
 ): number {
-  const bucket = getTimeBucket(timeConsumption);
+  const bucket = timeConsumption;
   const effectiveRecurrence: Exclude<HabitRecurrence, "custom"> =
     recurrence === "custom" && customConfig
       ? getEffectiveRecurrenceForCustom(customConfig)
@@ -172,8 +185,8 @@ export function calculateHabitEnergyCost(
  * Returns the Resilience awarded when a habit is completed at 0 Energy.
  * Scales with time bucket only (no Priority field on Habits).
  */
-export function calculateHabitResilienceAward(timeConsumption: number): number {
-  return RESILIENCE_TABLE[getTimeBucket(timeConsumption)];
+export function calculateHabitResilienceAward(timeConsumption: HabitTimeConsumption): number {
+  return RESILIENCE_TABLE[timeConsumption];
 }
 
 // =============================================================================
@@ -393,20 +406,6 @@ export function getCompletionTimeLabel(
 // VALIDATION HELPERS
 // Used by Zod refinements and action-layer guard checks.
 // ===================================================
-
-/** Returns true if time_consumption is a valid positive integer. */
-export function isValidTimeConsumption(value: number): boolean {
-  return Number.isInteger(value) && value > 0;
-}
-
-/**
- * Returns true if time_consumption exceeds the soft-warning threshold.
- * The PRD specifies a prompt to confirm above 480 minutes (8 hours)
- * but no hard ceiling.
- */
-export function isUnusuallyLongHabit(minutes: number): boolean {
-  return minutes > 480;
-}
 
 /**
  * Returns true if a custom recurrence config would result in more than one

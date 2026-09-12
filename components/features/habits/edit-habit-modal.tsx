@@ -38,7 +38,7 @@ import { updateHabit } from '@/lib/actions/habits'
 import {
   calculateHabitRewards,
   getRecurrenceLabel,
-  isUnusuallyLongHabit,
+  TIME_CONSUMPTION_OPTIONS,
   isCustomRecurrenceConfigComplete,
   isCustomRecurrenceTooFrequent,
 } from '@/lib/utils/habits'
@@ -81,7 +81,7 @@ const editHabitSchema = z.object({
   weekly_day: z.number().min(0).max(6).optional(),
   monthly_day: z.number().min(1).max(31).optional(),
   custom_recurrence_config: customRecurrenceSchema.optional(),
-  time_consumption: z.number().min(1, 'Must be at least 1 minute'),
+  time_consumption: z.enum(['quick', 'medium', 'extended', 'long']),
   completion_time: z.enum(['morning', 'afternoon', 'evening', 'overnight']).optional(),
 
   skill_ids: z.array(z.string()).max(3, 'Max 3 skills'),
@@ -143,7 +143,7 @@ export function EditHabitModal({
       icon: DEFAULT_ICON.value,
       iconType: DEFAULT_ICON.type as 'emoji' | 'fontawesome' | 'image',
       recurrence: 'daily',
-      time_consumption: 15,
+      time_consumption: 'quick',
       skill_ids: [],
       character_ids: [],
       use_custom_xp: false,
@@ -202,7 +202,7 @@ export function EditHabitModal({
 
   const algorithmRewards = calculateHabitRewards(
     recurrence as HabitRecurrence,
-    timeConsumption ?? 15,
+    timeConsumption ?? 'quick',
     Math.max(1, skillIds?.length ?? 1),
     recurrence === 'custom' ? (customConfig as HabitCustomRecurrenceConfig | undefined) : undefined
   )
@@ -617,39 +617,35 @@ export function EditHabitModal({
 
             <div>
               <Label htmlFor="time_consumption" className="text-xs text-muted-foreground mb-1.5 block">
-                Average duration (minutes) <span className="text-destructive">*</span>
+                Time it takes <span className="text-destructive">*</span>
               </Label>
-              <div className="flex items-center gap-3">
-                <Controller
-                  name="time_consumption"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
+              <Controller
+                name="time_consumption"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger
                       id="time_consumption"
-                      type="number"
-                      min={1}
-                      className={cn('w-28', errors.time_consumption && 'border-destructive')}
-                      value={field.value ?? ''}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  )}
-                />
-                <span className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  {timeConsumption ? (
-                    timeConsumption >= 60
-                      ? `${Math.floor(timeConsumption / 60)}h ${timeConsumption % 60}m`
-                      : `${timeConsumption}m`
-                  ) : '—'}
-                </span>
-              </div>
+                      className={cn('w-full', errors.time_consumption && 'border-destructive')}
+                    >
+                      <SelectValue placeholder="How long does this take?" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIME_CONSUMPTION_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          <span className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                            {opt.label}
+                            <span className="text-xs text-muted-foreground">· {opt.hint}</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.time_consumption && (
                 <p className="text-xs text-destructive mt-1">{errors.time_consumption.message}</p>
-              )}
-              {timeConsumption && isUnusuallyLongHabit(timeConsumption) && (
-                <p className="text-xs text-amber-600 mt-1.5">
-                  That&apos;s over 8 hours — double-check this is intentional.
-                </p>
               )}
             </div>
 
