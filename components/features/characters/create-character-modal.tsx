@@ -78,15 +78,26 @@ const SKIN_TONE_LABELS: Record<SkinToneKey, string> = {
   deep:       'Deep',
 }
 
+const STEPS = [
+  { id: 1, label: "Basics" },
+  { id: 2, label: "Avatar Selection" },
+  { id: 3, label: "Sub-Item Selector" },
+] 
+
 // =======================================
-// SCHEMA
+// ZOD SCHEMA
 // =======================================
 
 const createCharacterSchema = z.object({
+  // STEP 1 - Basics
   title: z
     .string()
     .min(1, 'Title is required')
     .max(50, 'Title must be 50 characters or fewer'),
+  description: z
+    .string()
+    .max(500, 'Description must be 500 characters or fewer')
+    .optional(),
   icon: z
     .string()
     .optional(),
@@ -98,10 +109,6 @@ const createCharacterSchema = z.object({
   color_theme: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, 'Please select a color theme'),
-  description: z
-    .string()
-    .max(500, 'Description must be 500 characters or fewer')
-    .optional(),
   skillIds: z
     .array(z.string())
 })
