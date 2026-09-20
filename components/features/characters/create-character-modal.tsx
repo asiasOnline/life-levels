@@ -106,7 +106,7 @@ const createCharacterSchema = z.object({
   iconColor: z
     .string()
     .optional(),
-  color_theme: z
+  character_color: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, 'Please select a color theme'),
   skillIds: z
@@ -151,13 +151,13 @@ export function CreateCharacterModal({
       icon: DEFAULT_ICON,
        iconType: DEFAULT_ICON_TYPE as 'emoji' | 'fontawesome' | 'image',
       iconColor: DEFAULT_ICON_COLOR,
-      color_theme: COLOR_PALETTE[0].hex,
+      character_color: COLOR_PALETTE[0].hex,
       description: '',
       skillIds: [],
     },
   })
 
-  const selectedColor = form.watch('color_theme')
+  const selectedColor = form.watch('character_color')
   const selectedSkillIds = form.watch('skillIds')
 
   // Load skills on mount
@@ -223,7 +223,7 @@ export function CreateCharacterModal({
 
       const input: CreateCharacterInput = {
         title: values.title,
-        color_theme: values.color_theme,
+        character_color: values.character_color,
         icon: values.icon || DEFAULT_ICON_DATA.value,
         icon_type: values.iconType,
         icon_color: values.iconColor,
@@ -238,7 +238,7 @@ export function CreateCharacterModal({
         if (result.error.includes('title')) {
           form.setError('title', { message: result.error })
         } else if (result.error.includes('color')) {
-          form.setError('color_theme', { message: result.error })
+          form.setError('character_color', { message: result.error })
         } else {
           setSubmitError(result.error)
         }
@@ -339,7 +339,7 @@ export function CreateCharacterModal({
                       type="button"
                       title={color.label}
                       onClick={() => {
-                        form.setValue('color_theme', color.hex, { shouldValidate: true })
+                        form.setValue('character_color', color.hex, { shouldValidate: true })
                       }}
                       className={cn(
                         'w-8 h-8 rounded-full border-2 transition-all',
@@ -376,7 +376,7 @@ export function CreateCharacterModal({
                         type="color"
                         value={selectedColor}
                         onChange={(e) =>
-                          form.setValue('color_theme', e.target.value, { shouldValidate: true })
+                          form.setValue('character_color', e.target.value, { shouldValidate: true })
                         }
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         title="Pick a custom colour"
@@ -391,7 +391,7 @@ export function CreateCharacterModal({
                       const raw = e.target.value.trim()
                       // Always keep the leading # while typing
                       const withHash = raw.startsWith('#') ? raw : `#${raw}`
-                      form.setValue('color_theme', withHash, { shouldValidate: true })
+                      form.setValue('character_color', withHash, { shouldValidate: true })
                     }}
                     maxLength={7}
                     className="font-mono text-sm w-32"
@@ -404,8 +404,8 @@ export function CreateCharacterModal({
                   </span>
                 </div>
 
-                {form.formState.errors.color_theme && (
-                  <p className="text-sm text-destructive">{form.formState.errors.color_theme.message}</p>
+                {form.formState.errors.character_color && (
+                  <p className="text-sm text-destructive">{form.formState.errors.character_color.message}</p>
                 )}
               </Field>
 

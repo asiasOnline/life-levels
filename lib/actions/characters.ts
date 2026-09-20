@@ -129,7 +129,7 @@ function mapRowToCharacter(row: CharacterRowWithSkills): Character {
   return {
     id:  row.id,
     title: row.title,
-    color_theme: row.color_theme,
+    character_color: row.character_color,
     icon: row.icon as unknown as IconData,
     description: row.description ?? undefined,
     avatar: (row.avatar as unknown as CharacterAvatarData) ?? null,
@@ -382,7 +382,7 @@ export async function createCharacter(
     const characterData: CharacterInsert = {
       user_id:     user.id,
       title:       input.title,
-      color_theme: input.color_theme,
+      character_color: input.character_color,
       icon: {
         type: input.icon_type || DEFAULT_ICON_TYPE,
         value: input.icon || DEFAULT_ICON,
@@ -451,11 +451,11 @@ export async function updateCharacter(
  
     const characterUpdate: CharacterUpdate = {}
  
-    if (input.title       !== undefined) characterUpdate.title       = input.title
-    if (input.color_theme !== undefined) characterUpdate.color_theme = input.color_theme
-    if (input.description !== undefined) characterUpdate.description = input.description
-    if (input.is_archived !== undefined) characterUpdate.is_archived = input.is_archived
-    if (input.avatar      !== undefined) {
+    if (input.title           !== undefined) characterUpdate.title            = input.title
+    if (input.character_color !== undefined) characterUpdate.character_color  = input.character_color
+    if (input.description     !== undefined) characterUpdate.description      = input.description
+    if (input.is_archived     !== undefined) characterUpdate.is_archived      = input.is_archived
+    if (input.avatar          !== undefined) {
       characterUpdate.avatar = input.avatar as unknown as CharacterUpdate['avatar']
     }
     if (input.icon !== undefined) {

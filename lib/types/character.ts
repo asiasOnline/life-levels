@@ -23,12 +23,12 @@ export const DEFAULT_SKIN_TONE: SkinToneKey = "light";
 // (e.g. on a Task or Habit form)
 export type CharacterSummary = Pick<
   Character, 
-  "id" | "title" | "icon" | "color_theme"
+  "id" | "title" | "icon" | "character_color"
 >;
 
 export type CharacterSummaryWithLevel = Pick<
 Character,
-  "id" | "title" | "icon" | "color_theme" | "level" 
+  "id" | "title" | "icon" | "character_color" | "level" 
 >;
 
 // Summary shapes for activity history on the Character detail page
@@ -73,7 +73,7 @@ export interface CreateCharacterInput {
   icon?: string
   icon_type?: IconType
   icon_color?: string
-  color_theme: string;
+  character_color: string;
   avatar?: CharacterAvatarData | null 
   skill_ids?: string[]; // for linking existing Skills during Character creation
 }
@@ -85,7 +85,7 @@ export interface UpdateCharacterInput {
   icon?: string
   icon_type?: IconType
   icon_color?: string
-  color_theme?: string;
+  character_color?: string;
   avatar?: CharacterAvatarData | null 
   is_archived?: boolean;
   skill_ids?: string[]; // full replacement — action does delete-then-insert
@@ -99,7 +99,7 @@ export interface Character {
     title: string;
     icon: IconData
     description?: string;
-    color_theme: string;
+    character_color: string;
     avatar: CharacterAvatarData | null;
     level: number;
     skills?: SkillSummary[];

@@ -16,8 +16,10 @@ export type Database = {
     Tables: {
       characters: {
         Row: {
-          avatar: Json | null
-          color_theme: string
+          avatar: string | null
+          avatar_color: string
+          character_color: string
+          character_quote: string | null
           created_at: string
           current_xp: number
           description: string | null
@@ -25,7 +27,6 @@ export type Database = {
           id: string
           is_archived: boolean
           level: number
-          skin_tone: string
           title: string
           total_xp: number
           updated_at: string
@@ -33,8 +34,10 @@ export type Database = {
           xp_to_next_level: number
         }
         Insert: {
-          avatar?: Json | null
-          color_theme: string
+          avatar?: string | null
+          avatar_color?: string
+          character_color?: string
+          character_quote?: string | null
           created_at?: string
           current_xp?: number
           description?: string | null
@@ -42,7 +45,6 @@ export type Database = {
           id?: string
           is_archived?: boolean
           level?: number
-          skin_tone?: string
           title: string
           total_xp?: number
           updated_at?: string
@@ -50,8 +52,10 @@ export type Database = {
           xp_to_next_level?: number
         }
         Update: {
-          avatar?: Json | null
-          color_theme?: string
+          avatar?: string | null
+          avatar_color?: string
+          character_color?: string
+          character_quote?: string | null
           created_at?: string
           current_xp?: number
           description?: string | null
@@ -59,7 +63,6 @@ export type Database = {
           id?: string
           is_archived?: boolean
           level?: number
-          skin_tone?: string
           title?: string
           total_xp?: number
           updated_at?: string
