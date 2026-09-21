@@ -18,13 +18,8 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { IconPicker } from '@/components/layout/app/icon-picker'
 import { IconData, IconType } from '@/lib/types/icon'
-import {
-  Character,
-  CharacterAvatarData,
-  SKIN_TONES,
-  SkinToneKey,
-  DEFAULT_SKIN_TONE,
-} from '@/lib/types/character'
+import { Character } from '@/lib/types/character'
+import { ColorPicker } from '@/components/layout/app/color-picker'
 import { AVATAR_REGISTRY } from './avatars/avatar-registry'
 import { AvatarRenderer } from './avatars/avatar-renderer'
 import { updateCharacter } from '@/lib/actions/characters'
@@ -50,14 +45,6 @@ const COLOR_PALETTE = [
   { hex: '#64748b', label: 'Slate'    },
 ]
  
-const SKIN_TONE_LABELS: Record<SkinToneKey, string> = {
-  light:       'Light',
-  mediumLight: 'Medium Light',
-  medium:      'Medium',
-  mediumDark:  'Medium Dark',
-  deep:        'Deep',
-}
-
 // =======================================
 // SCHEMA
 // =======================================
@@ -107,16 +94,11 @@ export function EditCharacterModal({
   onOpenChange,
   onCharacterUpdated,
 }: EditCharacterModalProps) {
-  const existingAvatar = character.avatar as CharacterAvatarData | null
   const existingIcon   = character.icon   as IconData
- 
+
   const [icon, setIcon]                           = useState<IconData>(existingIcon)
-  const [selectedArchetype, setSelectedArchetype] = useState<string | null>(
-    existingAvatar?.archetype_id ?? null
-  )
-  const [skinTone, setSkinTone] = useState<SkinToneKey>(
-    (existingAvatar?.skin_tone as SkinToneKey) ?? DEFAULT_SKIN_TONE
-  )
+  const [selectedArchetype, setSelectedArchetype] = useState<string | null>(character.avatar)
+  const [avatarColor, setAvatarColor]             = useState<string>(character.avatar_color)
   const [isSubmitting, setIsSubmitting] = useState(false)
  
   const form = useForm<EditCharacterFormValues>({
@@ -126,14 +108,13 @@ export function EditCharacterModal({
       icon: character.icon.value,
       iconType: character.icon.type,
       iconColor: character.icon.color,
-      color_theme: character.color_theme,
+      color_theme: character.character_color,
       description: character.description || '',
     },
   })
 
   // Reset all local state whenever the character prop changes
   useEffect(() => {
-    const latestAvatar = character.avatar as CharacterAvatarData | null
     const latestIcon   = character.icon   as IconData
  
     form.reset({
@@ -141,13 +122,13 @@ export function EditCharacterModal({
       icon:        character.icon.value,
       iconType:    character.icon.type,
       iconColor:   character.icon.color,
-      color_theme: character.color_theme,
+      color_theme: character.character_color,
       description: character.description || '',
     })
  
     setIcon(latestIcon)
-    setSelectedArchetype(latestAvatar?.archetype_id ?? null)
-    setSkinTone((latestAvatar?.skin_tone as SkinToneKey) ?? DEFAULT_SKIN_TONE)
+    setSelectedArchetype(character.avatar)
+    setAvatarColor(character.avatar_color)
   }, [character, form])
 
   const selectedColor = form.watch('color_theme')
@@ -162,19 +143,16 @@ export function EditCharacterModal({
   async function onSubmit(values: EditCharacterFormValues) {
     setIsSubmitting(true)
     try {
-      const avatar: CharacterAvatarData | null = selectedArchetype
-        ? { archetype_id: selectedArchetype, skin_tone: skinTone }
-        : null
- 
       const result = await updateCharacter({
         id: character.id,
         title: values.title,
-        color_theme: values.color_theme,
+        character_color: character.character_color,
         icon: values.icon ?? character.icon.value,
         icon_type: values.iconType ?? character.icon.type,
         icon_color: values.iconColor ?? character.icon.color,
         description: values.description || undefined,
-        avatar,
+        avatar: selectedArchetype,
+        avatar_color: avatarColor,
       })
  
       if (!result.success) {
@@ -205,7 +183,7 @@ export function EditCharacterModal({
         <DialogHeader>
           <DialogTitle>Edit Character</DialogTitle>
           <DialogDescription>
-            Update your character's details and appearance.
+            Update your character`&apos;`s details and appearance.
           </DialogDescription>
         </DialogHeader>
 
@@ -377,7 +355,7 @@ export function EditCharacterModal({
                       >
                         <AvatarRenderer
                           archetypeId={archetype.id}
-                          skinTone={skinTone}
+                          color={avatarColor}
                           size={48}
                         />
                         <span className="font-medium text-foreground">{archetype.label}</span>
@@ -392,27 +370,11 @@ export function EditCharacterModal({
                 </div>
               </div>
  
-              {/* Skin tone + preview — only when an archetype is selected */}
+              {/* Avatar color + preview — only when an archetype is selected */}
               {selectedArchetype && (
                 <div className="space-y-3">
-                  <Label>Skin Tone</Label>
-                  <div className="flex gap-2">
-                    {(Object.keys(SKIN_TONES) as SkinToneKey[]).map((key) => (
-                      <button
-                        key={key}
-                        type="button"
-                        title={SKIN_TONE_LABELS[key]}
-                        onClick={() => setSkinTone(key)}
-                        className={cn(
-                          'w-8 h-8 rounded-full border-2 transition-all',
-                          skinTone === key
-                            ? 'border-foreground scale-110 shadow-md'
-                            : 'border-transparent hover:scale-105'
-                        )}
-                        style={{ backgroundColor: SKIN_TONES[key].base }}
-                      />
-                    ))}
-                  </div>
+                  <Label>Avatar Color</Label>
+                  <ColorPicker value={avatarColor} onChange={setAvatarColor} />
  
                   {/* Live preview */}
                   <div className="space-y-2">
@@ -427,7 +389,7 @@ export function EditCharacterModal({
                       >
                         <AvatarRenderer
                           archetypeId={selectedArchetype}
-                          skinTone={skinTone}
+                          color={avatarColor}
                           size={64}
                         />
                       </div>
@@ -438,10 +400,10 @@ export function EditCharacterModal({
                         <div className="flex items-center gap-2">
                           <div
                             className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: SKIN_TONES[skinTone]?.base }}
+                            style={{ backgroundColor: avatarColor }}
                           />
                           <span className="text-muted-foreground text-xs">
-                            {SKIN_TONE_LABELS[skinTone]} skin
+                            Avatar color
                           </span>
                         </div>
                       </div>

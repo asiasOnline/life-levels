@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
@@ -10,8 +11,6 @@ import { TaskWithRelations } from "@/lib/types/tasks";
 import TaskCard from "@/components/features/tasks/task-card";
 import { TaskTableRow } from "@/components/features/tasks/task-table-row";
 import { CreateTaskModal } from "@/components/features/tasks/create-task-modal";
-import { EditTaskModal } from "@/components/features/tasks/edit-task-modal";
-import { TaskDetailModal } from "@/components/features/tasks/task-detail-modal";
 import { 
   Table, 
   TableHead, 
@@ -29,16 +28,13 @@ import { SkillSummary } from "@/lib/types/skills";
 import { fetchSkills } from "@/lib/actions/skills";
 
 export default function TaskPage() {
+    const router = useRouter()
     const [viewMode, setViewMode] = useState<ViewMode>('grid')
     const [tasks, setTasks] = useState<TaskWithRelations[]>([])
     const [availableSkills, setAvailableSkills] = useState<SkillSummary[]>([])
     const [availableCharacters, setAvailableCharacters] = useState<CharacterSummary[]>([])
     const [isLoading, setIsLoading] = useState(true)
-    const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-    const [taskToEdit, setTaskToEdit] = useState<TaskWithRelations | null>(null)
 
     useEffect(() => {
     loadTasks()
@@ -86,7 +82,7 @@ export default function TaskPage() {
             id:           c.id,
             title:        c.title,
             icon:         c.icon,
-            color_theme:  c.color_theme,
+            character_color:  c.character_color,
           }))
       )
 
@@ -103,25 +99,10 @@ export default function TaskPage() {
   }, [])
 
   function handleTaskClick(task: TaskWithRelations) {
-    setSelectedTask(task)
-    setIsDetailModalOpen(true)
+    router.push(`/tasks/${task.id}`)
   }
 
   function handleTaskCreated() {
-    loadTasks()
-  }
-
-  function handleTaskUpdated() {
-    loadTasks()
-  }
-
-  function handleEditRequest(task: TaskWithRelations) {
-    setTaskToEdit(task)
-    setIsDetailModalOpen(false)
-    setIsEditModalOpen(true)
-  }
-
-  function handleTaskDeleted() {
     loadTasks()
   }
 
@@ -215,26 +196,6 @@ export default function TaskPage() {
               isOpen={isCreateModalOpen}
               onOpenChange={setIsCreateModalOpen}
               onTaskCreated={handleTaskCreated}
-              availableSkills={availableSkills}
-              availableCharacters={availableCharacters}
-            />
-
-            {/* Skill Detail Modal */}
-            <TaskDetailModal
-              task={selectedTask}
-              isOpen={isDetailModalOpen}
-              onClose={setIsDetailModalOpen}
-              onTaskUpdated={handleTaskUpdated}
-              onTaskDeleted={handleTaskDeleted}
-              onEditRequest={handleEditRequest}
-            />
-
-            {/* Edit Task Modal */}
-            <EditTaskModal
-              isOpen={isEditModalOpen}
-              onOpenChange={setIsEditModalOpen}
-              onTaskUpdated={handleTaskUpdated}
-              task={taskToEdit}
               availableSkills={availableSkills}
               availableCharacters={availableCharacters}
             />

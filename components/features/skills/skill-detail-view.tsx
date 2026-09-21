@@ -1,19 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Skill } from '@/lib/types/skills'
+import { SkillWithRelations } from '@/lib/types/skills'
 import { renderIcon } from '@/lib/utils/icon'
 import { getProgressPercentage } from '@/lib/utils/skills'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import {
   Tabs,
   TabsContent,
@@ -30,45 +23,43 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { EditSkillModal } from './edit-skill-modal'
-import { Pencil, Trash2, Link2, Users, Target, ListTodo, RefreshCw } from 'lucide-react'
+import { LinkedItemsSection } from '@/components/layout/app/linked-items-section'
+import { Pencil, Trash2, Target, ListTodo, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { deleteSkill } from '@/lib/actions/skills'
 
 
 
-interface SkillDetailModalProps {
-  skill: Skill | null
-  isOpen: boolean
-  onClose: (isOpen: boolean) => void
-  onSkillUpdated: () => void
+interface SkillDetailViewProps {
+  skill: SkillWithRelations
+  // Called after the skill is deleted; the page navigates back to the list
   onSkillDeleted: () => void
+  // The page owns the edit modal
+  onEditRequest: (skill: SkillWithRelations) => void
 }
 
-export function SkillDetailModal({
+export function SkillDetailView({
   skill,
-  isOpen,
-  onClose,
-  onSkillUpdated,
   onSkillDeleted,
-}: SkillDetailModalProps) {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  onEditRequest,
+}: SkillDetailViewProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-
-  if (!skill) return null
 
   const progressPercentage = getProgressPercentage(skill.current_xp, skill.xp_to_next_level)
 
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
-      await deleteSkill(skill.id)
+      const result = await deleteSkill(skill.id)
+      if (!result.success) {
+        toast.error(`Failed to delete skill: ${result.error}`)
+        return
+      }
 
       toast(`${skill.title} has been removed from your skill log.`)
-      
+
       onSkillDeleted()
-      onClose(false)
     } catch (error) {
       console.error('Error deleting skill:', error)
       toast.error('Failed to delete skill. Please try again.')
@@ -80,26 +71,25 @@ export function SkillDetailModal({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-175 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+      <div className="rounded-xl border bg-background p-6 max-w-4xl space-y-6">
+          <header>
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <div className="text-5xl">
                   {renderIcon(skill.icon.value, skill.icon.type, skill.icon.color, 'w-12 h-12')}
                 </div>
                 <div>
-                  <DialogTitle className="text-2xl">{skill.title}</DialogTitle>
-                  <DialogDescription>
+                  <h1 className="text-2xl font-semibold">{skill.title}</h1>
+                  <p className="text-sm text-muted-foreground">
                     {skill.description || 'No description'}
-                  </DialogDescription>
+                  </p>
                 </div>
               </div>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setIsEditModalOpen(true)}
+                  onClick={() => onEditRequest(skill)}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -112,7 +102,7 @@ export function SkillDetailModal({
                 </Button>
               </div>
             </div>
-          </DialogHeader>
+          </header>
 
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -180,111 +170,38 @@ export function SkillDetailModal({
             </TabsContent>
 
             {/* Connections Tab */}
-            <TabsContent value="connections" className="space-y-6">
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Link this skill to other features to track related activities and progress.
-                </p>
+            <TabsContent value="connections" className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Activities linked to this skill award it XP when completed.
+              </p>
 
-                {/* Character Link */}
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-                        <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Character</h4>
-                        <p className="text-sm text-muted-foreground">
-                          
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" disabled>
-                      <Link2 className="h-4 w-4 mr-2" />
-                      Link
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Goals Link */}
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                        <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Goals</h4>
-                        <p className="text-sm text-muted-foreground">
-                          0 linked goals
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" disabled>
-                      <Link2 className="h-4 w-4 mr-2" />
-                      Link
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Tasks Link */}
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                        <ListTodo className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Tasks</h4>
-                        <p className="text-sm text-muted-foreground">
-                          0 linked tasks
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" disabled>
-                      <Link2 className="h-4 w-4 mr-2" />
-                      Link
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Habits Link */}
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
-                        <RefreshCw className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                      </div>
-                      <div>
-                        <h4 className="font-medium">Habits</h4>
-                        <p className="text-sm text-muted-foreground">
-                          0 linked habits
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" disabled>
-                      <Link2 className="h-4 w-4 mr-2" />
-                      Link
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <LinkedItemsSection
+                label="Goals"
+                singular="goal"
+                basePath="/goals"
+                items={skill.goals}
+                headerIcon={<Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+                iconBgClassName="bg-blue-100 dark:bg-blue-900/20"
+              />
+              <LinkedItemsSection
+                label="Tasks"
+                singular="task"
+                basePath="/tasks"
+                items={skill.tasks}
+                headerIcon={<ListTodo className="h-5 w-5 text-green-600 dark:text-green-400" />}
+                iconBgClassName="bg-green-100 dark:bg-green-900/20"
+              />
+              <LinkedItemsSection
+                label="Habits"
+                singular="habit"
+                basePath="/habits"
+                items={skill.habits}
+                headerIcon={<RefreshCw className="h-5 w-5 text-orange-600 dark:text-orange-400" />}
+                iconBgClassName="bg-orange-100 dark:bg-orange-900/20"
+              />
             </TabsContent>
           </Tabs>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Modal */}
-      <EditSkillModal
-        skill={skill}
-        open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
-        onSkillUpdated={() => {
-          onSkillUpdated()
-          setIsEditModalOpen(false)
-        }}
-      />
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

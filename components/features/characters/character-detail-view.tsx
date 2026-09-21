@@ -1,22 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Character } from '@/lib/types/character'
+import { CharacterWithRelations } from '@/lib/types/character'
 import { IconData } from '@/lib/types/icon'
 import { AVATAR_REGISTRY } from './avatars/avatar-registry'
 import { AvatarRenderer } from './avatars/avatar-renderer'
-import { CharacterAvatarData } from '@/lib/types/character'
 import { renderIcon } from '@/lib/utils/icon'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import {
   Tabs,
   TabsContent,
@@ -33,7 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { EditCharacterModal } from './edit-character-modal'
+import { LinkedItemsSection } from '@/components/layout/app/linked-items-section'
 import { 
   Pencil, 
   Trash2, 
@@ -55,35 +47,33 @@ import {
 // PROPS
 // =======================================
 
-interface CharacterDetailModalProps {
-  character: Character | null
-  isOpen: boolean
-  onClose: (isOpen: boolean) => void
+interface CharacterDetailViewProps {
+  character: CharacterWithRelations
+  // Called after archive/reactivate so the page can refetch
   onCharacterUpdated: () => void
+  // Called after the character is deleted; the page navigates back to the list
   onCharacterDeleted: () => void
+  // The page owns the edit modal
+  onEditRequest: (character: CharacterWithRelations) => void
 }
 
 // =======================================
 // MAIN COMPONENT
 // =======================================
 
-export function CharacterDetailModal({
+export function CharacterDetailView({
   character,
-  isOpen,
-  onClose,
   onCharacterUpdated,
   onCharacterDeleted,
-}: CharacterDetailModalProps) {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  onEditRequest,
+}: CharacterDetailViewProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isArchiving, setIsArchiving] = useState(false)
 
-  if (!character) return null
-
-  const selectedColor = character.color_theme
-  const avatar = character.avatar as CharacterAvatarData | null
+  const selectedColor = character.character_color
+  const avatar = character.avatar
   const icon   = character.icon   as IconData
 
   const progressPct    = Math.min(100, Math.round((character.current_xp / character.xp_to_next_level) * 100))
@@ -92,25 +82,28 @@ export function CharacterDetailModal({
   // ── Handlers ───────────────────────────────
 
   async function handleArchiveToggle() {
-    if (!character) return
     setIsArchiving(true)
     try {
-      if (character.is_archived) {
-        await activateCharacter(character.id)
-        toast(`${character.title} is active again.`)
-      } else {
-        await archiveCharacter(character.id)
-        toast(`${character.title} has been archived.`)
+      const result = character.is_archived
+        ? await activateCharacter(character.id)
+        : await archiveCharacter(character.id)
+
+      if (!result.success) {
+        // Guard trigger fires when archiving the last active character
+        if (result.error.includes('at least one active Character')) {
+          toast.error("You can't archive your only active character.")
+        } else {
+          toast.error('Something went wrong. Please try again.')
+        }
+        return
       }
+
+      toast(character.is_archived
+        ? `${character.title} is active again.`
+        : `${character.title} has been archived.`)
       onCharacterUpdated()
-      onClose(false)
-    } catch (error: any) {
-      // Guard trigger fires when archiving the last active character
-      if (error?.message?.includes('at least one active Character')) {
-        toast.error("You can't archive your only active character.")
-      } else {
-        toast.error('Something went wrong. Please try again.')
-      }
+    } catch {
+      toast.error('Something went wrong. Please try again.')
     } finally {
       setIsArchiving(false)
       setIsArchiveDialogOpen(false)
@@ -118,19 +111,23 @@ export function CharacterDetailModal({
   }
 
   async function handleDelete() {
-    if (!character) return
     setIsDeleting(true)
     try {
-      await deleteCharacter(character.id)
+      const result = await deleteCharacter(character.id)
+
+      if (!result.success) {
+        if (result.error.includes('at least one active Character')) {
+          toast.error("You can't delete your only active character.")
+        } else {
+          toast.error('Failed to delete character. Make sure all linked activities are removed first.')
+        }
+        return
+      }
+
       toast(`${character.title} has been permanently deleted.`)
       onCharacterDeleted()
-      onClose(false)
-    } catch (error: any) {
-      if (error?.message?.includes('at least one active Character')) {
-        toast.error("You can't delete your only active character.")
-      } else {
-        toast.error('Failed to delete character. Make sure all linked activities are removed first.')
-      }
+    } catch {
+      toast.error('Failed to delete character. Make sure all linked activities are removed first.')
     } finally {
       setIsDeleting(false)
       setIsDeleteDialogOpen(false)
@@ -143,9 +140,8 @@ export function CharacterDetailModal({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-175 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+      <div className="rounded-xl border bg-background p-6 max-w-4xl space-y-6">
+          <header>
             <div className="flex items-start justify-between gap-4">
 
               {/* Icon + title */}
@@ -153,22 +149,22 @@ export function CharacterDetailModal({
                 <div
                   className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border text-3xl"
                   style={{
-                    backgroundColor: character.color_theme + '18',
-                    borderColor: character.color_theme + '55',
+                    backgroundColor: character.character_color + '18',
+                    borderColor: character.character_color + '55',
                   }}
                 >
                   {renderIcon(icon.value, icon.type, icon.color, 'w-8 h-8')}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <DialogTitle className="text-2xl">{character.title}</DialogTitle>
+                    <h1 className="text-2xl font-semibold">{character.title}</h1>
                     {character.is_archived && (
                       <Badge variant="secondary" className="text-xs">Archived</Badge>
                     )}
                   </div>
-                  <DialogDescription>
+                  <p className="text-sm text-muted-foreground">
                     {character.description || 'No description'}
-                  </DialogDescription>
+                  </p>
                 </div>
               </div>
 
@@ -177,7 +173,7 @@ export function CharacterDetailModal({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setIsEditModalOpen(true)}
+                  onClick={() => onEditRequest(character)}
                   title="Edit character"
                 >
                   <Pencil className="h-4 w-4" />
@@ -203,7 +199,7 @@ export function CharacterDetailModal({
                 </Button>
               </div>
             </div>
-          </DialogHeader>
+          </header>
 
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -221,8 +217,8 @@ export function CharacterDetailModal({
                   <Badge
                     className="text-lg font-bold px-4 py-1 border-0"
                     style={{
-                      backgroundColor: character.color_theme + '22',
-                      color: character.color_theme,
+                      backgroundColor: character.character_color + '22',
+                      color: character.character_color,
                     }}
                   >
                     Level {character.level}
@@ -239,7 +235,7 @@ export function CharacterDetailModal({
                   <div className="h-3 w-full rounded-full bg-muted overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${progressPct}%`, backgroundColor: character.color_theme }}
+                      style={{ width: `${progressPct}%`, backgroundColor: character.character_color }}
                     />
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -269,26 +265,21 @@ export function CharacterDetailModal({
                       }}
                     >
                       <AvatarRenderer
-                        archetypeId={avatar.archetype_id}
-                        skinTone={avatar.skin_tone as 'light' | 'mediumLight' | 'medium' | 'mediumDark' | 'deep'}
+                        archetypeId={avatar}
+                        color={character.avatar_color}
                         size={56}
                       />
                     </div>
                     <div className="space-y-1.5 text-sm">
                       <p className="font-medium">
-                        {AVATAR_REGISTRY.find(a => a.id === avatar.archetype_id)?.label ?? avatar.archetype_id}
+                        {AVATAR_REGISTRY.find(a => a.id === avatar)?.label ?? avatar}
                       </p>
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <div
                           className="w-3 h-3 rounded-full border border-border/50"
-                          style={{ backgroundColor: avatar.skin_tone }}
+                          style={{ backgroundColor: character.avatar_color }}
                         />
-                        <span>Skin tone</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <div
-                          className="w-3 h-3 rounded-full border border-border/50"
-                        />
+                        <span>Avatar color</span>
                       </div>
                     </div>
                   </div>
@@ -304,10 +295,10 @@ export function CharacterDetailModal({
                     <div className="flex items-center gap-2 mt-1">
                       <div
                         className="w-4 h-4 rounded-full border border-border/50"
-                        style={{ backgroundColor: character.color_theme }}
+                        style={{ backgroundColor: character.character_color }}
                       />
                       <span className="font-mono text-xs font-medium">
-                        {character.color_theme}
+                        {character.character_color}
                       </span>
                     </div>
                   </div>
@@ -339,53 +330,30 @@ export function CharacterDetailModal({
                 Activities linked to this character contribute XP and Gold on completion.
               </p>
 
-              {/* Goals */}
-              <div className="border rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                      <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium">Goals</h4>
-                      <p className="text-sm text-muted-foreground">0 linked goals</p>
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="text-xs">Coming soon</Badge>
-                </div>
-              </div>
-
-              {/* Tasks */}
-              <div className="border rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                      <ListTodo className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium">Tasks</h4>
-                      <p className="text-sm text-muted-foreground">0 linked tasks</p>
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="text-xs">Coming soon</Badge>
-                </div>
-              </div>
-
-              {/* Habits */}
-              <div className="border rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
-                      <RefreshCw className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium">Habits</h4>
-                      <p className="text-sm text-muted-foreground">0 linked habits</p>
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="text-xs">Coming soon</Badge>
-                </div>
-              </div>
+              <LinkedItemsSection
+                label="Goals"
+                singular="goal"
+                basePath="/goals"
+                items={character.goals ?? []}
+                headerIcon={<Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+                iconBgClassName="bg-blue-100 dark:bg-blue-900/20"
+              />
+              <LinkedItemsSection
+                label="Tasks"
+                singular="task"
+                basePath="/tasks"
+                items={character.tasks ?? []}
+                headerIcon={<ListTodo className="h-5 w-5 text-green-600 dark:text-green-400" />}
+                iconBgClassName="bg-green-100 dark:bg-green-900/20"
+              />
+              <LinkedItemsSection
+                label="Habits"
+                singular="habit"
+                basePath="/habits"
+                items={character.habits ?? []}
+                headerIcon={<RefreshCw className="h-5 w-5 text-orange-600 dark:text-orange-400" />}
+                iconBgClassName="bg-orange-100 dark:bg-orange-900/20"
+              />
 
               {/* Rewards */}
               <div className="border rounded-lg p-4">
@@ -404,19 +372,7 @@ export function CharacterDetailModal({
               </div>
             </TabsContent>
           </Tabs>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Edit Modal ──────────────────── */}
-      <EditCharacterModal
-        character={character}
-        open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
-        onCharacterUpdated={() => {
-          onCharacterUpdated()
-          setIsEditModalOpen(false)
-        }}
-      />
+      </div>
 
       {/* ── Archive / Reactivate Confirmation ───────── */}
       <AlertDialog open={isArchiveDialogOpen} onOpenChange={setIsArchiveDialogOpen}>
@@ -450,7 +406,7 @@ export function CharacterDetailModal({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Character?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to permanently delete "{character.title}"? This action cannot
+              Are you sure you want to permanently delete `{character.title}`? This action cannot
               be undone. All XP history, avatar settings, and skill links will be removed.
               Linked Tasks, Goals, and Habits must be reassigned before deletion is permitted.
             </AlertDialogDescription>

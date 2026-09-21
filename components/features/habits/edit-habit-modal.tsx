@@ -758,7 +758,7 @@ export function EditHabitModal({
                           'flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-medium transition-all',
                           selected ? 'text-white border-transparent shadow-sm' : 'bg-background text-foreground border-border hover:border-violet-400'
                         )}
-                        style={selected ? { backgroundColor: character.color_theme, borderColor: character.color_theme } : {}}
+                        style={selected ? { backgroundColor: character.character_color, borderColor: character.character_color } : {}}
                       >
                         <span className="text-base leading-none">
                           {character.icon.type === 'emoji' ? character.icon.value : '👤'}

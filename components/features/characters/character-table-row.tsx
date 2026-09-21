@@ -4,7 +4,7 @@ import { Database } from '@/lib/database.types'
 import { renderIcon } from '@/lib/utils/icon'
 import { getProgressPercentage } from '@/lib/utils/character'
 import { Character } from '@/lib/types/character'
-import { CharacterAvatarData } from '@/lib/types/character'
+import { AvatarRenderer } from './avatars/avatar-renderer'
 import { 
   TableHeader,
   TableRow,
@@ -94,7 +94,7 @@ export function CharacterTableRow({
   onClick,
   className,
 }: CharacterTableRowProps) {
-  const avatar = character.avatar as unknown as CharacterAvatarData | null
+  const avatar = character.avatar
 
   const handleClick = () => {
     if (onClick) {
@@ -116,7 +116,7 @@ export function CharacterTableRow({
       <TableCell className="py-3 pr-2 w-1">
         <div
           className="w-0.5 h-8 rounded-full mx-auto"
-          style={{ backgroundColor: character.color_theme }}
+          style={{ backgroundColor: character.character_color }}
         />
       </TableCell>
 
@@ -126,8 +126,8 @@ export function CharacterTableRow({
           <div
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border"
             style={{
-              backgroundColor: character.color_theme + '18',
-              borderColor: character.color_theme + '55',
+              backgroundColor: character.character_color + '18',
+              borderColor: character.character_color + '55',
             }}
           >
             {renderIcon(character.icon.value, character.icon.type, character.icon.color, 'w-6 h-6')}
@@ -156,27 +156,19 @@ export function CharacterTableRow({
 
       {/* Avatar */}
       <TableCell className="py-3 pr-4">
-        {avatarEmoji ? (
-          <div className="flex items-center gap-2">
-            <div
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-base border"
-              style={{
-                backgroundColor: clothingColor + '22',
-                borderColor: clothingColor + '44',
-              }}
-            >
-              {avatarEmoji}
-            </div>
-            <div className="flex items-center gap-1">
-              <div
-                className="w-2 h-2 rounded-full border border-border/40"
-                style={{ backgroundColor: avatar!.skin_tone }}
-              />
-              <div
-                className="w-2 h-2 rounded-full border border-border/40"
-                style={{ backgroundColor: clothingColor }}
-              />
-            </div>
+        {avatar ? (
+          <div
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border overflow-hidden"
+            style={{
+              backgroundColor: character.character_color + '22',
+              borderColor: character.character_color + '44',
+            }}
+          >
+            <AvatarRenderer
+              archetypeId={avatar}
+              color={character.avatar_color}
+              size={24}
+            />
           </div>
         ) : (
           <span className="text-xs text-muted-foreground/40">—</span>
@@ -188,8 +180,8 @@ export function CharacterTableRow({
         <span
           className="inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-bold tabular-nums"
           style={{
-            backgroundColor: character.color_theme + '22',
-            color: character.color_theme,
+            backgroundColor: character.character_color + '22',
+            color: character.character_color,
           }}
         >
           {character.level}
@@ -201,7 +193,7 @@ export function CharacterTableRow({
         <InlineXPBar
           currentXP={character.current_xp}
           xpToNextLevel={character.xp_to_next_level}
-          color={character.color_theme}
+          color={character.character_color}
         />
       </TableCell>
 

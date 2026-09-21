@@ -1,13 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog'
+import Link from 'next/link'
 import {
   Tabs,
   TabsContent,
@@ -55,13 +49,13 @@ import {
 // PROPS
 // =============================================================================
 
-interface HabitDetailModalProps {
-  habit:            HabitWithRelations | null
-  isOpen:           boolean
-  onClose:          () => void
+interface HabitDetailViewProps {
+  habit:            HabitWithRelations
+  // Called after a status change so the page can refetch
   onHabitUpdated:   () => void
+  // Called after the habit is deleted; the page navigates back to the list
   onHabitDeleted:   () => void
-  // Passed from the page so the modal can open the edit form over itself
+  // The page owns the edit modal
   onEditRequest:    (habit: HabitWithRelations) => void
   // Optional pre-computed score from the page; 0 if not yet available
   consistencyScore?: number
@@ -161,21 +155,17 @@ function ConsistencyBar({ score }: { score: number }) {
 // COMPONENT
 // =============================================================================
 
-export function HabitDetailModal({
+export function HabitDetailView({
   habit,
-  isOpen,
-  onClose,
   onHabitUpdated,
   onHabitDeleted,
   onEditRequest,
   consistencyScore = 0,
-}: HabitDetailModalProps) {
+}: HabitDetailViewProps) {
   const [isPauseDialogOpen,   setIsPauseDialogOpen]   = useState(false)
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false)
   const [isDeleteDialogOpen,  setIsDeleteDialogOpen]  = useState(false)
   const [isActioning,         setIsActioning]         = useState(false)
-
-  if (!habit) return null
 
   const icon = habit.icon as IconData
 
@@ -216,7 +206,6 @@ export function HabitDetailModal({
       toast.success(isPaused ? `"${habit.title}" reactivated.` : `"${habit.title}" paused.`)
       onHabitUpdated()
       setIsPauseDialogOpen(false)
-      onClose()
     } catch {
       toast.error('Something went wrong. Please try again.')
     } finally {
@@ -235,7 +224,6 @@ export function HabitDetailModal({
       toast.success(`"${habit.title}" archived. All data and connections are preserved.`)
       onHabitUpdated()
       setIsArchiveDialogOpen(false)
-      onClose()
     } catch {
       toast.error('Something went wrong. Please try again.')
     } finally {
@@ -254,7 +242,6 @@ export function HabitDetailModal({
       toast.success(`"${habit.title}" permanently deleted.`)
       onHabitDeleted()
       setIsDeleteDialogOpen(false)
-      onClose()
     } catch {
       toast.error('Something went wrong. Please try again.')
     } finally {
@@ -268,11 +255,10 @@ export function HabitDetailModal({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="rounded-xl border bg-background p-6 max-w-4xl space-y-6">
 
           {/* ── Header ──────────────────────────────────────────────────────── */}
-          <DialogHeader>
+          <header>
             <div className="flex items-start justify-between gap-4">
 
               {/* Icon + title + status */}
@@ -282,13 +268,13 @@ export function HabitDetailModal({
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <DialogTitle className="text-xl leading-tight">{habit.title}</DialogTitle>
+                    <h1 className="text-2xl font-semibold leading-tight">{habit.title}</h1>
                     <StatusBadge status={habit.status} />
                   </div>
                   {habit.description && (
-                    <DialogDescription className="mt-0.5 text-sm">
+                    <p className="mt-0.5 text-sm text-muted-foreground">
                       {habit.description}
-                    </DialogDescription>
+                    </p>
                   )}
                 </div>
               </div>
@@ -340,7 +326,7 @@ export function HabitDetailModal({
                 </Button>
               </div>
             </div>
-          </DialogHeader>
+          </header>
 
           {/* ── Tabs ────────────────────────────────────────────────────────── */}
           <Tabs defaultValue="details" className="mt-2">
@@ -418,9 +404,11 @@ export function HabitDetailModal({
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {habit.goal_ids.map((id) => (
-                      <Badge key={id} variant="outline" className="text-xs font-normal">
-                        Goal
-                      </Badge>
+                      <Link key={id} href={`/goals/${id}`}>
+                        <Badge variant="outline" className="text-xs font-normal hover:bg-muted">
+                          Goal
+                        </Badge>
+                      </Link>
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1.5">
@@ -490,9 +478,10 @@ export function HabitDetailModal({
                 {habit.skills && habit.skills.length > 0 ? (
                   <div className="space-y-2">
                     {habit.skills.map((skill) => (
-                      <div
+                      <Link
                         key={skill.id}
-                        className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2.5"
+                        href={`/skills/${skill.id}`}
+                        className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2.5 hover:bg-muted/50 transition-colors"
                       >
                         <span className="text-lg leading-none">
                           {skill.icon.type === 'emoji' ? skill.icon.value : '⚡'}
@@ -504,7 +493,7 @@ export function HabitDetailModal({
                         <span className="text-xs text-violet-600 font-semibold shrink-0">
                           +{habit.skill_xp} XP
                         </span>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (
@@ -525,13 +514,14 @@ export function HabitDetailModal({
                 {habit.characters && habit.characters.length > 0 ? (
                   <div className="space-y-2">
                     {habit.characters.map((character) => (
-                      <div
+                      <Link
                         key={character.id}
-                        className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2.5"
+                        href={`/characters/${character.id}`}
+                        className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2.5 hover:bg-muted/50 transition-colors"
                       >
                         <div
                           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm"
-                          style={{ backgroundColor: character.color_theme }}
+                          style={{ backgroundColor: character.character_color }}
                         >
                           {character.icon.type === 'emoji' ? character.icon.value : '👤'}
                         </div>
@@ -539,7 +529,7 @@ export function HabitDetailModal({
                         <span className="text-xs text-amber-600 font-semibold shrink-0">
                           +{habit.character_xp} XP
                         </span>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (
@@ -551,8 +541,7 @@ export function HabitDetailModal({
               </div>
             </TabsContent>
           </Tabs>
-        </DialogContent>
-      </Dialog>
+      </div>
 
       {/* ── Pause / Resume Confirmation ─────────────────────────────────────── */}
       <AlertDialog open={isPauseDialogOpen} onOpenChange={setIsPauseDialogOpen}>

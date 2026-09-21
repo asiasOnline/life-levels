@@ -15,7 +15,6 @@ import {
   UpdateCharacterInput
 } from '../types/character'
 import { calculateXPForLevel } from '@/lib/utils/character'
-import { CharacterAvatarData } from '@/lib/types/character'
 import { SkillSummary } from '../types/skills'
 
 // =======================================
@@ -132,7 +131,8 @@ function mapRowToCharacter(row: CharacterRowWithSkills): Character {
     character_color: row.character_color,
     icon: row.icon as unknown as IconData,
     description: row.description ?? undefined,
-    avatar: (row.avatar as unknown as CharacterAvatarData) ?? null,
+    avatar: row.avatar ?? null,
+    avatar_color: row.avatar_color,
     level: row.level ?? 1,
     current_xp: row.current_xp ?? 0,
     xp_to_next_level: row.xp_to_next_level ?? 0,
@@ -221,6 +221,51 @@ async function syncCharacterSkills(
   if (insertError) {
     console.error(`Failed to link skills for character ${character_id}:`, insertError)
     throw insertError
+  }
+}
+
+// =======================================
+// NEW-CHARACTER LINK HELPER
+// Insert-only — a freshly created character has no existing links to clear.
+// Habit and task junction rows carry only the two foreign keys; goal_characters
+// also stores user_id.
+// =======================================
+async function linkItemsToNewCharacter(
+  supabase: ReturnType<typeof createClient>,
+  user_id: string,
+  character_id: string,
+  links: { habit_ids?: string[]; task_ids?: string[]; goal_ids?: string[] }
+): Promise<void> {
+  const { habit_ids = [], task_ids = [], goal_ids = [] } = links
+
+  if (habit_ids.length > 0) {
+    const { error } = await supabase
+      .from('habit_characters')
+      .insert(habit_ids.map((habit_id) => ({ character_id, habit_id })))
+    if (error) {
+      console.error(`Failed to link habits for character ${character_id}:`, error)
+      throw error
+    }
+  }
+
+  if (task_ids.length > 0) {
+    const { error } = await supabase
+      .from('task_characters')
+      .insert(task_ids.map((task_id) => ({ character_id, task_id })))
+    if (error) {
+      console.error(`Failed to link tasks for character ${character_id}:`, error)
+      throw error
+    }
+  }
+
+  if (goal_ids.length > 0) {
+    const { error } = await supabase
+      .from('goal_characters')
+      .insert(goal_ids.map((goal_id) => ({ character_id, goal_id, user_id })))
+    if (error) {
+      console.error(`Failed to link goals for character ${character_id}:`, error)
+      throw error
+    }
   }
 }
 
@@ -389,7 +434,8 @@ export async function createCharacter(
         color: input.icon_color || DEFAULT_ICON_COLOR,
       },
       description:      input.description ?? null,
-      avatar:           (input.avatar ?? null) as unknown as CharacterInsert['avatar'],
+      avatar:           input.avatar ?? null,
+      ...(input.avatar_color && { avatar_color: input.avatar_color }),
       level:            1,
       current_xp:       0,
       xp_to_next_level: calculateXPForLevel(1),
@@ -418,7 +464,9 @@ export async function createCharacter(
     if (input.skill_ids && input.skill_ids.length > 0) {
       await syncCharacterSkills(supabase, data.id, input.skill_ids)
     }
- 
+
+    await linkItemsToNewCharacter(supabase, user.id, data.id, input)
+
     const result = await fetchCharacterById(data.id)
     if (!result.success) return result
  
@@ -455,9 +503,8 @@ export async function updateCharacter(
     if (input.character_color !== undefined) characterUpdate.character_color  = input.character_color
     if (input.description     !== undefined) characterUpdate.description      = input.description
     if (input.is_archived     !== undefined) characterUpdate.is_archived      = input.is_archived
-    if (input.avatar          !== undefined) {
-      characterUpdate.avatar = input.avatar as unknown as CharacterUpdate['avatar']
-    }
+    if (input.avatar          !== undefined) characterUpdate.avatar           = input.avatar
+    if (input.avatar_color    !== undefined) characterUpdate.avatar_color     = input.avatar_color
     if (input.icon !== undefined) {
       characterUpdate.icon = {
         value: input.icon,

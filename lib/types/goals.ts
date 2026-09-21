@@ -75,6 +75,7 @@ export interface Goal {
     use_custom_xp: boolean;
     character_xp?: number;
     skill_xp?: number;
+    gold_reward: number;
 
     // Timestamps
     created_at: Date;
@@ -177,6 +178,7 @@ export function toGoal(row: GoalRow): Goal {
     use_custom_xp: row.use_custom_xp,
     character_xp:  row.character_xp ?? undefined,
     skill_xp:      row.skill_xp     ?? undefined,
+    gold_reward:   row.gold_reward,
 
     created_at: new Date(row.created_at),
     updated_at: new Date(row.updated_at),

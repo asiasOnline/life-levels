@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
 import { ViewMode } from "@/components/layout/app/item-container-header";
-import { Skill, SkillWithRelations } from "@/lib/types/skills";
+import { Skill } from "@/lib/types/skills";
 import { SkillCard } from "@/components/features/skills/skill-card";
 import { SkillTableRow } from "@/components/features/skills/skill-table-row";
 import { CreateSkillModal } from "@/components/features/skills/create-skill-modal";
-import { SkillDetailModal } from "@/components/features/skills/skill-detail-modal";
 import { 
   Table, 
   TableHead, 
@@ -19,20 +19,19 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { fetchSkills, fetchSkillById } from "@/lib/actions/skills";
+import { fetchSkills } from "@/lib/actions/skills";
 import { CharacterSummaryWithLevel } from '@/lib/types/character'
 import { fetchCharacters } from "@/lib/actions/characters";
 import { FaPlus } from "react-icons/fa6";
 import { RxDoubleArrowUp } from "react-icons/rx";
 
 export default function SkillsPage() {
+  const router = useRouter()
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [skills, setSkills] = useState<Skill[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [selectedSkill, setSelectedSkill] = useState<SkillWithRelations | null>(null)
   const [availableCharacters, setAvailableCharacters] = useState<CharacterSummaryWithLevel[]>([])
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
  const loadSkills = async () => {
     setIsLoading(true)
@@ -61,7 +60,7 @@ export default function SkillsPage() {
             id: c.id,
             title: c.title,
             icon: c.icon,
-            color_theme: c.color_theme,
+            character_color: c.character_color,
             level: c.level,
           }))
       )
@@ -80,30 +79,11 @@ export default function SkillsPage() {
     loadSkills()
   }, [])
 
-  const handleSkillClick = async (skill: Skill) => {
-    const result = await fetchSkillById(skill.id)
-
-    if (!result.success) {
-      toast.error('Failed to load skill details.')
-      return
-    }
-    setSelectedSkill(result.data)
-    setIsDetailModalOpen(true)
+  const handleSkillClick = (skill: Skill) => {
+    router.push(`/skills/${skill.id}`)
   }
 
   const handleSkillCreated = () => {
-    loadSkills()
-  }
-
-  const handleSkillUpdated = () => {
-    setIsDetailModalOpen(false)
-    setSelectedSkill(null)
-    loadSkills()
-  }
-
-  const handleSkillDeleted = () => {
-    setIsDetailModalOpen(false)
-    setSelectedSkill(null)
     loadSkills()
   }
 
@@ -197,15 +177,6 @@ export default function SkillsPage() {
         onClose={setIsCreateModalOpen}
         onSkillCreated={handleSkillCreated}
         availableCharacters={availableCharacters}
-      />
-
-      {/* Skill Detail Modal */}
-      <SkillDetailModal
-        skill={selectedSkill}
-        isOpen={isDetailModalOpen}
-        onClose={setIsDetailModalOpen}
-        onSkillUpdated={handleSkillUpdated}
-        onSkillDeleted={handleSkillDeleted}
       />
 
      </ItemContainer>

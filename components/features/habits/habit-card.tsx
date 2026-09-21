@@ -326,7 +326,7 @@ export function HabitCard({
               <div
                 key={char.id}
                 className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-card text-[11px]"
-                style={{ backgroundColor: char.color_theme, marginLeft: i > 0 ? '-6px' : '0' }}
+                style={{ backgroundColor: char.character_color, marginLeft: i > 0 ? '-6px' : '0' }}
                 title={char.title}
               >
                 {char.icon.type === 'emoji' ? char.icon.value : '👤'}

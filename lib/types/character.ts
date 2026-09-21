@@ -62,20 +62,19 @@ export interface CharacterStyleProps {
   skinTone?: SkinToneKey;
 }
 
-export interface CharacterAvatarData {
-  archetype_id: string
-  skin_tone: string
-}
-
 export interface CreateCharacterInput {
   title: string
   description?: string
   icon?: string
   icon_type?: IconType
   icon_color?: string
-  character_color: string;
-  avatar?: CharacterAvatarData | null 
-  skill_ids?: string[]; // for linking existing Skills during Character creation
+  character_color: string; // the character's background color
+  avatar?: string | null // archetype id from AVATAR_REGISTRY
+  avatar_color?: string // fill color applied to the avatar
+  skill_ids?: string[]; // for linking existing items during Character creation
+  habit_ids?: string[];
+  task_ids?: string[];
+  goal_ids?: string[];
 }
 
 export interface UpdateCharacterInput {
@@ -86,7 +85,8 @@ export interface UpdateCharacterInput {
   icon_type?: IconType
   icon_color?: string
   character_color?: string;
-  avatar?: CharacterAvatarData | null 
+  avatar?: string | null
+  avatar_color?: string
   is_archived?: boolean;
   skill_ids?: string[]; // full replacement — action does delete-then-insert
 }
@@ -100,7 +100,8 @@ export interface Character {
     icon: IconData
     description?: string;
     character_color: string;
-    avatar: CharacterAvatarData | null;
+    avatar: string | null;
+    avatar_color: string;
     level: number;
     skills?: SkillSummary[];
     current_xp: number;

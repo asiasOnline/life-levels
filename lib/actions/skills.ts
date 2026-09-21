@@ -35,7 +35,7 @@ type SkillRowWithCharacters = SkillRow & {
       id: string
       title: string 
       icon: unknown
-      color_theme: string 
+      character_color: string 
       level: number
     } | null
   }[]
@@ -86,14 +86,14 @@ type ActionResult<T> =
 const SKILL_WITH_CHARACTERS_SELECT = `
   *,
   skill_characters(
-    characters(id, title, icon, color_theme, level)
+    characters(id, title, icon, character_color, level)
   )
 ` as const
 
 const SKILL_WITH_RELATIONS_SELECT = `
   *,
   skill_characters(
-    characters(id, title, icon, color_theme, level)
+    characters(id, title, icon, character_color, level)
   ),
   habit_skills(
     habits(id, title, icon, status)
@@ -124,7 +124,7 @@ function mapRowToSkill(row: SkillRowWithCharacters): Skill {
       id: sc.characters!.id,
       title: sc.characters!.title,
       icon: sc.characters!.icon as unknown as IconData,
-      color_theme: sc.characters!.color_theme,
+      character_color: sc.characters!.character_color,
       level: sc.characters!.level,
     }))
  

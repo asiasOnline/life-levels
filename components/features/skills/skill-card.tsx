@@ -124,7 +124,7 @@ export function SkillCard ({
                 key={character.id}
                 className="flex items-center gap-2 rounded-lg border p-2 text-xs font-medium"
                 style={{
-                  borderColor: character.color_theme + '66',
+                  borderColor: character.character_color + '66',
                 }}
               >
                 <span className="shrink-0">
@@ -134,7 +134,7 @@ export function SkillCard ({
                 <Badge 
                   variant="outline" 
                   className="text-xs"
-                  style={{borderColor: character.color_theme + '66'}}>
+                  style={{borderColor: character.character_color + '66'}}>
                     Lv {character.level}
                 </Badge>
               </div>

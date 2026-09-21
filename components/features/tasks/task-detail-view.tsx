@@ -1,6 +1,7 @@
-import React from 'react'
+'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { TaskWithRelations } from '@/lib/types/tasks'
 import { deleteTask } from '@/lib/actions/tasks'
 import { 
@@ -11,13 +12,6 @@ import {
 } from '@/lib/utils/tasks'
 import { formatDateLong } from '@/lib/utils/general'
 import { renderIcon } from '@/lib/utils/icon'
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription 
-} from '@/components/ui/dialog'
 import {
   Tabs,
   TabsContent,
@@ -58,13 +52,11 @@ import { TASK_DIFFICULTY_LABELS, TASK_PRIORITY_LABELS } from '@/lib/types/tasks'
 // PROPS
 // =======================================
 
-interface TaskDetailModalProps {
-  task: TaskWithRelations | null
-  isOpen: boolean
-  onClose: (isOpen: boolean) => void
-  onTaskUpdated: () => void
+interface TaskDetailViewProps {
+  task: TaskWithRelations
+  // Called after the task is deleted; the page navigates back to the list
   onTaskDeleted: () => void
-  // Passed from the page so the modal can open the edit form over itself
+  // The page owns the edit modal
   onEditRequest: (task: TaskWithRelations) => void
 }
 
@@ -72,18 +64,13 @@ interface TaskDetailModalProps {
 // MAIN COMPONENT
 // =======================================
 
-export function TaskDetailModal({
+export function TaskDetailView({
   task,
-  isOpen,
-  onClose,
-  onTaskUpdated,
   onTaskDeleted,
   onEditRequest,
-}: TaskDetailModalProps) {
+}: TaskDetailViewProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-
-  if (!task) return null
 
   // ===============================
   // HANDLERS
@@ -93,11 +80,14 @@ export function TaskDetailModal({
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
-      await deleteTask(task.id)
+      const result = await deleteTask(task.id)
+      if (!result.success) {
+        toast.error(`Failed to delete task: ${result.error}`)
+        return
+      }
 
       toast.success(`"${task.title}" has been successfully deleted.`)
-      
-      onClose(false)
+
       onTaskDeleted()
     } catch (error) {
       console.error('Error deleting task:', error)
@@ -126,19 +116,18 @@ export function TaskDetailModal({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-175 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+      <div className="rounded-xl border bg-background p-6 max-w-4xl">
+          <header>
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <div className="shrink-0">
                   {renderIcon(task.icon.value, task.icon.type, task.icon.color, 'w-12 h-12')}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <DialogTitle className="text-2xl">{task.title}</DialogTitle>
-                  <DialogDescription>
+                  <h1 className="text-2xl font-semibold">{task.title}</h1>
+                  <p className="text-sm text-muted-foreground">
                     {task.description || 'No description'}
-                  </DialogDescription>
+                  </p>
                 </div>
               </div>
               <div className="flex gap-2 shrink-0">
@@ -158,7 +147,7 @@ export function TaskDetailModal({
                 </Button>
               </div>
             </div>
-        </DialogHeader>
+        </header>
 
         <Tabs defaultValue='overview' className='mt-6'>
           <TabsList className="w-full grid grid-cols-2">
@@ -325,8 +314,9 @@ export function TaskDetailModal({
                     const skillIcon = skill.icon as any
 
                     return (
-                      <div
+                      <Link
                         key={skill.id}
+                        href={`/skills/${skill.id}`}
                         className="flex items-center gap-4 rounded-lg border p-4 hover:bg-muted/50 transition-colors"
                       >
                         <div className="shrink-0">
@@ -357,7 +347,7 @@ export function TaskDetailModal({
                           <p className="text-xs text-muted-foreground">XP Award</p>
                           <p className="text-lg font-bold text-violet-600">+{skillXP}</p>
                         </div>
-                      </div>
+                      </Link>
                     )
                   })}
 
@@ -370,8 +360,7 @@ export function TaskDetailModal({
               )}
             </TabsContent>
           </Tabs>
-        </DialogContent>
-      </Dialog>
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

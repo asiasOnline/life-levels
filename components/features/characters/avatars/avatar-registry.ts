@@ -1,21 +1,23 @@
 import { Aphrodite } from "./mythology/aphrodite"
+import { Apollo } from "./mythology/apollo"
 import { Ares } from "./mythology/ares"
 import { Artemis } from "./mythology/artemis"
 import { Athena } from "./mythology/athena"
+import { Centaur } from "./mythology/centaur"
 import { Chiron } from "./mythology/chiron"
 import { Cyclops } from "./mythology/cyclops"
 import { Demeter } from "./mythology/demeter"
 import { Hephaestus } from "./mythology/hephaestus"
 import { Hercules } from "./mythology/hercules"
+import { Hermes } from "./mythology/hermes"
+import { Hydra } from "./mythology/hydra"
 import { Nike } from "./mythology/nike"
 import { Prometheus } from "./mythology/prometheus"
 import { Themis } from "./mythology/themis"
 import { Zeus } from "./mythology/zeus"
 import { Knight } from "./rpg/knight"
-import { SkinToneKey } from "@/lib/types/character"
 
 export type AvatarProps = {
-  skinTone: SkinToneKey    // hex color
   className?: string
 }
 
@@ -35,6 +37,12 @@ export const AVATAR_REGISTRY: AvatarArchetype[] = [
     tags: ['intellect', 'courage', 'leadership', 'strategy'],
   },
   {
+    id: 'apollo',
+    label: 'Apollo',
+    component: Apollo,
+    tags: ['intellect', 'courage', 'leadership', 'strategy'],
+  },
+  {
     id: 'ares',
     label: 'Ares',
     component: Ares,
@@ -51,6 +59,12 @@ export const AVATAR_REGISTRY: AvatarArchetype[] = [
     label: 'Athena',
     component: Athena,
     tags: ['knowledge', 'creative'],
+  },
+  {
+    id: 'centaur',
+    label: 'Centaur',
+    component: Centaur,
+    tags: ['wisdom', 'medicine', 'mentorship', 'harmony'],
   },
   {
     id: 'chiron',
@@ -81,6 +95,18 @@ export const AVATAR_REGISTRY: AvatarArchetype[] = [
     label: 'Hercules',
     component: Hercules,
     tags: ['strength', 'perserverance', 'heroism', 'potential'],
+  },
+  {
+    id: 'hermes',
+    label: 'Hermes',
+    component: Hermes,
+    tags: ['strength', 'perserverance', 'heroism', 'potential'],
+  },
+  {
+    id: 'hydra',
+    label: 'Hydra',
+    component: Hydra,
+    tags: ['resilience', 'regeneration', 'persistence', 'monster'],
   },
   {
     id: 'nike',

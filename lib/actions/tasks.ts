@@ -44,7 +44,7 @@ type TaskRowWithRelations = TaskRow & {
       id: string;
       title: string;
       icon: unknown;
-      color_theme: string
+      character_color: string
     } | null
   }[]
   task_goals: {
@@ -70,7 +70,7 @@ const TASK_WITH_RELATIONS_SELECT = `
     skills(id, title, icon, level)
   ),
   task_characters(
-    characters(id, title, icon, color_theme)
+    characters(id, title, icon, character_color)
   ),
   task_goals(goal_id)
 ` as const

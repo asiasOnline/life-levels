@@ -324,8 +324,8 @@ export function CreateSkillModal({
                         onClick={() => toggleCharacter(character.id)}
                         className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors"
                         style={{
-                          borderColor: character.color_theme,
-                          backgroundColor: isSelected ? character.color_theme : 'transparent',
+                          borderColor: character.character_color,
+                          backgroundColor: isSelected ? character.character_color : 'transparent',
                           color: isSelected ? '#fff' : 'inherit',
                         }}
                       >

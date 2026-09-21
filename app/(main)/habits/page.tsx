@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import PageHeader from '@/components/layout/app/page-header'
 import ItemContainer from '@/components/layout/app/item-container'
 import { ItemContainerHeader, ViewMode } from '@/components/layout/app/item-container-header'
 import { HabitCard } from '@/components/features/habits/habit-card'
-import { HabitDetailModal } from '@/components/features/habits/habit-detail-modal'
 import { CreateHabitModal } from '@/components/features/habits/create-habit-modal'
-import { EditHabitModal } from '@/components/features/habits/edit-habit-modal'
 import { Button } from '@/components/ui/button'
 import { fetchHabits } from '@/lib/actions/habits'
 import { fetchSkills } from '@/lib/actions/skills'
@@ -39,16 +38,13 @@ type HabitCompletionRecord = { habit_id: string; completed_at: string }
 // ============================================
 
 export default function HabitPage() {
+  const router = useRouter()
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [habits, setHabits] = useState<HabitWithScore[]>([])
   const [availableSkills, setAvailableSkills] = useState<SkillSummary[]>([])
   const [availableCharacters, setAvailableCharacters] = useState<CharacterSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedHabit, setSelectedHabit] = useState<HabitWithRelations | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [habitToEdit, setHabitToEdit] = useState<HabitWithRelations | null>(null)
 
   // ── Data fetching ──────────────────────────
 
@@ -116,7 +112,7 @@ export default function HabitPage() {
             id:           c.id,
             title:        c.title,
             icon:         c.icon,
-            color_theme:  c.color_theme,
+            character_color:  c.character_color,
             level:        c.level,
           }))
       )
@@ -141,27 +137,12 @@ export default function HabitPage() {
   // ── Handlers ───────────────────────────────
 
   const handleHabitClick = (habit: HabitWithRelations) => {
-    setSelectedHabit(habit)
-    setIsDetailModalOpen(true)
+    router.push(`/habits/${habit.id}`)
   }
 
   const handleHabitCreated = () => {
     loadHabits()
     setIsCreateModalOpen(false)
-  }
-
-  function handleHabitUpdated() {
-    loadHabits()
-  }
-
-  function handleHabitDeleted() {
-    loadHabits()
-  }
-
-  function handleEditRequest(habit: HabitWithRelations) {
-    setHabitToEdit(habit)
-    setIsDetailModalOpen(false)
-    setIsEditModalOpen(true)
   }
 
   // ==========================================
@@ -304,29 +285,6 @@ export default function HabitPage() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onHabitCreated={handleHabitCreated}
-        availableSkills={availableSkills}
-        availableCharacters={availableCharacters}
-      />
-
-      {/* ── Detail modal ────────────────────────────────────*/}
-      <HabitDetailModal
-        habit={selectedHabit}
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        onHabitUpdated={handleHabitUpdated}
-        onHabitDeleted={handleHabitDeleted}
-        onEditRequest={handleEditRequest}
-        consistencyScore={
-          habits.find((h) => h.id === selectedHabit?.id)?.consistency_score ?? 0
-        }
-      />
-
-      {/* ── Edit modal ──────────────────────────*/}
-      <EditHabitModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onHabitUpdated={handleHabitUpdated}
-        habit={habitToEdit}
         availableSkills={availableSkills}
         availableCharacters={availableCharacters}
       />

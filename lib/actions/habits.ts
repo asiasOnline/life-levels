@@ -49,7 +49,7 @@ type HabitRowWithRelations = HabitRow & {
       id: string
       title: string
       icon: unknown
-      color_theme: string
+      character_color: string
     } | null
   }[]
   habit_goals: { 
@@ -76,7 +76,7 @@ const HABIT_WITH_RELATIONS_SELECT = `
     skills(id, title, icon, level)
   ),
   habit_characters(
-    characters(id, title, icon, color_theme)
+    characters(id, title, icon, character_color)
   ),
   habit_goals(goal_id)
 ` as const

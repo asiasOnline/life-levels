@@ -40,7 +40,7 @@ type GoalRowWithRelations = GoalRow & {
       id: string
       title: string
       icon: unknown
-      color_theme: string
+      character_color: string
     } | null
   }[]
 }
@@ -64,7 +64,7 @@ const GOAL_WITH_RELATIONS_SELECT = `
     skills(id, title, icon, level)
   ),
   goal_characters(
-    characters(id, title, icon, color_theme)
+    characters(id, title, icon, character_color)
   )
 ` as const
 

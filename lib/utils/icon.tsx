@@ -1,9 +1,10 @@
 import * as FaIcons from 'react-icons/fa6'
+import { HiOutlineUserGroup } from 'react-icons/hi2'
 import { IconType } from 'react-icons'
 
 // Popular icons for the system
 export const AVAILABLE_ICONS = [
-  'FaCircleArrowUp', 'FaStar', 'FaTrophy', 'FaFire', 'FaBolt',
+  'HiOutlineUserGroup', 'FaCircleArrowUp', 'FaStar', 'FaTrophy', 'FaFire', 'FaBolt',
   'FaHeart', 'FaBrain', 'FaDumbbell', 'FaBook', 'FaCode',
   'FaPalette', 'FaMusic', 'FaGamepad', 'FaCamera', 'FaComment', 'FaPenNib',
   'FaRocket', 'FaLightbulb', 'FaGem', 'FaCrown', 'FaShield',

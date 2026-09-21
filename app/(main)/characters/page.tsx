@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Character } from "@/lib/types/character";
 import { IconType } from "@/lib/types/icon";
 import { ViewMode } from "@/components/layout/app/item-container-header";
 import PageHeader from "@/components/layout/app/page-header";
 import ItemContainer from "@/components/layout/app/item-container";
 import { ItemContainerHeader } from "@/components/layout/app/item-container-header";
-import { CreateCharacterModal } from "@/components/features/characters/create-character-modal";
+import { CreateCharacterModal, LinkableItem } from "@/components/features/characters/create-character-modal";
 import { CharacterCard } from "@/components/features/characters/character-card";
 import { CharacterTableRow } from "@/components/features/characters/character-table-row";
-import { CharacterDetailModal } from "@/components/features/characters/character-detail-modal";
 import { 
   Table,
   TableHeader,
@@ -19,31 +19,42 @@ import {
   TableBody
  } from "@/components/ui/table";
 import { toast } from "sonner";
-import { 
-  fetchCharacters, 
-  fetchCharacterById 
-} from "@/lib/actions/characters";
+import { fetchCharacters } from "@/lib/actions/characters";
 import { Button } from "@/components/ui/button";
 import { FaPlus, FaXmark } from "react-icons/fa6";
 import { SkillSummary } from "@/lib/types/skills";
 import { fetchSkills } from "@/lib/actions/skills";
+import { fetchHabits } from "@/lib/actions/habits";
+import { fetchTasks } from "@/lib/actions/tasks";
+import { fetchGoals } from "@/lib/actions/goals";
 import { HiOutlineUserGroup } from "react-icons/hi2";
 
 export default function CharactersPage() {
+  const router = useRouter()
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
     const [characters, setCharacters] = useState<Character[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-    const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
     const [availableSkills, setAvailableSkills] = useState<SkillSummary[]>([])
-    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+    const [availableHabits, setAvailableHabits] = useState<LinkableItem[]>([])
+    const [availableTasks, setAvailableTasks] = useState<LinkableItem[]>([])
+    const [availableGoals, setAvailableGoals] = useState<LinkableItem[]>([])
 
     const loadCharacters = useCallback(async () => {
       setIsLoading(true)
       try {
-        const [skillsResult, charactersResult] = await Promise.all([
+        const [
+          skillsResult,
+          charactersResult,
+          habitsResult,
+          tasksResult,
+          goalsResult,
+        ] = await Promise.all([
           fetchSkills(),
           fetchCharacters(),
+          fetchHabits(),
+          fetchTasks(),
+          fetchGoals(),
         ])
 
         if (!skillsResult.success) {
@@ -57,6 +68,25 @@ export default function CharactersPage() {
         }
 
         setCharacters(charactersResult.data)
+
+        // Linking is optional, so a failed fetch just leaves that list empty.
+        // Archived habits and completed tasks/goals are no longer worth linking.
+        const toLinkable = (i: LinkableItem): LinkableItem => ({ id: i.id, title: i.title, icon: i.icon })
+        setAvailableHabits(
+          habitsResult.success
+            ? habitsResult.data.filter((h) => h.status !== 'archived').map(toLinkable)
+            : []
+        )
+        setAvailableTasks(
+          tasksResult.success
+            ? tasksResult.data.filter((t) => t.status !== 'completed').map(toLinkable)
+            : []
+        )
+        setAvailableGoals(
+          goalsResult.success
+            ? goalsResult.data.filter((g) => g.status !== 'completed').map(toLinkable)
+            : []
+        )
 
         setAvailableSkills(
         (skillsResult.data ?? []).map((s) => ({
@@ -80,31 +110,11 @@ export default function CharactersPage() {
     loadCharacters()
   }, [])
 
-  const handleCharacterClick = async (character: Character) => {
-    const result = await fetchCharacterById(character.id)
-
-    if (!result.success) {
-      toast.error('Failed to load character details.')
-      return
-    }
-
-    setSelectedCharacter(result.data)
-    setIsDetailModalOpen(true)
+  const handleCharacterClick = (character: Character) => {
+    router.push(`/characters/${character.id}`)
   }
 
   const handleCharacterCreated = () => {
-    loadCharacters()
-  }
-
-  const handleCharacterUpdated = () => {
-    setIsDetailModalOpen(false)
-    setSelectedCharacter(null)
-    loadCharacters()
-  }
-
-  const handleCharacterDeleted = () => {
-    setIsDetailModalOpen(false)
-    setSelectedCharacter(null)
     loadCharacters()
   }
 
@@ -197,15 +207,9 @@ export default function CharactersPage() {
         onClose={setIsCreateModalOpen}
         onCharacterCreated={handleCharacterCreated}
         availableSkills={availableSkills}
-      />
-
-      {/* Character Detail Modal */}
-      <CharacterDetailModal
-        character={selectedCharacter}
-        isOpen={isDetailModalOpen}
-        onClose={setIsDetailModalOpen}
-        onCharacterUpdated={handleCharacterUpdated}
-        onCharacterDeleted={handleCharacterDeleted}
+        availableHabits={availableHabits}
+        availableTasks={availableTasks}
+        availableGoals={availableGoals}
       />
 
       </ItemContainer>

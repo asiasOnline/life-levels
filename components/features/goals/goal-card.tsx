@@ -1,3 +1,4 @@
 'use client'
 
-import { useMemo } from 'react'
+import { renderIcon } from '@/lib/utils/icon'
+import { Goal } from '@/lib/types/goals'
